@@ -18,7 +18,7 @@ const FAB = {
   denim: { tile: 0.055, nrm: 2.8, rough: 0.92, fn: (x, y, S) => { const d = 0.5 + 0.5 * Math.sin(TAU * (x + y) / 4); const warp = 0.55 + 0.45 * hsh(x, 3); const streak = 0.9 + 0.1 * Math.sin(TAU * x / 64 + hsh(x >> 3, 9) * 6); return Math.min(1, (0.5 + 0.3 * d * warp + (hsh(x, y >> 1) > 0.93 ? 0.2 : 0)) * streak * 1.18); } },
   knit: { tile: 0.07, nrm: 3.2, rough: 0.97, sheen: 0.6, fn: (x, y) => { const c = Math.sin(TAU * x / 8), r = ((y + (x >> 3) * 4) % 8) / 8; return 0.66 + 0.2 * (0.5 + 0.5 * c) * (0.6 + 0.4 * Math.sin(Math.PI * r)) + (hsh(x >> 1, y >> 1) - 0.5) * 0.08; } },
   pique: { tile: 0.05, nrm: 2.6, rough: 0.88, fn: (x, y) => { const dx = Math.abs(((x % 8) - 4)), dy = Math.abs(((y % 8) - 4)); return 0.7 + 0.26 * Math.max(0, 1 - (dx + dy) / 6) + (hsh(x >> 1, y >> 1) - 0.5) * 0.05; } },
-  tech: { tile: 0.06, nrm: 1.0, rough: 0.52, fn: (x, y) => { const hx = (x % 12) - 6, hy = ((y + ((x / 12 | 0) & 1) * 6) % 12) - 6; return 0.8 + 0.1 * Math.max(0, 1 - Math.hypot(hx, hy) / 4) + (hsh(x, y) - 0.5) * 0.04; } },
+  tech: { tile: 0.05, nrm: 2.2, rough: 0.8, env: 0.3, fn: (x, y) => { const hx = (x % 12) - 6, hy = ((y + ((x / 12 | 0) & 1) * 6) % 12) - 6; return 0.62 + 0.3 * Math.max(0, 1 - Math.hypot(hx, hy) / 4.5) + (hsh(x, y) - 0.5) * 0.06; } },
   canvas: { tile: 0.06, nrm: 3.0, rough: 0.92, fn: (x, y) => wv(x, y, 4) * 0.9 + 0.1 * (0.5 + 0.5 * Math.sin(TAU * y / 32 + noise2(x * 0.05, y * 0.4) * 4)) },
   terry: { tile: 0.04, nrm: 3.5, rough: 1.0, fn: (x, y) => 0.55 + 0.45 * hsh(x >> 1, y >> 1) * (0.6 + 0.4 * hsh(x, y)) },
   blazer: { tile: 0.06, nrm: 1.2, rough: 0.78, fn: (x, y) => twl(x, y, 4, 0.12) - (x % 32 === 0 || x % 32 === 1 ? 0.08 : 0) },
@@ -38,7 +38,7 @@ export function fabricSet(kind) {
     const map = texFromCanvas(c, { aniso: 4 });
     const normalMap = def.nrm > 0 ? texFromCanvas(heightToNormalCanvas(c, def.nrm), { srgb: false, aniso: 4 }) : null;
     map.userData.shared = true; if (normalMap) normalMap.userData.shared = true;
-    const o = { map, normalMap, tile: def.tile, rough: def.rough, sheen: def.sheen || 0, userData: { shared: true } };
+    const o = { map, normalMap, tile: def.tile, rough: def.rough, sheen: def.sheen || 0, env: def.env, userData: { shared: true } };
     return o;
   });
 }
@@ -100,7 +100,7 @@ export function clothMat(kind, color, fx, o = {}) {
   const f = fabricSet(kind);
   const m = new THREE.MeshStandardMaterial({
     color: new THREE.Color(color), map: o.map === undefined ? f.map : o.map, normalMap: f.normalMap, roughness: o.rough ?? f.rough, metalness: o.metal ?? 0,
-    vertexColors: !!o.vertexColors, side: o.double ? THREE.DoubleSide : THREE.FrontSide, envMapIntensity: 0.6,
+    vertexColors: !!o.vertexColors, side: o.double ? THREE.DoubleSide : THREE.FrontSide, envMapIntensity: f.env ?? 0.6,
   });
   if (m.normalMap) m.normalScale.set(o.nrmScale ?? 0.7, o.nrmScale ?? 0.7);
   if (o.emissive) { m.emissive = new THREE.Color(o.emissive); m.emissiveIntensity = o.emissiveIntensity ?? 2; }

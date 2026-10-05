@@ -114,15 +114,15 @@ export function buildClothing(P, L, rig, head, fx, bodyGeo) {
   // ---------------------------------------------------------------- top
   if (!TS.robe && !TS.dress) {
     const hemY = TS.hem, flare = TS.flare || 0;
-    const vopen = TS.neck === 'vneck' ? (yf) => 0.62 * smooth(0.79, 0.855, yf) : (TS.neck === 'collar' || TS.neck === 'polo') ? (yf) => (TS.neck === 'polo' ? 0.34 : 0.5) * smooth(0.78, 0.855, yf) : null;
+    const vopen = TS.neck === 'vneck' ? (yf) => 0.42 * smooth(0.80, 0.857, yf) : (TS.neck === 'collar' || TS.neck === 'polo') ? (yf) => (TS.neck === 'polo' ? 0.2 : 0.26) * smooth(0.815, 0.857, yf) : null;
     const y1 = TS.neck === 'scoop' ? 0.835 : 0.855;
     push('top', torsoShell(c, { y0: hemY, y1, off: tfit, offFn: (yf) => flare * (1 - smooth(hemY, hemY + 0.12, yf)) + bel * 0.008 * smooth(0.5, 0.58, yf) * (1 - smooth(0.62, 0.7, yf)), color: topC, tile: 0.05, open: vopen }));
     if (TS.neck === 'crew' || TS.neck === 'roll') push('top', collarBand(c, { y: 0.855, h: TS.neck === 'roll' ? 0.045 : 0.012, off: tfit + (TS.neck === 'roll' ? 0.006 : 0.002), flare: TS.neck === 'roll' ? 0.012 : 0.001, color: T.trim ? tTrim : dark(topC, 0.9) }));
     if (TS.neck === 'collar' || TS.neck === 'polo' || TS.neck === 'vneck') {
       push('top', collarBand(c, { y: 0.852, h: 0.03, off: tfit + 0.004, flare: 0.006, color: TS.neck === 'polo' ? tTrim : topC }));
       if (TS.neck !== 'vneck') for (const s of [1, -1]) {
-        const pts = [], nr = [], N = 9, a1 = s * (TS.neck === 'polo' ? 0.22 : 0.27);
-        for (let i = 0; i < N; i++) { const t = i / (N - 1); const sp = shellPoint(c, mixn(0.858, 0.80, smooth(0, 1, t)), mixn(s * 2.3, a1, Math.pow(t, 0.8)), tfit + 0.007); pts.push(sp.p); nr.push(sp.n); }
+        const pts = [], nr = [], N = 9, a1 = s * (TS.neck === 'polo' ? 0.16 : 0.2);
+        for (let i = 0; i < N; i++) { const t = i / (N - 1); const sp = shellPoint(c, mixn(0.858, 0.815, smooth(0, 1, t)), mixn(s * 2.3, a1, Math.pow(t, 0.8)), tfit + 0.007); pts.push(sp.p); nr.push(sp.n); }
         push('top', strip(pts, nr, (t) => 0.036 * (1 - 0.3 * t) + 0.006, c.torsoSkin, TS.neck === 'polo' ? tTrim : topC, 10));
       }
     }
@@ -157,14 +157,14 @@ export function buildClothing(P, L, rig, head, fx, bodyGeo) {
     const openA = outer.open === false ? 0 : (OS.open || 0);
     const openFn = openA ? () => openA : (OS.vopen ? (yf) => 0.62 * smooth(0.665, 0.84, yf) : null);
     const flare = OS.flare || 0.01, lap = OS.collar === 'lapel';
-    push('outer', torsoShell(c, { y0: hemYf, y1: OS.collar === 'stand' || OS.sleeveless ? 0.855 : 0.852, off: of, offFn: (yf) => (knee ? 0 : flare * (1 - smooth(hemYf, hemYf + 0.1, yf))), color: ocol, tile: 0.06, open: openFn }));
+    push('outer', torsoShell(c, { y0: hemYf, y1: 0.858, off: of, offFn: (yf) => (knee ? 0 : flare * (1 - smooth(hemYf, hemYf + 0.1, yf))) - of * 0.6 * smooth(0.8, 0.858, yf), color: ocol, tile: 0.06, open: openFn }));
     if (knee) push('outer', skirtShell(c, { top: 0.62, hem: c.dims.kneeY + (OS.fab === 'labcoat' ? 0.04 : 0.0), off: of, flare: (s) => 0.04 * Math.pow(s, 1.1), color: ocol, tile: 0.06, open: () => openA, legK: 0.45 }));
-    if (OS.collar === 'stand') push('outer', collarBand(c, { y: 0.855, h: 0.05, off: of + 0.004, flare: 0.006, color: dark(ocol, 0.9) }));
+    if (OS.collar === 'stand') push('outer', collarBand(c, { y: 0.858, h: 0.05, off: 0.012, flare: 0.006, color: dark(ocol, 0.9) }));
     else if (!OS.sleeveless) {
-      push('outer', collarBand(c, { y: 0.852, h: 0.032, off: of + 0.004, flare: 0.008, color: ocol }));
+      push('outer', collarBand(c, { y: 0.858, h: 0.032, off: 0.013, flare: 0.012, color: ocol }));
       for (const s of [1, -1]) {
         const pts = [], nr = [], N = 10, yEnd = lap ? 0.70 : 0.775;
-        for (let i = 0; i < N; i++) { const t = i / (N - 1), yf = mixn(0.858, yEnd, Math.pow(t, 0.9)), aOpen = openFn ? openFn(yf) : 0; const sp = shellPoint(c, yf, s * (i === 0 ? 2.3 : mixn(2.2, aOpen + 0.12, Math.pow(t, 0.7))), of + 0.008); pts.push(sp.p); nr.push(sp.n); }
+        for (let i = 0; i < N; i++) { const t = i / (N - 1), yf = mixn(0.858, yEnd, Math.pow(t, 0.9)), aOpen = openFn ? openFn(yf) : 0; const sp = shellPoint(c, yf, s * (i === 0 ? 2.3 : mixn(2.2, aOpen + 0.12, Math.pow(t, 0.7))), of * (1 - 0.6 * smooth(0.8, 0.858, yf)) + 0.008); pts.push(sp.p); nr.push(sp.n); }
         push('outer', strip(pts, nr, (t) => (lap ? 0.05 : 0.04) * (1 - 0.35 * t) + 0.01, c.torsoSkin, lap ? dark(ocol, 0.92) : ocol, 10));
       }
     }

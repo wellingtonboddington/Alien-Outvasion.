@@ -81,19 +81,19 @@ export function hairline(phi, o = {}) {
 
 /** scalp-cap shell hugging the head. o:{nr,nc,off,offFn(y,phi,t),yBot(phi),yTop,color,uvRep,phi0,phi1} -> geometry (no skin yet) in MODEL space */
 export function capGeometry(hs, o = {}) {
-  const nr = o.nr || 18, nc = o.nc || 56, yTop = o.yTop ?? CROWN - 0.003, p0 = o.phi0 ?? -Math.PI, p1 = o.phi1 ?? Math.PI;
+  const nr = o.nr || 18, nc = o.nc || 56, yTop = typeof o.yTop === 'function' ? 0 : (o.yTop ?? CROWN - 0.003), p0 = o.phi0 ?? -Math.PI, p1 = o.phi1 ?? Math.PI;
   const pos = [], nor = [], uv = [], col = [], idx = [], tmp = { p: V(), n: V() }, m = V();
   const c = new THREE.Color(o.color || 0x222222);
   for (let j = 0; j <= nr; j++) {
     const t = j / nr;
     for (let i = 0; i <= nc; i++) {
       const phi = mixn(p0, p1, i / nc), yb = typeof o.yBot === 'function' ? o.yBot(phi) : (o.yBot ?? 0.03);
-      const y = mixn(yb, yTop, 1 - Math.pow(1 - t, 1.5));
+      const yt = typeof o.yTop === 'function' ? o.yTop(phi) : yTop, y = mixn(yb, yt, 1 - Math.pow(1 - t, 1.5));
       const off = (o.off ?? 0.003) + (o.offFn ? o.offFn(y, phi, t) : 0);
       hs.point(y, phi, off, tmp); hs.toModel(tmp.p, m);
       pos.push(m.x, m.y, m.z); nor.push(tmp.n.x, tmp.n.y, tmp.n.z);
       uv.push((i / nc) * (o.uvRep || 3), t);
-      const k = 0.6 + 0.4 * smooth(0, 0.35, t); col.push(c.r * k, c.g * k, c.b * k);
+      if (o.colorFn) { const cc = o.colorFn(y, phi, t); col.push(cc.r, cc.g, cc.b); } else { const k = 0.6 + 0.4 * smooth(0, 0.35, t); col.push(c.r * k, c.g * k, c.b * k); }
     }
   }
   for (let j = 0; j < nr; j++) for (let i = 0; i < nc; i++) { const a = j * (nc + 1) + i, b = a + 1, d = a + nc + 1, e = d + 1; idx.push(a, d, b, b, d, e); }
@@ -112,17 +112,27 @@ export function capGeometry(hs, o = {}) {
  */
 export function growStrand(hs, root, d0, S) {
   const pts = [root.clone()], p = root.clone(), d = d0.clone().normalize(), n = S.n || 10, step = S.len / n;
-  const tgt = V(), nrm = V(), side = V(), up = V(0, 1, 0);
+  const tgt = V(), nrm = V(), up = V(0, 1, 0);
   for (let i = 0; i < n; i++) {
     const s = (i + 1) / n;
     if (S.flow) { S.flow(p, s, d, tgt); d.lerp(tgt, S.follow ?? 0.3).normalize(); }
     d.y -= (S.droop ?? 0.1) * (0.3 + s); d.normalize();
-    if (S.wave) { side.crossVectors(d, up); if (side.lengthSq() < 1e-6) side.set(1, 0, 0); side.normalize(); d.addScaledVector(side, S.wave[0] * Math.cos((s * S.wave[1] + (S.phase || 0)) * Math.PI * 2)).normalize(); }
-    if (S.curl) { side.crossVectors(d, up).normalize(); const w = (s * S.curl[1] + (S.phase || 0)) * Math.PI * 2; d.addScaledVector(side, S.curl[0] * Math.cos(w)).addScaledVector(up, S.curl[0] * 0.8 * Math.sin(w)).normalize(); }
     p.addScaledVector(d, step);
     if (hs.pushOut(p, S.margin ?? 0.004, nrm, S.torso !== false)) { d.addScaledVector(nrm, -d.dot(nrm) * 0.9); d.addScaledVector(nrm, 0.01); d.normalize(); }
+    if (S.hug) { const g = hs.gHead(p), tg = 1 + (S.margin ?? 0.004) * 12.5 + 0.02; if (g > tg && g < 3) { const h = 0.0015; nrm.set(hs.gHead(_b.copy(p).add(_c.set(h, 0, 0))) - hs.gHead(_b.copy(p).add(_c.set(-h, 0, 0))), hs.gHead(_b.copy(p).add(_c.set(0, h, 0))) - hs.gHead(_b.copy(p).add(_c.set(0, -h, 0))), hs.gHead(_b.copy(p).add(_c.set(0, 0, h))) - hs.gHead(_b.copy(p).add(_c.set(0, 0, -h)))).multiplyScalar(1 / (2 * h)); const l2 = nrm.lengthSq(); if (l2 > 1e-6) { p.addScaledVector(nrm, -(g - tg) * S.hug / l2); d.addScaledVector(nrm, -0.3 * Math.max(0, d.dot(nrm))).normalize(); } } }
     pts.push(p.clone());
     if (S.yEnd !== undefined && p.y < S.yEnd) break;
+    if (S.stop && S.stop(p)) break;
+  }
+  if (S.wave || S.curl) { // positional waves / helical curls on top of the flow line
+    const out = V(), tan = V(), side = V(), N = pts.length, ph = S.phase || 0, TAU = Math.PI * 2;
+    for (let i = 1; i < N; i++) {
+      const s = i / (N - 1), ramp = smooth(0, 0.3, s);
+      tan.copy(pts[Math.min(N - 1, i + 1)]).sub(pts[i - 1]).normalize(); hs.outward(pts[i], out); side.crossVectors(tan, out); if (side.lengthSq() < 1e-6) side.set(1, 0, 0); side.normalize();
+      if (S.wave) pts[i].addScaledVector(side, S.wave[0] * Math.sin((s * S.wave[1] + ph) * TAU) * ramp);
+      if (S.curl) { const w = (s * S.curl[1] + ph) * TAU; pts[i].addScaledVector(side, S.curl[0] * Math.cos(w) * ramp).addScaledVector(out, S.curl[0] * Math.sin(w) * ramp); }
+      hs.pushOut(pts[i], S.margin ?? 0.004, null, S.torso !== false);
+    }
   }
   return pts;
 }
@@ -179,8 +189,8 @@ export function strandTex() {
   return cached('hair.strand', () => {
     const W = 128, Hh = 256, c = makeCanvas(W, Hh), x = c.getContext('2d');
     x.clearRect(0, 0, W, Hh);
-    for (let i = 0; i < 46; i++) {
-      const cx = hsh(i, 1) * W, w = 1.4 + hsh(i, 2) * 2.4, len = Hh * (0.72 + 0.28 * hsh(i, 3)), g = Math.floor(150 + 105 * hsh(i, 4)), ph = hsh(i, 5) * 6, amp = 1 + 2.5 * hsh(i, 6);
+    for (let i = 0; i < 64; i++) {
+      const cx = hsh(i, 1) * W, w = 2.4 + hsh(i, 2) * 3.6, len = Hh * (0.6 + 0.4 * hsh(i, 3)), g = Math.floor(150 + 105 * hsh(i, 4)), ph = hsh(i, 5) * 6, amp = 1 + 2.5 * hsh(i, 6);
       x.strokeStyle = `rgb(${g},${g},${g})`; x.lineWidth = w; x.lineCap = 'round'; x.beginPath();
       for (let y = Hh; y >= Hh - len; y -= 8) { const px = cx + Math.sin(y * 0.03 + ph) * amp; (y === Hh ? x.moveTo(px, y) : x.lineTo(px, y)); }
       x.stroke();
@@ -197,7 +207,7 @@ export function capTex(kind) {
       const v = 1 - py / S, u = px / S;
       const streak = 0.78 + 0.22 * (0.5 + 0.5 * Math.sin(px * 2.1 + hsh(px >> 1, 3) * 6)) * (0.6 + 0.4 * hsh(px, py >> 3));
       let a = 255, l = streak;
-      if (kind === 'fade') a = hsh(px, py) < smooth(0.0, 0.3, v) * 1.05 ? 255 : 0;
+      if (kind === 'fade' || kind === 'fadeS') a = hsh(px, py) < smooth(0.0, kind === 'fade' ? 0.3 : 0.1, v) * 1.05 ? 255 : 0;
       else if (kind === 'curly') { const n = fbm2(u * 14, v * 14, 3) + 0.25 * noise2(u * 40, v * 40); a = n > 0.43 ? 255 : 0; l = 0.55 + 0.5 * n * (0.7 + 0.3 * hsh(px, py)); }
       const i = (py * S + px) * 4, g = Math.min(255, l * 255); d[i] = d[i + 1] = d[i + 2] = g; d[i + 3] = a;
     }

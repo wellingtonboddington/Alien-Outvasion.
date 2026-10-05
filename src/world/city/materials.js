@@ -13,13 +13,14 @@ uniform float uTime; uniform float uAmount; varying vec2 vUv; varying vec3 vCol;
 float h21(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p,p+45.32); return fract(p.x*p.y); }
 float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
 void main(){
-  float ph = vCol.r * 17.0; float t = uTime * 2.1 + ph;
-  float n = n2(vec2(vUv.x * 4.0 + ph, vUv.y * 2.5 - t)) * 0.65 + n2(vec2(vUv.x * 9.0 - ph, vUv.y * 5.0 - t * 1.7)) * 0.35;
-  float y = vUv.y; float wdt = mix(0.48, 0.04, pow(y, 0.8)) * (0.7 + 0.6 * n);
-  float m = smoothstep(wdt, wdt * 0.25, abs(vUv.x - 0.5)) * smoothstep(1.0, 0.05, y + (n - 0.45) * 0.55);
-  float core = smoothstep(0.0, 0.6, m * (1.0 - y * 0.7));
-  vec3 c = mix(vec3(1.0, 0.18, 0.02), vec3(1.0, 0.82, 0.35), core) * (2.2 + 1.8 * core) * vCol.g;
-  gl_FragColor = vec4(c * m * uAmount, m * uAmount);
+  float ph = vCol.r * 17.0; float t = uTime * 1.8 + ph;
+  float n = n2(vec2(vUv.x * 3.0 + ph, vUv.y * 2.2 - t)) * 0.6 + n2(vec2(vUv.x * 7.0 - ph, vUv.y * 4.0 - t * 1.6)) * 0.4;
+  float y = vUv.y; float wdt = mix(0.55, 0.12, pow(y, 0.7)) * (0.75 + 0.5 * n);
+  float edge = smoothstep(wdt, wdt * 0.1, abs(vUv.x - 0.5));
+  float m = edge * smoothstep(1.0, 0.0, y + (n - 0.5) * 0.7) * smoothstep(0.0, 0.08, y);
+  float core = smoothstep(0.1, 0.9, m) * (1.0 - y * 0.6);
+  vec3 c = mix(vec3(0.9, 0.12, 0.01), vec3(1.0, 0.7, 0.2), core) * (1.1 + 1.4 * core) * vCol.g;
+  gl_FragColor = vec4(c * m * uAmount, m * 0.85 * uAmount);
   if (gl_FragColor.a < 0.01) discard;
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -60,6 +61,7 @@ export class MatSet {
       case 's_dome': return new THREE.MeshStandardMaterial({ map: getDomeTex(), roughness: 0.32, metalness: 0.55, vertexColors: true, envMapIntensity: 1.3 });
       case 'copper': return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.55, envMapIntensity: 1.1 });
       case 'island': return new THREE.MeshBasicMaterial({ vertexColors: true, fog: true });
+      case 'chitin': return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.32, metalness: 0.15, side: THREE.DoubleSide, envMapIntensity: 1.2 });
       case 'gold': return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.85, envMapIntensity: 1.3 });
       case 'bronze': return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.9 });
       case 'water': return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.06, metalness: 0.0, envMapIntensity: 1.6 });

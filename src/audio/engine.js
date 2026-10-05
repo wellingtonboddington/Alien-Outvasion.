@@ -40,7 +40,7 @@ export function createAudio(opts = {}) {
     ctx, offline, q, vtime: 0, rng: new RNG(hashStr('alien-outvasion-audio') ^ (opts.seed || 0)),
     live: { sfx: 0, music: 0, amb: 0, voice: 0 },
     caps: offline ? { sfx: 1e9, music: 1e9, amb: 1e9, voice: 1e9 } : { sfx: [16, 28, 46][cl(q, 0, 2)], music: [70, 130, 200][cl(q, 0, 2)], amb: 40, voice: 12 }, // (offline: nothing ends before rendering, so counters would never drop)
-    lookahead: offline ? 0.2 : (q === 0 ? 0.55 : 0.38),
+    lookahead: q === 0 ? 2.0 : 1.6, // seconds scheduled ahead of the audio clock: survives ~1.5 s main-thread stalls (scene swaps)
     now() { return offline ? A.vtime : ctx.currentTime; },
     tickers: new Set(), bus: {}, listener: { x: 0, y: 0, z: 0, rx: 1, ry: 0, rz: 0, fx: 0, fy: 0, fz: -1, ux: 0, uy: 1, uz: 0, cam: null },
     sampleRate: ctx.sampleRate, mix: opts.mix || MIX,
@@ -193,7 +193,7 @@ export function createAudio(opts = {}) {
     },
     /** global reverb return level (0..2, 1 = default) */
     setReverb(v = 1) { revS.ret.gain.setTargetAtTime(revS.base * v, A.now(), 0.1); revL.ret.gain.setTargetAtTime(revL.base * v, A.now(), 0.1); },
-    setQuality(l) { A.q = cl(l, 0, 2); if (!offline) { A.caps.sfx = [16, 28, 46][A.q]; A.caps.music = [70, 130, 200][A.q]; } A.lookahead = offline ? 0.2 : (A.q === 0 ? 0.55 : 0.38); },
+    setQuality(l) { A.q = cl(l, 0, 2); if (!offline) { A.caps.sfx = [16, 28, 46][A.q]; A.caps.music = [70, 130, 200][A.q]; } A.lookahead = A.q === 0 ? 2.0 : 1.6; },
     /** optional per-frame call (the engine already runs its own 40 Hz timer); keeps positioned sounds tight to the camera */
     update(dt) { if (offline) return; frameDt = dt; pump(A.now()); },
     now: () => A.now(),

@@ -16,14 +16,14 @@ const sideAB = (name, x0, x1, z0, z1) => ({ front: [[x0, z1], [x1, z1]], right: 
 const soot = [0.012, 0.011, 0.01];
 
 /** per-building damage parameters from a 0..1 level */
-export function damageParams(s, dmg, rng) {
+export function damageParams(s, dmg, rng, boost = 1) {
   const hTot = s.tiers.reduce((a, t) => a + t.floors * (t.fh || 3), 0) + (s.shop ? s.shop.fh : 0);
   const f = smoothstep(0.32, 0.92, dmg);
   const hs = 1 - smoothstep(0.86, 1.0, dmg) * 0.86;
   const leanOK = dmg > 0.35 && dmg < 0.9 && rng.chance(0.55) && hTot > 8;
   return {
     dmg, hTot, scorch: smoothstep(0.06, 0.55, dmg), broken: smoothstep(0.03, 0.45, dmg) * 0.78 + (dmg > 0.9 ? 0.2 : 0),
-    fire: smoothstep(0.18, 0.65, dmg) * (dmg > 0.93 ? 0.12 : 0.34), f, hs,
+    fire: Math.min(0.9, smoothstep(0.18, 0.65, dmg) * (dmg > 0.93 ? 0.12 : 0.34) * boost), f, hs,
     corner: rng.int(0, 3), corner2: rng.int(0, 3), lean: leanOK ? rng.range(0.025, 0.075) * rng.sign() : 0, leanAxis: rng.chance(0.5), roofGone: f > 0.45,
     seed: rng.int(1, 1e6),
   };
@@ -66,7 +66,7 @@ const BODY_FLOOR_FH = 3.0;
 export function emitBuilding(B, s, dmg, ctx) {
   const rng = new RNG(s.seed * 2654435761 >>> 0);
   const drng = new RNG((s.seed * 40503 + 17) >>> 0);
-  const dp = dmg > 0.015 ? damageParams(s, dmg, drng) : null;
+  const dp = dmg > 0.015 ? damageParams(s, dmg, drng, ctx.fireBoost || 1) : null;
   const tint = rgb(s.tint || 0xdddddd);
   B.push(s.x, s.y ?? 0, s.z, s.yaw || 0);
   if (dp && dp.lean) { const m = new THREE.Matrix4(); const k = Math.tan(dp.lean); if (dp.leanAxis) m.set(1, k, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); else m.set(1, 0, 0, 0, 0, 1, 0, 0, 0, k, 1, 0, 0, 0, 0, 1); B.pushM(m); }

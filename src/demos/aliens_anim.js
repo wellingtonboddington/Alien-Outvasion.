@@ -3,7 +3,8 @@
 //   strip : one clip sampled at several times in a row.   params {clip, times:[..], kind, gap, side:true, hold:bool, loc:'x'}
 import * as THREE from 'three';
 import { addStudioLights } from '../engine/stage.js';
-import { createVessari } from '../models/aliens/index.js';
+import { createVessari, createCrawler } from '../models/aliens/index.js';
+const mkHero = (kind, seed, opts) => (kind === 'crawler' ? createCrawler(seed, opts) : createVessari(kind, seed, opts));
 
 const SETS = {
   a: [['idle', 1.0], ['idle_alert', 1.0], ['walk', 0.1], ['walk', 0.5], ['run', 0.1], ['run', 0.4], ['stalk', 0.3], ['aim', 1.0], ['fire', 0.05]],
@@ -16,7 +17,7 @@ export default async function setup(stage, params) {
   if (params.clip) {
     const times = params.times || [0, 0.15, 0.3, 0.45, 0.6]; const gap = params.gap || 2.0; const n = times.length;
     times.forEach((tm, i) => {
-      const h = createVessari(kind, 3, params.opts || {}); if (params.side) h.root.position.set(0, 0, (i - (n - 1) / 2) * gap); else h.root.position.set((i - (n - 1) / 2) * gap, 0, 0); if (params.hold !== undefined) h.hold(params.hold ? 'rifle' : null);
+      const h = mkHero(kind, 3, params.opts || {}); if (params.side) h.root.position.set(0, 0, (i - (n - 1) / 2) * gap); else h.root.position.set((i - (n - 1) / 2) * gap, 0, 0); if (params.hold !== undefined && h.hold) h.hold(params.hold ? 'rifle' : null);
       stage.scene.add(h.root); h.play(params.clip, { time: tm, blend: 0 }); if (params.inf) h.setInfection(params.inf); heroes.push({ h, clip: params.clip, time: tm });
     });
     const W = n * gap; const d = Math.max(7, W * 0.9);

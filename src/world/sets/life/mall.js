@@ -131,12 +131,10 @@ export function createMallInterior(opts = {}) {
   K.slab('concrete', -LW / 2 - 8, -0.8, -LD / 2 - 8, LW / 2 + 8, -0.01, LD / 2 + 8);
   // upper slabs
   const holesL1 = [[-3.2, 6.5, 3.2, 13.0], [-3.2, -13.0, 3.2, -6.5]], holesL2 = [[11.0, -3.2, 20.0, 3.2], [-20.0, -3.2, -11.0, 3.2]];
-  const ringRects = (hs) => { const out = []; for (const [a, b, c, d] of [[-24, -17, -10, 17], [10, -17, 24, 17], [-10, -17, 10, -6.5], [-10, 6.5, 10, 17]]) out.push(...slabHoles(K, 'marble#f1e8dc', 'plaster#e8e2d6', a, b, c, d, 0, hs)); };
-  for (let l = 1; l <= 2; l++) K.at([0, l * F, 0], 0, () => { const hs = l === 1 ? holesL1 : holesL2; for (const [a, b, c, d] of [[-24, -17, -10, 17], [10, -17, 24, 17], [-10, -17, 10, -6.5], [-10, 6.5, 10, 17]]) slabHoles(K, 'marble#f1e8dc', 'plaster#e8e2d6', a, b, c, d, 0, hs); });
+  const ringRects = (hs) => { const out = []; for (const [a, b, c, d] of [[-24, -17, -10, 17], [10, -17, 24, 17], [-10, -17, 10, -6.5], [-10, 6.5, 10, 17]]) out.push(...slabHoles(K, 'marble#f1e8dc', 'soffit', a, b, c, d, 0, hs)); };
+  for (let l = 1; l <= 2; l++) K.at([0, l * F, 0], 0, () => { const hs = l === 1 ? holesL1 : holesL2; for (const [a, b, c, d] of [[-24, -17, -10, 17], [10, -17, 24, 17], [-10, -17, 10, -6.5], [-10, 6.5, 10, 17]]) slabHoles(K, 'marble#f1e8dc', 'soffit', a, b, c, d, 0, hs); });
   // roof deck over the ring + skylight over the void
-  K.slab('plaster#efe9dc', -24.3, ROOF - 0.5, -17.3, -10, ROOF, 17.3); K.slab('plaster#efe9dc', 10, ROOF - 0.5, -17.3, 24.3, ROOF, 17.3); K.slab('plaster#efe9dc', -10, ROOF - 0.5, -17.3, 10, ROOF, -6.5); K.slab('plaster#efe9dc', -10, ROOF - 0.5, 6.5, 10, ROOF, 17.3);
-  // end walls above shops (levels' structural separations) + outer shell
-  K.slab('plaster#d8d0c2', -24.4, 0, -17.4, -24, ROOF, 17.4); K.slab('plaster#d8d0c2', 24, 0, -17.4, 24.4, ROOF, 17.4); K.slab('plaster#d8d0c2', -24.4, 0, -17.4, 24.4, ROOF, -17); K.slab('plaster#d8d0c2', -24.4, 0, 17, 24.4, ROOF, 17.4);
+  K.slab('soffit', -24.3, ROOF - 0.5, -17.3, -10, ROOF, 17.3); K.slab('soffit', 10, ROOF - 0.5, -17.3, 24.3, ROOF, 17.3); K.slab('soffit', -10, ROOF - 0.5, -17.3, 10, ROOF, -6.5); K.slab('soffit', -10, ROOF - 0.5, 6.5, 10, ROOF, 17.3);
   // skylight: trusses + glowing panels
   K.at([0, ROOF, 0], 0, () => {
     for (let i = -5; i <= 5; i++) { K.box('darkMetal', 0.22, 0.5, 13.4, i * 2, -0.5, 0); K.box('darkMetal', 0.12, 0.9, 13.4, i * 2, -0.6, 0); }
@@ -201,7 +199,7 @@ export function createMallInterior(opts = {}) {
   // hanging ring chandeliers
   for (const [x, z, r] of [[-5, 0, 2.6], [5, 0, 2.6]]) K.at([x, 13.6, z], 0, () => { K.torus('glow', r, 0.08, 0, 0, 0, [Math.PI / 2, 0, 0], { seg: 6, segR: 56 }); K.torus('glowWarm', r * 0.6, 0.05, 0, 0.1, 0, [Math.PI / 2, 0, 0], { seg: 5, segR: 40 }); for (let i = 0; i < 4; i++) { const a = i * TAU / 4; K.cyl('darkMetal', 0.015, 2.6, Math.cos(a) * r, 0, Math.sin(a) * r, { seg: 4 }); } });
   // ceilings' troffers for ring corridors
-  for (let l = 0; l < 3; l++) for (let i = 0; i < 10; i++) for (const z of [-11.5, 11.5]) K.at([-21.6 + i * 4.8, 0, z], 0, () => troffer(K, 1.2, 0.5, (l + 1) * F - SLAB + (l === 2 ? SLAB - 0.5 + 0.5 : 0) + (l === 2 ? (ROOF - 2 * F - F) * 0 : 0) - (l === 2 ? 0 : 0) + (l === 2 ? 0.0 : 0) + (l === 2 ? 0 : 0), 'glow', 2));
+  for (let l = 0; l < 3; l++) { const cy = l < 2 ? (l + 1) * F - SLAB : ROOF - 0.5; for (let i = 0; i < 10; i++) for (const z of [-11.5, 11.5]) K.at([-21.6 + i * 4.8, 0, z], 0, () => { if (Math.abs(-21.6 + i * 4.8) > 9.5 || Math.abs(z) > 7) troffer(K, 1.2, 0.5, cy + l * F * 0 + (l < 2 ? 0 : 0) , 'glow', 2); }); }
   // bright entrance daylight spill is handled in mallEntrance
   K.build();
   // ---- lights

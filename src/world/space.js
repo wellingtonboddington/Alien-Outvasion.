@@ -92,7 +92,7 @@ void main() {
   col += vec3(0.10, 0.20, 0.42) * fr * oceanMask * day * 0.6;
   // city lights on the night side, hidden by clouds
   float nightK = 1.0 - smoothstep(-0.18, 0.06, ndlG);
-  float lt = texture2D(tLights, vUv).r; float tw = 0.85 + 0.15 * texture2D(uNoise, vUv * vec2(900.0, 450.0) + uTime * 0.01).g;
+  float lt = texture2D(tLights, vUv).r; lt = lt * lt * 1.6; float tw = (0.55 + 0.9 * texture2D(uNoise, vUv * vec2(700.0, 350.0)).r) * (0.92 + 0.08 * sin(uTime * 3.0 + vUv.x * 900.0));
   col += vec3(1.0, 0.70, 0.36) * lt * tw * nightK * uCityLights * (1.0 - cloudHere * 0.8) * 4.5;
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
@@ -154,6 +154,7 @@ void main() {
   }
   float cosT = dot(rd, L); float phR = 0.75 * (1.0 + cosT * cosT); float g = 0.78; float phM = (1.0 - g * g) / (12.566 * pow(1.0 + g * g - 2.0 * g * cosT, 1.5));
   vec3 col = (sumR * uKR * phR * 1.6 + sumM * kM * phM * 0.5) * uIntensity;
+  col = 1.7 * (1.0 - exp(-col / 1.7));
   float Tview = exp(-dot(uKR + kM * 0.4, vec3(0.3333)) * tauV * 0.9);
   gl_FragColor = vec4(col, Tview);
   #include <tonemapping_fragment>
@@ -268,11 +269,11 @@ varying vec3 vDir;
 void main() {
   vec3 d = normalize(vDir);
   vec3 w = vec3(tri(d + 0.3, 1.7, 1), tri(d - 0.2, 1.9, 2), tri(d * 1.3, 1.5, 3));
-  vec3 q = d + (w - 0.5) * 0.9;
-  float n = tri(q, 1.2, 0) * 0.55 + tri(q, 2.6, 1) * 0.3 + tri(q, 5.5, 2) * 0.15;
-  float m = smoothstep(0.48, 0.82, n);
-  float m2 = smoothstep(0.55, 0.9, tri(q + 3.1, 1.9, 3) * 0.6 + tri(q, 4.0, 0) * 0.4);
-  vec3 c = mix(uColA, uColB, smoothstep(0.4, 0.9, tri(d, 0.8, 2))) * m + uColC * m2 * 0.7;
+  vec3 q = d * 0.9 + (w - 0.5) * 0.55;
+  float n = tri(q, 0.8, 0) * 0.6 + tri(q, 1.7, 1) * 0.4;
+  float m = smoothstep(0.32, 0.92, n); m *= m;
+  float m2 = smoothstep(0.4, 0.95, tri(q + 3.1, 1.1, 3) * 0.7 + tri(q, 2.2, 0) * 0.3); m2 *= m2;
+  vec3 c = mix(uColA, uColB, smoothstep(0.35, 0.8, tri(d, 0.6, 2))) * m + uColC * m2 * 0.6;
   gl_FragColor = vec4(c * uAmt, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>

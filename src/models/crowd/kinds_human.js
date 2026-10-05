@@ -218,7 +218,7 @@ export function buildRobot() {
     M, L, K,
     palette: {
       skin: [0xf0f0f2], hair: [0x303030],
-      top: [0xf4f4f6, 0xeceef2, 0xe0e4ea, 0xf0f0f0, 0x3a3e46, 0xdcdfe4, 0x2e3238, 0xe8eaee], bot: [0xf4f4f6], acc: [0x34383f, 0x2a2e34, 0x40454d, 0x30343a, 0x464b54, 0x2c3036], shoe: [0x2a2e34],
+      top: [0xf4f4f6, 0xeceef2, 0xe0e4ea, 0xf0f0f0, 0x80868f, 0xdcdfe4, 0x6a7078, 0xe8eaee], bot: [0xf4f4f6], acc: [0x34383f, 0x2a2e34, 0x40454d, 0x30343a, 0x464b54, 0x2c3036], shoe: [0x2a2e34],
     },
     ovrSlot: SLOT.GLOSS, emitMask: 2.6, emitColor: 0x2aa8ff, emitSlot: 1.0, dirt: 0.05, mix: { kid: 0, elder: 0, female: 0 }, scale: [0.99, 1.02],
     groups: { head: 1 }, variant: (r) => ({ head: r.pick([0, 0, 1, 1, 2, 3]) }),

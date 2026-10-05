@@ -196,7 +196,7 @@ class Field {
     else this.intensity += (this.target - this.intensity) * Math.min(1, dt * 4);
     for (const m of this.parts) {
       const u = m.material.uniforms; u.uIntensity.value = this.intensity;
-      if (this.kind !== 'ember') u.uLight.value.setRGB(Math.min(1.3, amb.r * 1.1 + sun.r * 0.45), Math.min(1.3, amb.g * 1.1 + sun.g * 0.45), Math.min(1.3, amb.b * 1.1 + sun.b * 0.45));
+      if (this.kind !== 'ember') u.uLight.value.setRGB(clamp(amb.r * 1.1 + sun.r * 0.45, 0.22, 1.3), clamp(amb.g * 1.1 + sun.g * 0.45, 0.26, 1.3), clamp(amb.b * 1.1 + sun.b * 0.45, 0.34, 1.3)); // floor: rain/snow must stay readable at night
       m.visible = this.intensity > 0.002;
     }
   }
@@ -217,8 +217,8 @@ export function rain(fx, o = {}) {
   const box = boxOf(o, [36, 22, 36]); const wind = o.wind || [1.5, 0.5]; const speed = o.speed ?? 11; const q = Math.max(0.3, Q.particles);
   const nearN = Math.round((o.count ?? 3400) * q), farN = Math.round(1100 * q), splN = Math.round((o.splashes === false ? 0 : 1300) * q);
   const seed = (++fx.counter) * 31 + 3;
-  const near = makeMesh(fx, 'rain', nearN, seed, box, { size: 0.012, vel: [wind[0], -speed, wind[1]], color: [0.72, 0.78, 0.9], alpha: 0.55, shutter: 0.045, order: 108 });
-  const far = makeMesh(fx, 'rain', farN, seed + 1, [box[0] * 3.2, box[1] * 2.2, box[2] * 3.2], { size: 0.03, vel: [wind[0], -speed, wind[1]], color: [0.7, 0.76, 0.88], alpha: 0.26, shutter: 0.05, order: 107, minPx: 1.4 });
+  const near = makeMesh(fx, 'rain', nearN, seed, box, { size: 0.02, vel: [wind[0], -speed, wind[1]], color: [0.78, 0.84, 0.95], alpha: 0.95, shutter: 0.05, order: 108 });
+  const far = makeMesh(fx, 'rain', farN, seed + 1, [box[0] * 3.2, box[1] * 2.2, box[2] * 3.2], { size: 0.045, vel: [wind[0], -speed, wind[1]], color: [0.74, 0.8, 0.92], alpha: 0.5, shutter: 0.055, order: 107, minPx: 1.5 });
   far.userData.share = 1; const parts = [near, far];
   near.userData.windK = 1; far.userData.windK = 1;
   if (splN > 0) { const spl = makeMesh(fx, 'splash', splN, seed + 2, [box[0] * 0.8, 1, box[2] * 0.8], { size: 0.09, vel: [0, 0, 0], color: [0.8, 0.86, 0.95], alpha: 0.7, order: 107 }); spl.userData.windK = 0; parts.push(spl); }

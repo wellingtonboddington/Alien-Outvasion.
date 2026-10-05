@@ -31,13 +31,13 @@ export default async function setup(stage) {
       camera.updateProjectionMatrix(); earth.update(0, t); sun.update(0, t);
     },
     shots: [
-      { name: 'orbit_day', t: 0, frame: { lat: 15, lon: 115, distance: 3.0 }, sunRel: [0.45, 0.85, 0.3], fov: 38, moon: false },
-      { name: 'orbit_americas', t: 0.1, frame: { lat: 20, lon: -85, distance: 3.2 }, sunRel: [0.5, 0.7, 0.45], fov: 38, moon: false },
-      { name: 'orbit_night', t: 0.2, frame: { lat: 30, lon: 15, distance: 2.7 }, sunRel: [-0.7, 0.25, 0.1], fov: 38, moon: false },
+      { name: 'orbit_day', t: 0, frame: { lat: 15, lon: 115, distance: 3.7 }, sunRel: [0.45, 0.85, 0.3], fov: 38, moon: false },
+      { name: 'orbit_americas', t: 0.1, frame: { lat: 20, lon: -85, distance: 3.7 }, sunRel: [0.5, 0.7, 0.45], fov: 38, moon: false },
+      { name: 'orbit_night', t: 0.2, frame: { lat: 30, lon: 15, distance: 3.4 }, sunRel: [-0.7, 0.25, 0.1], fov: 38, moon: false },
       { name: 'limb', t: 0.3, fov: 55, custom() {
         camera.position.set(0, 6371 + 520, 0); const sd = new THREE.Vector3(0.0, -0.1, -1).normalize(); camera.lookAt(0, 6371 + 480, -300); camera.up.set(0, 1, 0); camera.lookAt(new THREE.Vector3(0, 6371 + 120, -9000)); const r = planetCameraRange(6371, 6371 + 520); camera.near = 2; camera.far = 6e5; sun.setDirection(new THREE.Vector3(0.18, 0.02, -1).normalize()); earth.setSunDirection(sun.direction); earth.setRotation(0.3);
       } },
-      { name: 'close_atmo', t: 0.4, frame: { lat: 28, lon: 85, distance: 1.32 }, sunRel: [0.3, 0.9, 0.2], fov: 42, moon: false },
+      { name: 'close_atmo', t: 0.4, frame: { lat: 12, lon: 80, distance: 1.5 }, sunRel: [0.15, 0.95, 0.1], fov: 45, moon: false, custom() { camera.lookAt(0, 6371 * 0.78, 0); } },
       { name: 'moon', t: 0.5, fov: 30, custom() {
         sun.setDirection(new THREE.Vector3(-0.6, 0.2, 0.7).normalize()); camera.position.copy(moon.root.position).add(new THREE.Vector3(2500, 600, 6200)); camera.lookAt(moon.root.position); camera.near = 20; camera.far = 4e6; } },
       { name: 'small', t: 0.6, small: true, fov: 40, custom() {

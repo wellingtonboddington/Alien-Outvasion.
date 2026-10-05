@@ -10,8 +10,8 @@ const dev = process.argv.includes('--dev') || watch;
 
 // Modules that other agents are still writing resolve to empty stubs (with a warning) so the player always builds.
 const optionalModules = { name: 'optional', setup(b) {
-  b.onResolve({ filter: /^\.\/(fx\/post|fx\/perf|fx\/particles|audio\/engine)\.js$/ }, (args) => { const p = path.join(args.resolveDir, args.path); if (fs.existsSync(p)) return null; console.warn('  (stub) missing optional module', args.path); return { path: p, namespace: 'stub' }; });
-  b.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({ contents: 'export {}', loader: 'js' }));
+  b.onResolve({ filter: /^\.\/(fx\/post|fx\/perf|fx\/particles|audio\/engine|act4)\.js$/ }, (args) => { const p = path.join(args.resolveDir, args.path); if (fs.existsSync(p)) return null; console.warn('  (stub) missing optional module', args.path); return { path: p, namespace: 'stub' }; });
+  b.onLoad({ filter: /.*/, namespace: 'stub' }, (a) => ({ contents: /act4/.test(a.path) ? 'export const ACT4 = [];' : 'export {}', loader: 'js' }));
 } };
 
 async function bundle() {

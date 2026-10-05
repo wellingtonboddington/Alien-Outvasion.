@@ -100,7 +100,7 @@ class Layer {
   constructor(inst, def, idx) {
     const A = inst.A, ctx = A.ctx; this.inst = inst; this.A = A; this.ctx = ctx; this.def = def; this.idx = idx; this.kind = def.kind; this.rng = new RNG(hashStr(inst.name) + idx * 7919);
     def.id = def.id || (def.kind + idx);
-    const mx = A.mix && A.mix.music && A.mix.music[inst.name]; this.gain = (def.g ?? 1) * ((mx && mx.layers && mx.layers[idx]) ?? 1);
+    const mx = A.mix && A.mix.music && A.mix.music[inst.name]; this.gain = (def.g ?? 1) * trimOf(def) * ((mx && mx.layers && mx.layers[idx]) ?? 1);
     this.in = ctx.createGain(); this.fxOut = ctx.createGain(); this.out = ctx.createGain(); this.send = ctx.createGain(); this.send.gain.value = def.rev ?? 0.25;
     this.p = new Syn(A, null, A.now(), 'music'); this.vib = null; this.p.nodes.push(this.in, this.fxOut, this.out, this.send);
     buildFx(this, def, inst.bpm);
@@ -129,6 +129,11 @@ const chordMidi = (e, inst, lo, k = 0) => { // k-th chord tone upward from the r
 };
 const vel = (base, rng, hum = 0.1) => cl(base * (1 + (rng.next() - 0.5) * 2 * hum), 0.05, 1.4);
 
+// per-instrument loudness trims (measured: solo-layer RMS vs a common target) so layers in the cue data start roughly balanced
+const TRIM = { 'drone/sub': 0.08, 'drone/dronesaw': 0.16, 'pad/strings': 0.47, 'pad/warm': 0.36, 'pad/glass': 0.14, 'pad/choir': 0.5, 'pad/brass': 0.17, 'ost/cello': 0.27, 'ost/spicc': 0.72, 'ost/stab': 0.34, 'ost/pluck': 0.4,
+  'ost/synbass': 0.17, 'ost/piano': 0.5, 'ost/sub': 0.12, 'arp/arpsyn': 0.5, 'arp/bell': 0.5, 'arp/harp': 1.2, 'arp/piano': 0.67, 'mel/solo': 0.4, 'mel/horn': 0.36, 'mel/brass': 0.39, 'mel/vox': 1.6, 'mel/piano': 1.0, 'mel/epiano': 0.6,
+  'mel/strings': 0.7, 'mel/bell': 0.46, 'mel/theremin': 0.6, 'bell/bell': 0.49, heart: 0.33, 'hit/braam': 0.52, perc: 1.9, rise: 1.37, tex: 3.0 };
+const trimOf = (d) => TRIM[d.kind + '/' + (d.inst || '')] ?? TRIM[d.kind] ?? 1;
 const SHED1 = { bell: 1, tex: 1, arp: 1 }, SHED2 = { ost: 1, mel: 0, rise: 1 }, SHED3 = { perc: 1, hit: 1, drone: 1 };
 const KINDS = {
   drone(L, e) { // sustained low notes, re-struck every `every` bars (or on each chord change when follow)
@@ -277,7 +282,7 @@ class CueInst {
 /* ------------------------------------------------------------------ public API */
 export function createMusic(A) {
   const ctx = A.ctx; let cur = null; const old = new Set(); let stL = null, stCount = 0;
-  A.addTicker((now, until) => { if (cur) cur.pump(now, until); for (const o of [...old]) { o.pump(now, until); if (o.dead) old.delete(o); } });
+  A.addTicker((now) => { const until = now + Math.max(1.6, A.lookahead); if (cur) cur.pump(now, until); for (const o of [...old]) { o.pump(now, until); if (o.dead) old.delete(o); } });
   function stingerLayer() {
     if (stL) return stL; const bus = A.bus.music; const inn = ctx.createGain(), send = ctx.createGain(); send.gain.value = 0.4; inn.connect(bus.dry); inn.connect(send); send.connect(bus.wetL);
     stL = { A, ctx, in: inn, vib: null, rng: new RNG(hashStr('stinger')), inst: { keyPc: 0, scale: SCALES.minor }, syn(t) { return new Syn(A, inn, t, 'music'); } }; return stL;

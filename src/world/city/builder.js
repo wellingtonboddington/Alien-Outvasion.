@@ -145,14 +145,14 @@ export class Builder {
         b.i.push(i0, i2, i1, i0, i3, i2);
       }
     }
-    if (o.cap !== false && !o.open && r1 > 0.001) this.disc(name, cx, cy + h, cz, r1, segs, ct, true, a0);
-    if (o.capBottom && !o.open && r0 > 0.001) this.disc(name, cx, cy, cz, r0, segs, col, false, a0);
+    if (o.cap !== false && !o.open && r1 > 0.001) this.disc(name, cx, cy + h, cz, r1, segs, ct, true, a0, mpt);
+    if (o.capBottom && !o.open && r0 > 0.001) this.disc(name, cx, cy, cz, r0, segs, col, false, a0, mpt);
   }
   disc(name, cx, y, cz, r, segs, col, up = true, a0 = 0, mpt = 4) {
     const b = this.bucket(name); const c = rgb(col); const ny = up ? 1 : -1;
-    const ci = this.vert(b, cx, y, cz, 0, ny, 0, 0.5, 0.5, c);
+    const ci = this.vert(b, cx, y, cz, 0, ny, 0, cx / mpt, cz / mpt, c);
     const first = b.count;
-    for (let i = 0; i <= segs; i++) { const a = a0 + (i / segs) * Math.PI * 2; this.vert(b, cx + Math.cos(a) * r, y, cz + Math.sin(a) * r, 0, ny, 0, 0.5 + Math.cos(a) * 0.5, 0.5 + Math.sin(a) * 0.5, c); }
+    for (let i = 0; i <= segs; i++) { const a = a0 + (i / segs) * Math.PI * 2; const px = cx + Math.cos(a) * r, pz = cz + Math.sin(a) * r; this.vert(b, px, y, pz, 0, ny, 0, px / mpt, pz / mpt, c); }
     for (let i = 0; i < segs; i++) { if (up) b.i.push(ci, first + i + 1, first + i); else b.i.push(ci, first + i, first + i + 1); }
   }
   /** surface of revolution around Y through (cx,cy,cz). profile = [[r,y],...] bottom->top. o:{col | cols:[per-point], segs, mpt, flat, uvU:1} */
@@ -185,7 +185,7 @@ export class Builder {
     for (let j = 0; j <= hs; j++) {
       const th = t0 + (t1 - t0) * (j / hs), st = Math.sin(th), ctt = Math.cos(th); const k = (1 - j / hs); const c = [cb[0] + (ct[0] - cb[0]) * k, cb[1] + (ct[1] - cb[1]) * k, cb[2] + (ct[2] - cb[2]) * k];
       for (let i = 0; i <= ws; i++) {
-        const a = (i / ws) * Math.PI * 2 + (o.rot || 0), ca = Math.cos(a), sa = Math.sin(a);
+        const a = (o.p0 ?? 0) + ((o.p1 ?? Math.PI * 2) - (o.p0 ?? 0)) * (i / ws) + (o.rot || 0), ca = Math.cos(a), sa = Math.sin(a);
         const nx = st * ca / rx, ny = ctt / ry, nz = st * sa / rz; const l = Math.hypot(nx, ny, nz) || 1;
         this.vert(b, cx + st * ca * rx, cy + ctt * ry, cz + st * sa * rz, nx / l, ny / l, nz / l, (i / ws) * (o.uvk ? o.uvk[0] : 1), (j / hs) * (o.uvk ? o.uvk[1] : 1), c);
       }

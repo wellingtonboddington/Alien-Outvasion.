@@ -81,13 +81,28 @@ export class SceneContext {
    * Returns end time. Subtitle shows opts.sub (translation) when given, else text.
    */
   say(t, who, text, opts = {}) {
-    const actor = who && who.model ? who : null; const dur = opts.dur ?? Math.max(1.0, estimateDuration(text, opts.wpm || 165) * (opts.pace || 1));
+    const actor = who && who.model ? who : null; const dur = opts.dur ?? Math.max(1.15, (estimateDuration(text, opts.wpm || 148) + 0.2) * (opts.pace || 1));
     const track = buildVisemeTrack(opts.visemeText || text, dur);
     const name = opts.name || (actor ? actor.name : String(who)); const color = opts.color || (actor ? actor.color : '#dfe8ff');
     const line = { t0: t, t1: t + dur, dur, actor, who, text, sub: opts.sub || text, name, color, track, emotion: opts.emotion || null, to: opts.to || null, amp: opts.amp ?? 1, style: opts.style || (actor && actor.isAlien ? 'alien' : 'human'), lang: opts.lang || 'en-US', gender: opts.gender || (actor && actor.model && actor.model.profile ? actor.model.profile.gender : 'M'), character: opts.character || (actor ? actor.id : name), idx: this.lines.length, italic: !!opts.italic || (opts.style === 'alien'), voice: opts.voice || {}, mute: !!opts.mute, pitch: opts.pitch, nosub: !!opts.nosub };
     this.lines.push(line);
     this.events.push({ t, fn: () => { if (this.silent || !this.audio || line.mute) return; this.audio.voice.say({ text: opts.speak || text, lang: line.lang, gender: line.gender === 'F' ? 'F' : 'M', pitch: line.pitch ?? 1, duration: dur, style: line.style, character: line.character, pan: opts.pan, ...line.voice }); }, done: false });
     return t + dur;
+  }
+  /**
+   * Fit a conversation into [t0,t1]: lines keep natural (never clipped) durations — slack becomes natural pauses between lines,
+   * overfull scenes compress speech by at most ~12%. lines = [[who,text,opts],...] (opts.gap = extra pause after the line). Returns end time.
+   * This is the anti-cut-off / anti-dead-air tool: use it for every scene so the talk fills the shot and ends before the fade.
+   */
+  fit(t0, t1, lines, { gap0 = 0.28, maxStretch = 1.18, maxGap = 1.6, lead = 0.35 } = {}) {
+    const nat = lines.map((l) => { const o = l[2] || {}; return o.dur ?? Math.max(1.15, (estimateDuration(l[1], o.wpm || 148) + 0.2) * (o.pace || 1)); });
+    const sum = nat.reduce((a, b) => a + b, 0), n = lines.length; const avail = Math.max(0.5, t1 - t0 - lead); const base = sum + (n - 1) * gap0;
+    let k = 1, gap = gap0;
+    if (base > avail) { k = Math.max(0.88, (avail - (n - 1) * gap0) / sum); if (k * sum + (n - 1) * gap0 > avail + 0.05 && !this.dir.quiet) console.warn(`[film] ${this.id}: dialogue overfull by ${(k * sum + (n - 1) * gap0 - avail).toFixed(1)} s`); }
+    else { k = Math.min(maxStretch, (avail - (n - 1) * gap0) / sum); k = Math.max(1, Math.min(k, 1.0 + (maxStretch - 1))); const slack = avail - k * sum; gap = n > 1 ? Math.min(maxGap, slack / (n - 1)) : 0; }
+    let c = t0 + lead + (n > 1 ? 0 : Math.max(0, (avail - k * sum) / 2));
+    for (let i = 0; i < n; i++) { const o = { ...(lines[i][2] || {}) }; o.dur = nat[i] * k; c = this.say(c, lines[i][0], lines[i][1], o) + (i < n - 1 ? Math.max(gap, 0.18) + (o.gap || 0) : 0); }
+    return c;
   }
   /** Sequential dialogue: lines = [[who, text, opts?], ...]; returns end time. */
   dialogue(t, lines, { gap = 0.3 } = {}) { let c = t; for (const l of lines) { c = this.say(c, l[0], l[1], l[2] || {}) + (l[2] && l[2].gap !== undefined ? l[2].gap : gap); } return c - gap; }

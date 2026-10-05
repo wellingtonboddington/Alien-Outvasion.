@@ -74,22 +74,22 @@ export function createPod(seed = 1, opts = {}) {
   const rng = new RNG(seed * 31 + 7);
   const root = new THREE.Group(); root.name = 'Pod';
   const body = new THREE.Group(); root.add(body);     // bob / tilt happen here
-  const mFlesh = fleshMat(), mShell = shellMat(), mGlow = glowMat(3.4), mGlow2 = glowMat(3.0);
-  const mFlameRing = flameMat({ power: 1.0, fall: 2.0, rim: 1.6, seed: seed }), mFlameCore = flameMat({ power: 1.6, fall: 2.6, rim: 1.0, seed: seed + 1 });
+  const mFlesh = fleshMat(), mShell = shellMat(), mGlow = glowMat(3.4), mPort = glowMat(3.4), mGlow2 = glowMat(3.0);
+  const mFlameRing = flameMat({ power: 1.0, fall: 2.0, rim: 1.6, seed }), mFlameCore = flameMat({ power: 1.6, fall: 2.6, rim: 1.0, seed: seed + 1 });
   const add = (g, m, parent = body, shadow = true) => { const me = new THREE.Mesh(g, m); me.castShadow = shadow; me.receiveShadow = true; parent.add(me); return me; };
-
-  const hull = add(hullGeo(), mFlesh);
-  add(capGeo(), mShell);
-  add(ribGeos(), mShell);
-  add(ringAt(0.0, podRadius(0) + 0.012, 0.05, seg(48, 16), 6), mShell);                 // equator belt
-  add(ringAt(-0.4, podRadius(-0.4) + 0.012, 0.035, seg(48, 16), 5), mShell);            // lower belt
-  { const sp = []; for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; const g = spike(0.36 - (i % 2) * 0.12, 0.03, 5); place(g, [Math.sin(a) * 0.16, YT - 0.02, Math.cos(a) * 0.16], new THREE.Euler(Math.cos(a) * 0.5, 0, -Math.sin(a) * 0.5)); sp.push(g); } add(mergeAll(sp), mShell); }
+  // static parts are merged per material
+  const st = { flesh: [], shell: [], port: [] };
+  const S = (g, k) => { st[k].push(g); return g; };
+  S(hullGeo(), 'flesh'); S(capGeo(), 'shell'); S(ribGeos(), 'shell');
+  S(ringAt(0.0, podRadius(0) + 0.012, 0.05, seg(48, 16), 6), 'shell');                 // equator belt
+  S(ringAt(-0.4, podRadius(-0.4) + 0.012, 0.035, seg(48, 16), 5), 'shell');            // lower belt
+  { const sp = []; for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; const g = spike(0.36 - (i % 2) * 0.12, 0.03, 5); place(g, [Math.sin(a) * 0.16, YT - 0.02, Math.cos(a) * 0.16], new THREE.Euler(Math.cos(a) * 0.5, 0, -Math.sin(a) * 0.5)); sp.push(g); } S(mergeAll(sp), 'shell'); }
   const pp = portParts(true);
-  add(pp.bezel, mFlesh); add(pp.lens, mGlow); add(pp.brow, mShell); add(pp.spikes, mShell);
-  // underside hub + thruster housing
-  const hub = revolve(0.34, (t) => 0.3 + 0.12 * Math.sin(t * Math.PI) - t * 0.12, { rings: 6, radial: 14, tile: 1.5 }); hub.translate(0, -0.78, 0); add(hub, mShell);
-  const housing = ringAt(-0.5, 1.0, 0.1, seg(40, 16), 8); add(housing, mFlesh);
-  const innerRing = ringAt(-0.585, 0.98, 0.045, seg(40, 16), 6); add(innerRing, mGlow2, body, false);
+  S(pp.bezel, 'flesh'); S(pp.lens, 'port'); S(pp.brow, 'shell'); S(pp.spikes, 'shell');
+  S(revolve(0.34, (t) => 0.3 + 0.12 * Math.sin(t * Math.PI) - t * 0.12, { rings: 6, radial: 14, tile: 1.5 }).translate(0, -0.78, 0), 'shell');   // hub
+  S(ringAt(-0.5, 1.0, 0.1, seg(40, 16), 8), 'flesh');                                  // thruster housing
+  for (const k of Object.keys(st)) { if (!st[k].length) continue; const me = add(mergeAll(st[k]), k === 'flesh' ? mFlesh : k === 'shell' ? mShell : mPort, body, k !== 'port'); me.name = 'pod_' + k; }
+  add(ringAt(-0.585, 0.98, 0.045, seg(40, 16), 6), mGlow2, body, false);
   // additive shimmer cones under the pod
   const cone = new THREE.CylinderGeometry(0.97, 0.62, 1.1, seg(32, 12), 1, true); cone.translate(0, -0.6 - 0.55, 0);
   { const uv = cone.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); }
@@ -97,62 +97,63 @@ export function createPod(seed = 1, opts = {}) {
   const cone2 = new THREE.ConeGeometry(0.5, 0.9, seg(20, 10), 1, true); cone2.rotateX(Math.PI); cone2.translate(0, -0.55 - 0.45, 0);
   { const uv = cone2.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i)); }
   const flameCore = add(cone2, mFlameCore, body, false);
-  // prong assembly (spins)
+  // prong assembly (spins): merged flesh / shell / glow tips + 3 halo sprites
   const prongs = new THREE.Group(); body.add(prongs);
-  const tips = [];
+  const pf = [], ps = [], pg = [], tips = [];
   for (let k = 0; k < 3; k++) {
-    const az = k * TAU / 3; const g = tube(prongCurve(az), [0.075, 0.06, 0.04, 0.008], { radial: 6, segsPerPoint: 5 }); scaleUV(g, 2, 3); g.rotateY(az);
-    add(g, mFlesh, prongs);
-    const col = new THREE.SphereGeometry(0.1, 8, 6); col.scale(1, 0.7, 1); col.translate(0.19, -0.5, 0); col.rotateY(az); add(col, mShell, prongs);
-    const col2 = new THREE.SphereGeometry(0.085, 8, 6); col2.scale(1, 0.7, 1); col2.translate(0.37, -0.95, 0); col2.rotateY(az); add(col2, mShell, prongs);
-    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), mGlow); tip.position.set(0.30 * Math.cos(az), -1.57, -0.30 * Math.sin(az)); prongs.add(tip); tips.push(tip);
-    const hm = haloMat({ color: CYAN, opacity: 0.8 }); const halo = new THREE.Sprite(hm); halo.position.copy(tip.position); halo.scale.setScalar(0.4); prongs.add(halo); tip.userData.halo = halo;
+    const az = k * TAU / 3; const g = tube(prongCurve(az), [0.075, 0.06, 0.04, 0.008], { radial: 6, segsPerPoint: 4 }); scaleUV(g, 2, 3); g.rotateY(az); pf.push(g);
+    const col = new THREE.SphereGeometry(0.1, 8, 6); col.scale(1, 0.7, 1); col.translate(0.19, -0.5, 0); col.rotateY(az); ps.push(col);
+    const col2 = new THREE.SphereGeometry(0.085, 8, 6); col2.scale(1, 0.7, 1); col2.translate(0.37, -0.95, 0); col2.rotateY(az); ps.push(col2);
+    const tg = new THREE.SphereGeometry(0.055, 8, 6); tg.translate(0.30 * Math.cos(az), -1.57, -0.30 * Math.sin(az)); pg.push(tg);
+    const halo = new THREE.Sprite(haloMat({ color: CYAN, opacity: 0.8 })); halo.position.set(0.30 * Math.cos(az), -1.57, -0.30 * Math.sin(az)); halo.scale.setScalar(0.4); prongs.add(halo);
+    const tipHolder = new THREE.Object3D(); tipHolder.position.copy(halo.position); tipHolder.userData.halo = halo; prongs.add(tipHolder); tips.push(tipHolder);
   }
-  // small tendrils hanging under the rear
-  const whips = [];
-  for (let k = 0; k < 4; k++) {
-    const a = Math.PI + (k - 1.5) * 0.5; const base = new THREE.Vector3(Math.sin(a) * 0.7, -0.42, Math.cos(a) * 0.7);
-    const pts = [base.clone(), base.clone().add(new THREE.Vector3(0, -0.35, 0)), base.clone().add(new THREE.Vector3(Math.sin(a) * 0.06, -0.75, Math.cos(a) * 0.06)), base.clone().add(new THREE.Vector3(Math.sin(a) * 0.1, -1.05, Math.cos(a) * 0.1))];
-    const g = tube(pts, [0.03, 0.022, 0.014, 0.004], { radial: 5 }); scaleUV(g, 1, 2); const m = add(g, mFlesh, body, false); m.userData.base = base; whips.push(m);
-  }
+  add(mergeAll(pf), mFlesh, prongs); add(mergeAll(ps), mShell, prongs); add(mergeAll(pg), mGlow, prongs, false);
+  // small tendrils hanging under the rear (sway together)
+  const whips = new THREE.Group(); body.add(whips);
+  { const wg = []; for (let k = 0; k < 4; k++) {
+      const a = Math.PI + (k - 1.5) * 0.5; const base = new THREE.Vector3(Math.sin(a) * 0.7, -0.42, Math.cos(a) * 0.7);
+      const pts = [base.clone(), base.clone().add(new THREE.Vector3(0, -0.35, 0)), base.clone().add(new THREE.Vector3(Math.sin(a) * 0.06, -0.75, Math.cos(a) * 0.06)), base.clone().add(new THREE.Vector3(Math.sin(a) * 0.1, -1.05, Math.cos(a) * 0.1))];
+      const g = tube(pts, [0.03, 0.022, 0.014, 0.004], { radial: 5, segsPerPoint: 3 }); scaleUV(g, 1, 2); wg.push(g); }
+    add(mergeAll(wg), mFlesh, whips, false); whips.position.set(0, -0.42, -0.7); whips.children[0].position.set(0, 0.42, 0.7); }
   // port halos
   const halos = [];
-  for (const p of PORTS) { const hm = haloMat({ color: CYAN, opacity: 0.55 }); const h = new THREE.Sprite(hm); const n = portNormal(p); portPos(p, 0.12, h.position); h.scale.setScalar(0.75); body.add(h); halos.push(h); }
+  for (const p of PORTS) { const hm = haloMat({ color: CYAN, opacity: 0.55 }); const h = new THREE.Sprite(hm); portPos(p, 0.12, h.position); h.scale.setScalar(0.75); body.add(h); halos.push(h); }
 
   const muzzleW = tips.map(() => new THREE.Vector3());
-  const st = { thrust: 0.4, charge: 0, flash: 0, infect: 0, yaw: 0, aim: new THREE.Vector3(), hasAim: false, pitchT: 0, spin: 0, phase: rng.range(0, TAU) };
-  const tmp = new THREE.Vector3(), tmpQ = new THREE.Quaternion();
+  const st2 = { thrust: 0.4, charge: 0, flash: 0, infect: 0, yaw: 0, aim: new THREE.Vector3(), hasAim: false, pitchT: 0, spin: 0, phase: rng.range(0, TAU) };
+  const tmp = new THREE.Vector3();
   const pod = {
     root, body, height: 2.0, radius: R0,
     update(dt, t) {
-      const ph = st.phase;
+      const ph = st2.phase;
       const bob = Math.sin(t * 1.9 + ph) * 0.07 + Math.sin(t * 3.1 + ph * 2.0) * 0.015;
-      body.position.y = bob * (1 - st.thrust * 0.4);
+      body.position.y = bob * (1 - st2.thrust * 0.4);
       let yawTo = 0, pitchTo = 0;
-      if (st.hasAim) { root.updateWorldMatrix(true, false); tmp.copy(st.aim); root.worldToLocal(tmp); yawTo = Math.atan2(tmp.x, tmp.z); pitchTo = -Math.atan2(tmp.y, Math.hypot(tmp.x, tmp.z)); }
-      st.yaw = damp(st.yaw, clamp(yawTo, -1.2, 1.2), 5, dt); st.pitchT = damp(st.pitchT, clamp(pitchTo, -0.6, 0.6), 5, dt);
-      body.rotation.set(st.pitchT * 0.5 + Math.sin(t * 1.3 + ph) * 0.025 + st.thrust * 0.1, st.yaw, Math.sin(t * 1.1 + ph * 1.7) * 0.03 - st.yaw * 0.05, 'YXZ');
-      st.flash = Math.max(0, st.flash - dt * 4);
-      const chg = clamp(st.charge + st.flash, 0, 1.4);
-      st.spin += dt * (1.2 + chg * 9.0); prongs.rotation.y = st.spin;
-      for (const tp of tips) { tp.material = mGlow; const hl = tp.userData.halo; hl.material.opacity = 0.25 + chg * 0.9; hl.scale.setScalar(0.25 + chg * 0.55); }
-      mGlow.emissiveIntensity = 3.0 + chg * 4.0;
+      if (st2.hasAim) { root.updateWorldMatrix(true, false); tmp.copy(st2.aim); root.worldToLocal(tmp); yawTo = Math.atan2(tmp.x, tmp.z); pitchTo = -Math.atan2(tmp.y, Math.hypot(tmp.x, tmp.z)); }
+      st2.yaw = damp(st2.yaw, clamp(yawTo, -1.2, 1.2), 5, dt); st2.pitchT = damp(st2.pitchT, clamp(pitchTo, -0.6, 0.6), 5, dt);
+      body.rotation.set(st2.pitchT * 0.5 + Math.sin(t * 1.3 + ph) * 0.025 + st2.thrust * 0.1, st2.yaw, Math.sin(t * 1.1 + ph * 1.7) * 0.03 - st2.yaw * 0.05, 'YXZ');
+      st2.flash = Math.max(0, st2.flash - dt * 4);
+      const chg = clamp(st2.charge + st2.flash, 0, 1.4);
+      st2.spin += dt * (1.2 + chg * 9.0); prongs.rotation.y = st2.spin;
+      for (const tp of tips) { const hl = tp.userData.halo; hl.material.opacity = 0.25 + chg * 0.9; hl.scale.setScalar(0.25 + chg * 0.55); }
+      mGlow.emissiveIntensity = 3.0 + chg * 4.0; mPort.emissiveIntensity = 3.2 + 0.4 * Math.sin(t * 2.2 + ph);
       const flick = 0.85 + 0.15 * Math.sin(t * 37.0 + ph) * Math.sin(t * 13.0);
-      mFlameRing.uniforms.uPower.value = (0.1 + st.thrust * 1.1) * flick; mFlameCore.uniforms.uPower.value = st.thrust * 1.8 * flick;
-      mGlow2.emissiveIntensity = (1.2 + st.thrust * 3.4) * flick;
-      flame.scale.set(1, 0.6 + st.thrust * 0.9, 1); flameCore.scale.set(1, 0.4 + st.thrust * 1.2, 1);
-      for (let i = 0; i < halos.length; i++) halos[i].material.opacity = (0.4 + 0.15 * Math.sin(t * 2.3 + i * 2.1 + ph)) * (1 - st.infect * 0.0);
-      for (let i = 0; i < whips.length; i++) { const w = whips[i]; w.rotation.x = Math.sin(t * 1.4 + i * 1.9 + ph) * 0.12; w.rotation.z = Math.sin(t * 1.1 + i * 2.7) * 0.1; w.position.y = 0; }
+      mFlameRing.uniforms.uPower.value = (0.1 + st2.thrust * 1.1) * flick; mFlameCore.uniforms.uPower.value = st2.thrust * 1.8 * flick;
+      mGlow2.emissiveIntensity = (1.2 + st2.thrust * 3.4) * flick;
+      flame.scale.set(1, 0.6 + st2.thrust * 0.9, 1); flameCore.scale.set(1, 0.4 + st2.thrust * 1.2, 1);
+      for (let i = 0; i < halos.length; i++) halos[i].material.opacity = 0.4 + 0.15 * Math.sin(t * 2.3 + i * 2.1 + ph);
+      whips.rotation.x = Math.sin(t * 1.4 + ph) * 0.12; whips.rotation.z = Math.sin(t * 1.1 + 2.7) * 0.1;
     },
-    setThrust(v) { st.thrust = clamp(v, 0, 1); },
+    setThrust(v) { st2.thrust = clamp(v, 0, 1); },
     /** aim the three ports / prongs at a world point (null releases) */
-    aimAt(v) { if (v) { st.aim.copy(v); st.hasAim = true; } else st.hasAim = false; },
+    aimAt(v) { if (v) { st2.aim.copy(v); st2.hasAim = true; } else st2.hasAim = false; },
     /** 0..1 prong charge glow (sustained) */
-    setCharge(v) { st.charge = clamp(v, 0, 1); },
+    setCharge(v) { st2.charge = clamp(v, 0, 1); },
     /** fire flash on the prongs; returns the 3 world-space muzzle positions (reused array) */
-    fire() { st.flash = 1; return pod.muzzles(); },
+    fire() { st2.flash = 1; return pod.muzzles(); },
     muzzles() { body.updateWorldMatrix(true, true); for (let i = 0; i < tips.length; i++) tips[i].getWorldPosition(muzzleW[i]); return muzzleW; },
-    setInfection(a) { st.infect = a; infectAll(root, a); },
+    setInfection(a) { st2.infect = a; infectAll(root, a); },
     dispose() { disposeTree(root); },
   };
   return pod;

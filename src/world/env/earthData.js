@@ -140,7 +140,7 @@ export function buildEarthTextures(seed = 1) {
         // night lights
         const pp = popAt((x + 0.5) / W, (y + 0.5) / H); const sp = noise3(d[0] * 160 + sx, d[1] * 160 + sy, d[2] * 160 + sz) * 0.5 + 0.5; const sp2 = noise3(d[0] * 60 + sz, d[1] * 60 + sx, d[2] * 60) * 0.5 + 0.5;
         const coastB = smoothstep(0.55, 0.9, blur2[i]) * 0.0 + 1;
-        let L = land > 0.5 && ice < 0.5 ? Math.min(1.4, pp * 1.15) * (0.3 + 0.7 * sp2) * smoothstep(0.22, 0.6, sp * 0.75 + pp * 0.42) : 0; // specks around centres
+        const ppp = Math.pow(Math.min(pp, 1.6), 1.35); let L = land > 0.5 && ice < 0.5 ? Math.min(1.5, ppp * 1.3) * (0.4 + 0.6 * sp2) * smoothstep(0.34, 0.66, sp * 0.72 + ppp * 0.5) : 0; // specks around centres
         L += land > 0.5 && ice < 0.5 ? 0.25 * smoothstep(0.62, 0.95, sp) * smoothstep(0.05, 0.4, pp) : 0;
         lights[i] = Math.round(clamp(L * coastB) * 255);
         // clouds: banded latitude coverage + warped fbm

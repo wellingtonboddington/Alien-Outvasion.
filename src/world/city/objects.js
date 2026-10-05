@@ -42,7 +42,7 @@ export function createBuilding(kind = 'midrise', opts = {}) {
   const mk = KIND_SPEC[kind] || KIND_SPEC.midrise; const spec = mk(rng, S, opts); spec.seed = rng.int(1, 1e9); spec.x = 0; spec.z = 0; spec.yaw = 0; spec.y = 0; if (opts.tint != null) spec.tint = opts.tint;
   const mats = new MatSet({ burning: true }); let api; const state = { damage: opts.damage || 0 };
   function build(dmg) {
-    const B = new Builder(); const ctx = { S, snow: opts.snow || 0, fires: [], night: 0 };
+    const B = new Builder(); const ctx = { S, snow: opts.snow || 0, fires: [], night: 0, fireBoost: opts.fireBoost || 1 };
     const info = emitBuilding(B, spec, dmg, ctx); B.quad('g_concrete', [-spec.w / 2 - 3, 0.01, spec.d / 2 + 3], [spec.w / 2 + 3, 0.01, spec.d / 2 + 3], [spec.w / 2 + 3, 0.01, -spec.d / 2 - 3], [-spec.w / 2 - 3, 0.01, -spec.d / 2 - 3], [0, 0, 5, 5], 0xb0aca4, [0, 1, 0]);
     return { B, ctx, info };
   }
@@ -57,8 +57,14 @@ export function createBuilding(kind = 'midrise', opts = {}) {
 /** A straight street along Z (centred on origin, from z=-len/2 to len/2), road width opts.width, sidewalks, markings, furniture, optional building rows.
  * opts: {style, width, sidewalk, seed, buildings:true, trees:true, cars:true, lamps:true, damage:0..1, barricades:0..1, checkpoint:false, tents:0, sandbags:0, wet:false, snow:0} */
 export function createStreet(len = 80, opts = {}) {
-  const S = STYLES[opts.style || 'generic'] || STYLES.generic; const rng = new RNG((opts.seed || 1) * 977 + 13); const B = new Builder(); const ctx = { S, snow: opts.snow || 0, fires: [], night: 0 }; const mats = new MatSet({ burning: true });
-  const rw = opts.width || S.roadW; const sw = opts.sidewalk ?? S.sidewalk; const level = opts.damage || 0; const snow = (opts.snow || 0) > 0.4; const parkW = S.parkLane || 0; const CURB = 0.15;
+  const mats = new MatSet({ burning: true }); const first = buildStreet(len, opts, opts.damage || 0, mats);
+  const api = finishObject(first.B, mats, { shadows: opts.shadows, fires: first.ctx.fires }); api.streetAnchors = first.anchors; api.bounds = first.bounds;
+  api.setDamage = (lv) => { api.group.traverse((m) => m.geometry && m.geometry.dispose()); api.root.remove(api.group); const r = buildStreet(len, opts, lv, mats); const n = finishObject(r.B, mats, { shadows: opts.shadows, fires: r.ctx.fires }); api.group = n.group; api.root.add(api.group); api.fireAnchors = r.ctx.fires; api.root.userData.fireAnchors = api.fireAnchors; api.streetAnchors = r.anchors; mats.setNight(mats.night); return api; };
+  if (opts.night) api.setNight(opts.night); return api;
+}
+function buildStreet(len, opts, level, mats) {
+  const S = STYLES[opts.style || 'generic'] || STYLES.generic; const rng = new RNG((opts.seed || 1) * 977 + 13); const B = new Builder(); const ctx = { S, snow: opts.snow || 0, fires: [], night: 0 };
+  const rw = opts.width || S.roadW; const sw = opts.sidewalk ?? S.sidewalk; const snow = (opts.snow || 0) > 0.4; const parkW = S.parkLane || 0; const CURB = 0.15;
   const anchors = []; const decals = getDecals();
   const sideMat = snow ? 'g_snow' : (S.name === 'berlin' || S.name === 'moscow' ? 'g_paving' : 'g_sidewalk'); const tileOf = (m) => ({ g_sidewalk: 4.8, g_paving: 4, g_snow: 6 })[m] || 4;
   const halfL = len / 2;
@@ -115,9 +121,7 @@ export function createStreet(len = 80, opts = {}) {
   for (let i = 0; i < (opts.tents || 0); i++) { const sg = i % 2 ? 1 : -1; P.tent(B, sg * (rw / 2 + sw + 6 + rng.range(0, 6)), rng.range(-halfL + 6, halfL - 6), rng.range(-0.3, 0.3), { col: rng.pick([0x6a7048, 0x7a7a60, 0xc8c0a0]) }); }
   if (level > 0.3) for (let i = 0; i < Math.round(level * 8); i++) rubblePile(B, rng.range(-rw / 2, rw / 2), rng.range(-halfL, halfL), rng.range(2, 5), rng.range(2, 5), Math.round(level * 40), rng, 0xb0aca0, { height: 0.9 });
   for (let z = -halfL + 20; z < halfL - 10; z += 40) anchors.push({ pos: [-rw / 4, 0, z], yaw: 0, kind: 'lane' }, { pos: [rw / 4, 0, z], yaw: PI, kind: 'lane' }, { pos: [rw / 2 + sw / 2, CURB, z], yaw: 0, kind: 'sidewalk' }, { pos: [-rw / 2 - sw / 2, CURB, z], yaw: 0, kind: 'sidewalk' });
-  const api = finishObject(B, mats, { shadows: opts.shadows, fires: ctx.fires }); api.streetAnchors = anchors; api.bounds = { w: rw + 2 * sw, d: len, minZ: -halfL, maxZ: halfL, roadWidth: rw, sidewalk: sw };
-  if (opts.night) api.setNight(opts.night);
-  return api;
+  return { B, ctx, anchors, bounds: { w: rw + 2 * sw, d: len, minZ: -halfL, maxZ: halfL, roadWidth: rw, sidewalk: sw } };
 }
 
 // ------------------------------------------------------------------ street furniture factories (each returns {root, update, dispose, ...})

@@ -29,9 +29,9 @@ export const SLOT = {
 /** texture-array layers */
 export const LAYER = {
   weave: 0, camo: 1, knit: 2, denim: 3, leather: 4, metal: 5, skin: 6, fleshUS: 7, fleshIN: 8, fleshDE: 9, circuit: 10,
-  faceHuman: 11, faceZomb: 12, faceRobot: 13, robotShell: 14, molle: 15, faceCebu: 16, faceIndia: 17, hair: 18, fur: 19, faceRus: 20, fleshRU: 21,
+  faceHuman: 11, faceZomb: 12, faceRobot: 13, robotShell: 14, molle: 15, faceCebu: 16, faceIndia: 17, hair: 18, fur: 19, faceRus: 20, fleshRU: 21, gore: 22, frost: 23,
 };
-export const NLAYER = 22;
+export const NLAYER = 24;
 
 /** gate codes (aMeta.y): 0 = always; grp*16 + mask = visible when the instance's option for group grp (0..3) is in mask (bit o = option o);
  *  group 14 = cough puff, group 15 = muzzle flash (shader driven) */

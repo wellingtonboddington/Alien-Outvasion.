@@ -29,7 +29,7 @@ function capitalParts(L, seed, lod) {
   const rng = new RNG(seed * 811 + 5);
   const { RM, FL, hullR, point, normal } = shipProfile(L);
   const parts = { hull: [], bone: [], glow: [], flameDefs: [], spikes: [], pods: [], organs: [], nozzles: [] };
-  const radial = lod ? 16 : seg(96, 40), rings = lod ? 26 : seg(160, 60), ribPer = L / 50;
+  const radial = lod ? 16 : seg(48, 22), rings = lod ? 26 : seg(88, 36), ribPer = L / 50;
   // main hull: rib bumps, dorsal ridge, ventral keel
   const hull = revolve(L, (t, y, a) => {
     const s = t * 2 - 1; let r = hullR(s);
@@ -44,7 +44,7 @@ function capitalParts(L, seed, lod) {
   const nb = lod ? 6 : 13;
   for (let k = 0; k < nb; k++) {
     const s = lerp(-0.78, 0.78, k / (nb - 1)) + rng.range(-0.015, 0.015); const w = L * (lod ? 0.025 : 0.014), Rc = hullR(s);
-    const band = revolve(w, (t) => (Rc + L * 0.004 + L * 0.0045 * Math.pow(Math.sin(Math.PI * t), 0.6)) * (1 + 0.0), { rings: lod ? 3 : 6, radial: lod ? 16 : seg(72, 32), tile: 64, ratio: FL });
+    const band = revolve(w, (t) => (Rc + L * 0.004 + L * 0.0045 * Math.pow(Math.sin(Math.PI * t), 0.6)) * (1 + 0.0), { rings: lod ? 3 : 3, radial: lod ? 16 : seg(40, 20), tile: 64, ratio: FL });
     band.rotateX(Math.PI / 2); band.translate(0, 0, s * L / 2 - w / 2); parts.bone.push(band);
   }
   // cathedral spires on the dorsal side
@@ -53,10 +53,10 @@ function capitalParts(L, seed, lod) {
   const nsp = lod ? 5 : spires.length;
   for (let i = 0; i < nsp; i++) {
     const sp = spires[i]; const hh = sp.h * L, r0 = sp.r * L; const lateral = sp.x * RM * 0.34;
-    const g = revolve(hh, (t, y) => { const base = r0 * Math.pow(1 - t, 0.78); const step = 1 + 0.1 * Math.max(0, Math.sin(t * 22)) * (1 - t) + 0.06 * gauss(t - 0.5, 0.05) ; return Math.max(0.002, base * step * (t > 0.9 ? Math.max(0.15, 1 - (t - 0.9) * 8) : 1)); }, { rings: lod ? 8 : 44, radial: lod ? 8 : 16, tile: 64 });
+    const g = revolve(hh, (t, y) => { const base = r0 * Math.pow(1 - t, 0.78); const step = 1 + 0.1 * Math.max(0, Math.sin(t * 22)) * (1 - t) + 0.06 * gauss(t - 0.5, 0.05) ; return Math.max(0.002, base * step * (t > 0.9 ? Math.max(0.15, 1 - (t - 0.9) * 8) : 1)); }, { rings: lod ? 8 : 26, radial: lod ? 8 : 12, tile: 64 });
     g.rotateX(-0.1); const y0 = topY(sp.s) * Math.sqrt(Math.max(0.2, 1 - (lateral / RM) ** 2)) - hh * 0.04; g.translate(lateral, y0, sp.s * L / 2); parts.bone.push(g);
     // gothic collar rings
-    if (!lod) for (let k = 1; k <= 3; k++) { const t = k * 0.2; const rr = r0 * Math.pow(1 - t, 0.78) * 1.25; const rg = torus(rr, hh * 0.008, 24, 6, { tile: 32 }); rg.rotateX(-0.1); rg.translate(lateral - Math.sin(0.1) * 0, y0 + hh * t, sp.s * L / 2 - hh * t * 0.1); parts.bone.push(rg); }
+    if (!lod) for (let k = 1; k <= 2; k++) { const t = k * 0.28; const rr = r0 * Math.pow(1 - t, 0.78) * 1.25; const rg = torus(rr, hh * 0.008, 16, 4, { tile: 32 }); rg.rotateX(-0.1); rg.translate(lateral - Math.sin(0.1) * 0, y0 + hh * t, sp.s * L / 2 - hh * t * 0.1); parts.bone.push(rg); }
     // beacon tip
     const bl = new THREE.SphereGeometry(r0 * 0.12 + 1.2, 8, 6); bl.translate(lateral, y0 + hh * 0.995, sp.s * L / 2 - hh * 0.1); parts.glow.push(bl);
     // flying buttresses (curved bone arms from the spire down to the hull flanks)
@@ -64,24 +64,24 @@ function capitalParts(L, seed, lod) {
       const sz = sp.s * L / 2; const a = new V3(lateral, y0 + hh * 0.32, sz - hh * 0.03);
       const side = new V3(lateral + sx * hh * 0.28, y0 - hh * 0.04, sz + dz * hh * 0.12);
       const mid = new V3().lerpVectors(a, side, 0.5); mid.y += hh * 0.06; mid.x += sx * hh * 0.04;
-      parts.bone.push(tube([a, mid, side], [r0 * 0.28, r0 * 0.22, r0 * 0.3], { radial: 8, segsPerPoint: 8 }));
+      parts.bone.push(tube([a, mid, side], [r0 * 0.28, r0 * 0.22, r0 * 0.3], { radial: 5, segsPerPoint: 4 }));
     }
   }
   // luminous longitudinal veins
   if (!lod) for (let k = 0; k < 16; k++) {
     const a = (k / 16) * TAU + 0.12; const pts = []; const s0 = rng.range(-0.8, -0.5), s1 = rng.range(0.55, 0.88);
     for (let i = 0; i <= 14; i++) { const s = lerp(s0, s1, i / 14); pts.push(point(s, a + 0.05 * Math.sin(i * 0.9 + k), L * 0.0022)); }
-    parts.glow.push(tube(pts, L * 0.0016, { radial: 5, segsPerPoint: 3 }));
+    parts.glow.push(tube(pts, L * 0.0016, { radial: 4, segsPerPoint: 1 }));
   }
   // organs: glowing nodes in rings; greeble spikes + pods
-  const nOrg = lod ? 0 : 240, nSpike = lod ? 0 : 900, nPod = lod ? 0 : 260;
+  const nOrg = lod ? 0 : 150, nSpike = lod ? 0 : 700, nPod = lod ? 0 : 180;
   for (let i = 0; i < nOrg; i++) { const s = rng.range(-0.85, 0.82), a = rng.range(0, TAU); const p = point(s, a, L * 0.003); const sc = rng.range(0.9, 2.6); parts.organs.push({ p, sc: new V3(sc, sc * 1.4, sc), n: normal(s, a) }); }
   for (let i = 0; i < nSpike; i++) { const s = rng.range(-0.9, 0.86), a = rng.range(0, TAU); const p = point(s, a, -L * 0.002); const len = rng.range(0.008, 0.026) * L; parts.spikes.push({ p, n: normal(s, a).add(new V3(0, 0, rng.range(-0.5, 0.2))).normalize(), len, r: len * rng.range(0.07, 0.12) }); }
   for (let i = 0; i < nPod; i++) { const s = rng.range(-0.88, 0.84), a = rng.range(0, TAU); const p = point(s, a, -L * 0.001); parts.pods.push({ p, n: normal(s, a), sc: rng.range(0.006, 0.016) * L, tw: rng.range(-1, 1) }); }
   // engines
   const sternR = hullR(-1);
   const mkBell = (cx, cy, rOut, len) => { // bell opening backwards (-Z)
-    const g = revolve(len, (t) => rOut * (0.45 + 0.55 * Math.pow(t, 0.6)) , { rings: lod ? 3 : 8, radial: lod ? 10 : 32, tile: 16 });
+    const g = revolve(len, (t) => rOut * (0.45 + 0.55 * Math.pow(t, 0.6)) , { rings: lod ? 3 : 5, radial: lod ? 10 : 20, tile: 16 });
     g.rotateX(-Math.PI / 2); g.translate(cx, cy, -L / 2); parts.hull.push(g);
     parts.nozzles.push({ x: cx, y: cy, r: rOut, len });
     const d = new THREE.CircleGeometry(rOut * 0.92, lod ? 10 : 28); d.rotateY(Math.PI); d.translate(cx, cy, -L / 2 - len * 0.55); parts.glow.push(d);
@@ -104,7 +104,7 @@ function instancedGreebles(parts, L, mat, rng) {
   };
   const cone = new THREE.ConeGeometry(1, 1, 5, 1, true); cone.translate(0, 0.5, 0); scaleUV(cone, 1, 1);
   mk(cone, parts.spikes, (it, p, q, s) => { p.copy(it.p); q.setFromUnitVectors(new V3(0, 1, 0), it.n); s.set(it.r * 2, it.len, it.r * 2); });
-  const pod = new THREE.SphereGeometry(1, 7, 4, 0, TAU, 0, Math.PI / 2); scaleUV(pod, 1, 1);
+  const pod = new THREE.SphereGeometry(1, 5, 3, 0, TAU, 0, Math.PI / 2); scaleUV(pod, 1, 1);
   mk(pod, parts.pods, (it, p, q, s) => { p.copy(it.p); q.setFromUnitVectors(new V3(0, 1, 0), it.n).multiply(new THREE.Quaternion().setFromAxisAngle(new V3(0, 1, 0), it.tw * 3)); s.set(it.sc * 1.4, it.sc * 0.8, it.sc * 1.4); });
   return g;
 }
@@ -120,7 +120,7 @@ export function createCapitalShip(seed = 1, opts = {}) {
   add(parts.hull, mHull, 'hull'); add(parts.bone, mBone, 'bone'); add(parts.glow, mGlow, 'glow');
   // glowing organs (instanced)
   if (parts.organs.length) {
-    const im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), mGlow, parts.organs.length); const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+    const im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 6, 4), mGlow, parts.organs.length); const m = new THREE.Matrix4(), q = new THREE.Quaternion();
     parts.organs.forEach((o, i) => { q.setFromUnitVectors(new V3(0, 1, 0), o.n); m.compose(o.p, q, o.sc); im.setMatrixAt(i, m); }); im.frustumCulled = false; root.add(im);
   }
   root.add(instancedGreebles(parts, L, mHull, rng));
@@ -212,7 +212,7 @@ export function createMothership(seed = 1, opts = {}) {
   const mHull = hullMat({ emissiveIntensity: 3.0, seed: 4 }), mBone = shellWindowMat({ emissiveIntensity: 2.8, seed: 6 }), mGlow = glowMat(3.2), mGlowV = glowMat(1.8);
   const mFlame = flameMat({ power: 2.0, fall: 1.8, rim: 0.7, seed }), mCore = flameMat({ power: 2.8, fall: 2.4, rim: 0.3, seed: seed + 1 });
   const P = { hull: [], bone: [], glow: [], vein: [] };
-  const radial = seg(176, 64), rings = seg(110, 44);
+  const radial = seg(88, 36), rings = seg(48, 24);
   // saucer-hive body: upper dome (taller) + lower belly, meridian ribs, terraces on the dome
   const bodyR = (y) => { const up = y >= 0; const s = up ? y / hu : y / -hb; const k = 2.3; let r = R * Math.pow(Math.max(0, 1 - Math.pow(Math.abs(s), k)), 1 / k); if (up) r *= 1 - 0.05 * ribBump(s * 4.5 + 0.2, 1.4); return r; };
   const body = revolve(hu + hb, (t, yy, a) => { const y = yy - hb; let r = bodyR(y); r *= 1 + 0.028 * Math.pow(Math.abs(Math.cos(a * 30)), 3.0) * (1 - Math.abs(y) / (hu + hb) * 0.5); return Math.max(0.5, r); }, { rings, radial, tile: 512 });
@@ -224,23 +224,23 @@ export function createMothership(seed = 1, opts = {}) {
   const nCrown = 9;
   for (let i = 0; i < nCrown; i++) {
     const a = i / nCrown * TAU + 0.2; const rad = R * 0.5; const h = D * rng.range(0.30, 0.42), r0 = D * rng.range(0.022, 0.03);
-    const g = spireGeo(h, r0); const tilt = 0.17; g.rotateZ(-Math.sin(a) * 0 ); // build upright then lean outward
+    const g = spireGeo(h, r0, 26, 12); const tilt = 0.17; g.rotateZ(-Math.sin(a) * 0 ); // build upright then lean outward
     g.rotateX(Math.sin(a) * tilt); g.rotateZ(-Math.cos(a) * tilt); g.translate(Math.cos(a) * rad, topAt(rad) - h * 0.03, Math.sin(a) * rad); P.bone.push(g);
     const bl = new THREE.SphereGeometry(r0 * 0.14 + 3, 8, 6); bl.translate(Math.cos(a) * (rad + Math.sin(tilt) * h), topAt(rad) + h * 0.97, Math.sin(a) * (rad + Math.sin(tilt) * h)); P.glow.push(bl);
-    for (let k = 1; k <= 3; k++) { const t = k * 0.2, rr = r0 * Math.pow(1 - t, 0.74) * 1.3; const rg = torus(rr, h * 0.006, 28, 6, { tile: 32 }); rg.rotateX(Math.sin(a) * tilt); rg.rotateZ(-Math.cos(a) * tilt); rg.translate(Math.cos(a) * rad + Math.cos(a) * Math.sin(tilt) * h * t, topAt(rad) + h * t, Math.sin(a) * rad + Math.sin(a) * Math.sin(tilt) * h * t); P.bone.push(rg); }
+    for (let k = 1; k <= 2; k++) { const t = k * 0.28, rr = r0 * Math.pow(1 - t, 0.74) * 1.3; const rg = torus(rr, h * 0.006, 16, 4, { tile: 32 }); rg.rotateX(Math.sin(a) * tilt); rg.rotateZ(-Math.cos(a) * tilt); rg.translate(Math.cos(a) * rad + Math.cos(a) * Math.sin(tilt) * h * t, topAt(rad) + h * t, Math.sin(a) * rad + Math.sin(a) * Math.sin(tilt) * h * t); P.bone.push(rg); }
     // buttress arc to the dome centre
     const a0 = new V3(Math.cos(a) * (rad + h * 0.05), topAt(rad) + h * 0.3, Math.sin(a) * (rad + h * 0.05)), a1 = new V3(Math.cos(a) * R * 0.78, topAt(R * 0.78) + 4, Math.sin(a) * R * 0.78), mid = a0.clone().lerp(a1, 0.5); mid.y += h * 0.05;
-    P.bone.push(tube([a0, mid, a1], [r0 * 0.3, r0 * 0.24, r0 * 0.3], { radial: 8, segsPerPoint: 8 }));
+    P.bone.push(tube([a0, mid, a1], [r0 * 0.3, r0 * 0.24, r0 * 0.3], { radial: 5, segsPerPoint: 4 }));
   }
   // great central spire (cathedral)
-  { const h = D * 0.62, r0 = D * 0.05; const g = spireGeo(h, r0, seg(90, 40), 24, 128); g.translate(0, topAt(0) - h * 0.02, 0); P.bone.push(g);
-    for (let k = 1; k <= 6; k++) { const t = k * 0.13, rr = r0 * Math.pow(1 - t, 0.74) * 1.35; const rg = torus(rr, h * 0.005, 40, 6, { tile: 32 }); rg.translate(0, topAt(0) + h * t, 0); P.bone.push(rg); }
+  { const h = D * 0.62, r0 = D * 0.05; const g = spireGeo(h, r0, seg(50, 28), 16, 128); g.translate(0, topAt(0) - h * 0.02, 0); P.bone.push(g);
+    for (let k = 1; k <= 4; k++) { const t = k * 0.17, rr = r0 * Math.pow(1 - t, 0.74) * 1.35; const rg = torus(rr, h * 0.005, 24, 4, { tile: 32 }); rg.translate(0, topAt(0) + h * t, 0); P.bone.push(rg); }
     const bl = new THREE.SphereGeometry(7, 10, 8); bl.translate(0, topAt(0) + h * 0.985, 0); P.glow.push(bl);
-    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; const t = tube([new V3(Math.cos(a) * r0 * 0.9, topAt(0) + h * 0.25, Math.sin(a) * r0 * 0.9), new V3(Math.cos(a) * R * 0.2, topAt(R * 0.2) + h * 0.07, Math.sin(a) * R * 0.2), new V3(Math.cos(a) * R * 0.32, topAt(R * 0.32) + 6, Math.sin(a) * R * 0.32)], [r0 * 0.2, r0 * 0.16, r0 * 0.22], { radial: 8, segsPerPoint: 8 }); P.bone.push(t); } }
+    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; const t = tube([new V3(Math.cos(a) * r0 * 0.9, topAt(0) + h * 0.25, Math.sin(a) * r0 * 0.9), new V3(Math.cos(a) * R * 0.2, topAt(R * 0.2) + h * 0.07, Math.sin(a) * R * 0.2), new V3(Math.cos(a) * R * 0.32, topAt(R * 0.32) + 6, Math.sin(a) * R * 0.32)], [r0 * 0.2, r0 * 0.16, r0 * 0.22], { radial: 5, segsPerPoint: 4 }); P.bone.push(t); } }
   // radial glow veins on the dome
-  for (let i = 0; i < 48; i++) { const a = i / 48 * TAU + 0.03; const pts = []; for (let k = 0; k <= 16; k++) { const rad = lerp(R * 0.97, R * 0.1, k / 16); pts.push(new V3(Math.cos(a) * rad, topAt(rad) * 1.004 + 3, Math.sin(a) * rad)); } P.vein.push(tube(pts, D * 0.0013, { radial: 4, segsPerPoint: 2 })); }
+  for (let i = 0; i < 24; i++) { const a = i / 24 * TAU + 0.03; const pts = []; for (let k = 0; k <= 16; k++) { const rad = lerp(R * 0.97, R * 0.1, k / 16); pts.push(new V3(Math.cos(a) * rad, topAt(rad) * 1.004 + 3, Math.sin(a) * rad)); } P.vein.push(tube(pts, D * 0.0018, { radial: 4, segsPerPoint: 1 })); }
   // belly: central maw (ring of teeth + glowing core), radial ribs
-  { const mawR = R * 0.2; const ring = torus(mawR, D * 0.008, 56, 8, { tile: 32 }); ring.translate(0, -hb * 0.97, 0); P.bone.push(ring);
+  { const mawR = R * 0.2; const ring = torus(mawR, D * 0.008, 40, 6, { tile: 32 }); ring.translate(0, -hb * 0.97, 0); P.bone.push(ring);
     const core = new THREE.CircleGeometry(mawR * 0.96, 48); core.rotateX(Math.PI / 2); core.translate(0, -hb * 0.93, 0); P.glow.push(core);
     for (let i = 0; i < 40; i++) { const a = i / 40 * TAU; const sp = spike(mawR * 0.55, mawR * 0.035, 5); place(sp, [Math.cos(a) * mawR * 0.97, -hb * 0.96, Math.sin(a) * mawR * 0.97], new THREE.Quaternion().setFromUnitVectors(new V3(0, 1, 0), new V3(-Math.cos(a) * 0.55, -1, -Math.sin(a) * 0.55).normalize())); P.bone.push(sp); }
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + 0.26; const rad = R * 0.5; const ey = -bodyR(0) * 0 - hb * Math.pow(Math.max(0, 1 - Math.pow(rad / R, 2.3)), 1 / 2.3) * 0.99; const em = new THREE.ConeGeometry(D * 0.014, D * 0.03, 10, 1, true); em.rotateX(Math.PI); em.translate(Math.cos(a) * rad, ey - D * 0.012, Math.sin(a) * rad); P.bone.push(em);
@@ -249,7 +249,7 @@ export function createMothership(seed = 1, opts = {}) {
   const flameGeo = [], coreGeo = []; const nRim = 24;
   for (let i = 0; i < nRim; i++) {
     const a = i / nRim * TAU + 0.07; const x = Math.cos(a) * R * 0.93, z = Math.sin(a) * R * 0.93, y = -hb * 0.28; const ro = D * 0.014, ln = D * 0.03;
-    const b = revolve(ln, (t) => ro * (0.5 + 0.5 * Math.pow(t, 0.6)), { rings: 4, radial: 14, tile: 16 }); b.rotateX(Math.PI); b.translate(x, y, z); P.hull.push(b);
+    const b = revolve(ln, (t) => ro * (0.5 + 0.5 * Math.pow(t, 0.6)), { rings: 3, radial: 10, tile: 16 }); b.rotateX(Math.PI); b.translate(x, y, z); P.hull.push(b);
     const d = new THREE.CircleGeometry(ro * 0.9, 14); d.rotateX(Math.PI / 2); d.translate(x, y - ln * 0.55, z); P.glow.push(d);
     const fl = D * 0.2; const c = new THREE.CylinderGeometry(ro * 0.9, ro * 0.25, fl, 14, 1, true); c.translate(0, -fl / 2, 0); flipUV(c); c.translate(x, y - ln * 0.55, z); flameGeo.push(c);
     const c2 = new THREE.ConeGeometry(ro * 0.5, fl * 0.55, 10, 1, true); c2.rotateX(Math.PI); c2.translate(0, -fl * 0.275, 0); flipUV(c2); c2.translate(x, y - ln * 0.55, z); coreGeo.push(c2);
@@ -258,7 +258,7 @@ export function createMothership(seed = 1, opts = {}) {
   const spikes = [], pods = [];
   const domeP = (rad, a, off = 0) => { const y = topAt(rad); return new V3(Math.cos(a) * rad, y + off, Math.sin(a) * rad); };
   const domeN = (rad, a) => { const e = 5; const dy = (topAt(rad + e) - topAt(Math.max(0, rad - e))) / (2 * e); return new V3(-dy * Math.cos(a), 1, -dy * Math.sin(a)).normalize(); };
-  const nS = seg(1800, 500), nPod = seg(500, 150);
+  const nS = seg(900, 300), nPod = seg(200, 80);
   for (let i = 0; i < nS; i++) { const rad = R * Math.sqrt(rng.range(0.02, 0.97)), a = rng.range(0, TAU); const len = rng.range(0.008, 0.024) * D; spikes.push({ p: domeP(rad, a, -2), n: domeN(rad, a), len, r: len * rng.range(0.07, 0.12) }); }
   for (let i = 0; i < nPod; i++) { const rad = R * Math.sqrt(rng.range(0.05, 0.95)), a = rng.range(0, TAU); const n = domeN(rad, a); pods.push({ p: domeP(rad, a, -1), n, sc: rng.range(0.007, 0.018) * D, tw: rng.range(-1, 1) }); }
   const add = (geos, mat, name) => { if (!geos.length) return null; const m = new THREE.Mesh(mergeAll(geos), mat); m.name = name; m.frustumCulled = false; root.add(m); return m; };

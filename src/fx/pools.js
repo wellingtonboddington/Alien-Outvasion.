@@ -46,6 +46,7 @@ uniform float uNearFade;
 uniform float uGrowR;
 uniform float uSquash;
 uniform vec3 uSunView;
+uniform float uMinSprite;
 uniform vec4 uAtlas;
 attribute vec4 aA; // p0.xyz birth
 attribute vec4 aB; // v.xyz life
@@ -152,6 +153,8 @@ void main() {
   {
     float rot = aC.z + aC.w * age;
     float cr = cos(rot), sr = sin(rot);
+    float pxm0 = max(-mvPosition.z, 0.01) * 2.0 / (uViewH * projectionMatrix[1][1]);
+    float sizeIn = size; size = max(size, uMinSprite * pxm0); nearF *= min(1.0, sizeIn / max(size, 1e-6)); // far glows keep a minimum pixel size but dim accordingly
     vec2 off = vec2(c.x * cr - c.y * sr, c.x * sr + c.y * cr) * size * 0.5;
     mvPosition.xy += off;
     vUv = position.xy + 0.5;
@@ -265,9 +268,9 @@ void main() {
   float glowm = s.b;
   float flick = 0.85 + 0.3 * vnoise(vec3(vUv * 3.0, vInfo.z * 0.8 + vCol.a * 9.0));
   vec3 base = vCol.rgb;
-  vec3 col = mix(base * 0.22, base * 1.7, glowm * flick) + vec3(0.1, 0.5, 0.05) * smoothstep(0.55, 1.0, glowm) * 1.4;
-  float alpha = dens * env * 0.9;
-  outc = vec4(col * alpha, alpha * (1.0 - uHeatAdd * glowm * 0.8));
+  vec3 col = mix(base * 0.12, base * 1.05, glowm * flick) + vec3(0.08, 0.4, 0.04) * smoothstep(0.6, 1.0, glowm) * 0.9;
+  float alpha = dens * env * 0.55;
+  outc = vec4(col * alpha, alpha * (1.0 - uHeatAdd * glowm * 0.7));
 #endif
 #ifdef USE_FOG
   #ifdef FOG_EXP2
@@ -333,7 +336,7 @@ export class BillboardPool {
       uAtlas: { value: new THREE.Vector4(atlas.cols, atlas.rows, 1, 1) },
       uGravity: { value: new THREE.Vector3(...(cfg.gravity || [0, 0, 0])) },
       uWindK: { value: cfg.windK ?? 1 }, uDrag: { value: cfg.drag ?? 0 }, uGrow: { value: cfg.grow ?? 1 }, uBounce: { value: cfg.bounce ?? 0 }, uTurbF: { value: cfg.turbF ?? 0.18 },
-      uMinPx: { value: cfg.minPx ?? 1.4 }, uNearFade: { value: cfg.nearFade ?? 1.2 }, uGrowR: { value: cfg.growR ?? 0.6 }, uSquash: { value: cfg.squash ?? 0.72 },
+      uMinPx: { value: cfg.minPx ?? 1.4 }, uMinSprite: { value: cfg.minSprite ?? 0 }, uNearFade: { value: cfg.nearFade ?? 1.2 }, uGrowR: { value: cfg.growR ?? 0.6 }, uSquash: { value: cfg.squash ?? 0.72 },
       uFadeIn: { value: cfg.fadeIn ?? 0.08 }, uFadeOut: { value: cfg.fadeOut ?? 0.5 }, uShade: { value: cfg.shade ?? 0.45 }, uHeatAdd: { value: cfg.heatAdd ?? 0.85 }, uFogAdd: { value: cfg.blend === 'add' ? 1 : 0 },
     }]);
     uniforms.uTime = shared.uTime; uniforms.uSunView = shared.uSunView; uniforms.uSunColor = shared.uSunColor; uniforms.uAmbient = shared.uAmbient; uniforms.uWind = shared.uWind; uniforms.uGround = shared.uGround; uniforms.uViewH = shared.uViewH;

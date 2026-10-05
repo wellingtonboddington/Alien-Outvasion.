@@ -42,7 +42,7 @@ export function makeVessariMaterials(kind = 'soldier', tint = {}) {
   const shellCol = new THREE.Color(tint.shell ?? (kind === 'hierarch' ? 0xfff0d0 : kind === 'officer' ? 0xffe6b8 : kind === 'drone' ? 0xc8b890 : 0xffffff));
   const skinCol = new THREE.Color(tint.skin ?? (kind === 'hierarch' ? 0xe6e4ff : kind === 'drone' ? 0xd8e8e8 : 0xffffff));
   const skin = pre(new THREE.MeshPhysicalMaterial({ color: skinCol, map: sk.map, normalMap: sk.normalMap, normalScale: new THREE.Vector2(0.55, 0.55), roughnessMap: sk.roughnessMap, roughness: 1.0, metalness: 0.02, clearcoat: 0.4, clearcoatRoughness: 0.25, iridescence: 0.3, iridescenceIOR: 1.4, iridescenceThicknessRange: [140, 460], sheen: 0.3, sheenColor: new THREE.Color(0x4aa0c0), sheenRoughness: 0.5 }));
-  const shell = pre(new THREE.MeshPhysicalMaterial({ color: shellCol, map: sh.map, normalMap: sh.normalMap, normalScale: new THREE.Vector2(1.0, 1.0), roughnessMap: sh.roughnessMap, roughness: 1.0, metalness: 0.04, clearcoat: 0.6, clearcoatRoughness: 0.22 }));
+  const shell = pre(new THREE.MeshPhysicalMaterial({ color: shellCol, map: sh.map, normalMap: sh.normalMap, normalScale: new THREE.Vector2(1.0, 1.0), roughnessMap: sh.roughnessMap, roughness: 1.0, metalness: 0.03, clearcoat: 0.75, clearcoatRoughness: 0.14 }));
   const glow = pre(new THREE.MeshStandardMaterial({ color: 0x061418, emissive: new THREE.Color(0x1fc8ff), emissiveIntensity: 1.9, roughness: 0.35, metalness: 0.0 }));
   const mouth = pre(new THREE.MeshStandardMaterial({ color: 0xffffff, map: mo.map, normalMap: mo.normalMap, roughness: 0.34, metalness: 0.0, emissive: new THREE.Color(0x4a0c28), emissiveIntensity: 0.55 }));
   const dark = pre(new THREE.MeshStandardMaterial({ color: 0x0b1219, roughness: 0.42, metalness: 0.25 }));

@@ -81,7 +81,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       R.range(0.35, 0.6) * S * fscale, R.range(0.9, 1.55) * S * fscale * (big ? 1.2 : 1));
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.8, 0.8); P.r = fireCol[0]; P.g = fireCol[1]; P.b = fireCol[2]; P.a = R.range(0.85, 1.35);
     P.turb = 0.08 * S; P.extra = air || laser ? 0.0 : sc; P.drag = R.range(0.8, 1.3);
-    fx.fire.add(P);
+    fx.firePool.add(P);
   }
   if (big) { // secondary rising fireball
     const n2 = fx.n(22);
@@ -89,7 +89,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       const dl = R.range(0.15, 0.75) * k; dirHemi(R, _d, 0.7);
       setP(P, x + R.range(-0.15, 0.15) * S, cy + R.range(0, 0.3) * S, z + R.range(-0.15, 0.15) * S, _d.x * S * 0.2, S * R.range(0.4, 1.0), _d.z * S * 0.2, t0 + dl, R.range(0.9, 1.7) * k, R.range(0.5, 0.8) * S, R.range(1.0, 1.6) * S);
       P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.5, 0.5); P.r = FIRE[0]; P.g = 0.36; P.b = 0.06; P.a = R.range(1.0, 1.5); P.turb = 0.1 * S; P.extra = sc * 1.3; P.drag = 1.1;
-      fx.fire.add(P);
+      fx.firePool.add(P);
     }
   }
 
@@ -102,7 +102,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       const c = sootColor(R, 0.1, 0.2);
       setP(P, x + _d.x * S * 0.1, cy + _d.y * S * 0.1, z + _d.z * S * 0.1, _d.x * sp, _d.y * sp + S * 0.3, _d.z * sp, t0 + R.range(0, 0.15) * k, R.range(2.5, 4.5) * k, R.range(0.4, 0.7) * S, R.range(1.1, 1.8) * S);
       P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.3, 0.3); P.r = c * 1.1; P.g = c * 1.0; P.b = c * 0.95; P.a = 0.82; P.heat = R.range(0.5, 0.95); P.heatDecay = 1.7 / k; P.turb = 0.1 * S; P.extra = sc * (air ? 0.3 : 1);
-      fx.smoke.add(P);
+      fx.smokePool.add(P);
     }
   }
 
@@ -119,7 +119,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       R.range(0.5, 0.9) * S * sSize, R.range(1.5, 2.6) * S * sSize * (big ? 1.2 : 1));
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.15, 0.15); P.r = c * 1.08; P.g = c; P.b = c * 0.94; P.a = R.range(0.8, 0.95);
     P.heat = delay < 0.5 ? R.range(0.1, 0.6) : 0; P.heatDecay = 0.8 / k; P.turb = 0.12 * S; P.extra = sc * R.range(0.7, 1.2) * (air ? 0.4 : 1); P.drag = R.range(0.7, 1.3);
-    fx.smoke.add(P);
+    fx.smokePool.add(P);
   }
 
   // ---- ground-only: dust ring, dirt, shock ring, scorch
@@ -130,7 +130,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       const c = R.range(0.8, 1.1);
       setP(P, x + Math.cos(a) * 0.15 * S, gy + 0.1 * S, z + Math.sin(a) * 0.15 * S, Math.cos(a) * sp, S * R.range(0.0, 0.12), Math.sin(a) * sp, t0 + R.range(0, 0.06), R.range(2.2, 3.8) * k, R.range(0.25, 0.4) * S * (laser ? 0.6 : 1), R.range(0.8, 1.3) * S * (laser ? 0.6 : 1));
       P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.4, 0.4); P.r = 0.5 * c; P.g = 0.43 * c; P.b = 0.34 * c; P.a = 0.5; P.drag = 3.2; P.extra = 0.2; P.turb = 0.05 * S;
-      fx.smoke.add(P);
+      fx.smokePool.add(P);
     }
     if (ground || big) { // dirt clods thrown up + dust column
       const cn = fx.n(ground ? 26 : 12);
@@ -139,7 +139,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
         setP(P, x + _d.x * 0.1 * S, gy + 0.1 * S, z + _d.z * 0.1 * S, _d.x * sp, _d.y * sp, _d.z * sp, t0 + R.range(0, 0.1), R.range(2.0, 4.0) * k, R.range(0.3, 0.55) * S, R.range(0.8, 1.2) * S);
         P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.5, 0.5); const c = R.range(0.8, 1.2);
         P.r = 0.27 * c; P.g = 0.2 * c; P.b = 0.14 * c; P.a = 0.9; P.extra = -11; P.drag = 0.9; P.turb = 0.06 * S;
-        fx.smoke.add(P);
+        fx.smokePool.add(P);
       }
     }
     fx.rings.add(x, gy, z, 0, 1, 0, t0, (laser ? 0.35 : 0.6) * k, 0.12 * S, (laser ? 1.3 : big ? 3.4 : 2.6) * S, 0.06, laser ? 1.6 : 0.85, laser ? 0.4 : 1.0, laser ? 0.85 : 0.86, laser ? 1.0 : 0.7, R.next());
@@ -163,7 +163,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
     P.stretch = R.range(0.035, 0.06); P.rnd = R.next(); const b = R.range(2.2, 4.5);
     if (laser) { P.r = 0.8 * b * 0.5; P.g = 1.4 * b * 0.5; P.b = 2.0 * b * 0.5; } else { P.r = b; P.g = b * (0.55 + 0.25 * warm); P.b = b * (0.2 + 0.2 * warm); }
     P.drag = 1; P.extra = air ? 0.8 : 1;
-    fx.spark.add(P);
+    fx.sparkPool.add(P);
   }
   if (!laser) {
     const en = fx.n(big ? 24 : 12);
@@ -171,7 +171,7 @@ export function spawnExplosion(fx, x, y, z, S, kind, seed, t0) {
       dirHemi(R, _d, 0.6); const sp = S * R.range(0.2, 0.9);
       setP(P, x, cy, z, _d.x * sp, _d.y * sp, _d.z * sp, t0 + R.range(0, 0.4), R.range(2.0, 4.5), R.range(0.06, 0.11) * wid, R.range(0.06, 0.11) * wid);
       P.stretch = 0.012; P.rnd = R.next(); P.r = 3.2; P.g = 1.2; P.b = 0.3; P.drag = 2.0; P.extra = 0.3; P.turb = 0.6;
-      fx.spark.add(P);
+      fx.sparkPool.add(P);
     }
   }
 
@@ -195,14 +195,14 @@ export function nuke(fx, pos, o = {}) {
   const x = px(pos), y = py(pos), z = pz(pos);
   const t0 = (o.t ?? fx.time) + (o.delay || 0);
   const seed = o.seed ?? ((++fx.counter) * 104729 + 11);
-  const R = fx.rng(seed), P = fx.P;
+  const R = fx.rng(seed), P = fx.P; const sc = S / 10;
   fx.emit('nuke', x, y, z, S, space, t0);
   fx.addFlash(t0, space ? 4.5 : 6.0, 1.0, x, y + (space ? 0 : S * 0.4), z, 1.0, 0.9, 0.8, S * 10, 1);
   const gy = y;
   if (space) {
     const cy = y;
     // blinding flash + flares + afterglow
-    glowSprite(fx, x, cy, z, t0, 1.0, S * 6, S * 10, G_SOFT, 18, 18, 17, 2.8);
+    glowSprite(fx, x, cy, z, t0, 1.0, S * 6, S * 10, G_SOFT, 10, 10, 9.5, 2.8);
     glowSprite(fx, x, cy, z, t0, 1.6, S * 14, S * 20, G_STAR, 5, 6, 8, 2.2, R.range(0, 6), 0.05);
     glowSprite(fx, x, cy, z, t0, 6.0, S * 5, S * 14, G_SOFT, 0.9, 1.1, 1.8, 1.4);
     glowSprite(fx, x, cy, z, t0 + 0.5, 12.0, S * 2.5, S * 3.4, G_SOFT, 1.1, 0.5, 0.2, 1.6);
@@ -214,7 +214,7 @@ export function nuke(fx, pos, o = {}) {
       setP(P, x + _d.x * r, cy + _d.y * r, z + _d.z * r, _d.x * sp, _d.y * sp, _d.z * sp, t0 + R.range(0, 0.15), R.range(1.8, 4.2), R.range(0.5, 0.9) * S, R.range(1.2, 2.4) * S);
       P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.6, 0.6); P.drag = 0.35; P.extra = 0; P.turb = 0.15 * S;
       if (R.chance(0.7)) { P.r = 0.35; P.g = 0.62; P.b = 1.0; } else { P.r = 1.0; P.g = 0.5; P.b = 0.22; } P.a = R.range(1.4, 2.4);
-      fx.fire.add(P);
+      fx.firePool.add(P);
     }
     // radial streaks (X-ray spikes)
     const sn = fx.n(70);
@@ -222,14 +222,14 @@ export function nuke(fx, pos, o = {}) {
       dirSphere(R, _d); const sp = S * R.range(1.2, 4.2);
       setP(P, x, cy, z, _d.x * sp, _d.y * sp, _d.z * sp, t0 + R.range(0, 0.1), R.range(1.2, 3.2), S * R.range(0.012, 0.035), S * R.range(0.012, 0.035));
       P.stretch = R.range(0.12, 0.3); P.extra = 0; P.drag = 0.15; const b = R.range(2.5, 6); P.r = b * 0.75; P.g = b * 0.92; P.b = b;
-      fx.spark.add(P);
+      fx.sparkPool.add(P);
     }
     // fresnel shells: bright fast blast front + violet slow plasma shell
-    fx.shells.add(x, cy, z, t0, 6.5, 0.05 * S, 2.8 * S, 3.2, 0.55, 0.78, 1.0, 2.2, R.next() * 10, 2.0, 0.85);
-    fx.shells.add(x, cy, z, t0, 3.2, 0.05 * S, 1.7 * S, 5.0, 1.0, 1.0, 1.0, 3.2, R.next() * 10, 2.4, 0.35);
-    fx.shells.add(x, cy, z, t0 + 0.15, 9.0, 0.1 * S, 4.4 * S, 1.1, 0.5, 0.35, 1.0, 1.8, R.next() * 10, 1.6, 0.6);
+    fx.shells.add(x, cy, z, t0, 6.5, 0.05 * S, 2.8 * S, 1.5, 0.55, 0.78, 1.0, 2.2, R.next() * 10, 2.0, 0.85);
+    fx.shells.add(x, cy, z, t0, 3.2, 0.05 * S, 1.7 * S, 1.6, 1.0, 1.0, 1.0, 3.6, R.next() * 10, 2.4, 0.6);
+    fx.shells.add(x, cy, z, t0 + 0.15, 9.0, 0.1 * S, 4.4 * S, 0.8, 0.5, 0.35, 1.0, 1.8, R.next() * 10, 1.6, 0.6);
     // EMP rings in three tilted planes (+ camera-facing)
-    const ringDefs = [[0, 0, 0, 7.5, 5.5, 1.0, 1.0, 1.0], [0, 1, 0, 9.5, 6.0, 0.4, 0.9, 1.0], [1, 0.15, 0, 11, 7.0, 0.6, 0.55, 1.0], [0.3, 0.2, 1, 8, 5.0, 0.35, 1.0, 0.9]];
+    const ringDefs = [[0, 0, 0, 7.5, 5.5, 1.0, 1.0, 1.0], [0.25, 1, 0.35, 9.5, 6.0, 0.4, 0.9, 1.0], [0.9, 0.4, 0.5, 11, 7.0, 0.6, 0.55, 1.0], [-0.5, 0.35, 1, 8, 5.0, 0.35, 1.0, 0.9]];
     for (let i = 0; i < ringDefs.length; i++) { const d = ringDefs[i]; fx.rings.add(x, cy, z, d[0], d[1], d[2], t0 + i * 0.12, d[4], 0.1 * S, d[3] * S, 0.022, 3.4, d[5], d[6], d[7], R.next()); }
     fx.rings.add(x, cy, z, 0, 0, 0, t0 + 0.4, 9, 0.2 * S, 14 * S, 0.012, 1.6, 0.6, 0.75, 1.0, R.next());
     return;
@@ -246,7 +246,7 @@ export function nuke(fx, pos, o = {}) {
     dirHemi(R, _d, 0.1); const r = R.range(0.04, 0.3) * S, sp = R.range(0.1, 0.45) * S;
     setP(P, x + _d.x * r, cy + _d.y * r * 0.8, z + _d.z * r, _d.x * sp, _d.y * sp + S * 0.12, _d.z * sp, t0 + R.range(0, 0.25), R.range(2.5, 6.5), R.range(0.5, 0.9) * S, R.range(1.2, 2.0) * S);
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.4, 0.4); P.drag = 0.75; P.r = 1.0; P.g = 0.4; P.b = 0.07; P.a = R.range(1.2, 2.2); P.extra = sc * 0.03 + 0.2; P.turb = 0.08 * S;
-    fx.fire.add(P);
+    fx.firePool.add(P);
   }
   // mushroom: rising centre; cap = rolling torus, stem = column; k (pool drag) = 0.1
   const Hfinal = S * 5.5, riseV = Hfinal / (9.2); const capY = gy + S * 0.8;
@@ -259,7 +259,7 @@ export function nuke(fx, pos, o = {}) {
     P.extra = phi; // phi0
     // orbit pool reinterprets aF = (turb, stretch, drag, extra) as (riseV, mode 0=torus, roll omega, phi0)
     P.turb = riseV; P.stretch = 0; P.drag = R.range(0.3, 0.46); P.extra = phi;
-    fx.cloud.add(P);
+    fx.cloudPool.add(P);
   }
   for (let i = 0; i < sn; i++) {
     const u = Math.pow(R.next(), 0.8), psi = R.range(0, TAU);
@@ -269,7 +269,7 @@ export function nuke(fx, pos, o = {}) {
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.08, 0.08);
     const dust = 1 - u; P.r = cc * (1 + 0.25 * dust); P.g = cc * (1 + 0.05 * dust); P.b = cc * (1 - 0.2 * dust); P.a = 0.9; P.heat = R.range(0.2, 0.8) * (0.4 + 0.6 * u); P.heatDecay = 0.18;
     P.turb = riseV; P.stretch = 1; P.drag = R.range(0.04, 0.1) * R.sign(); P.extra = u; // mode 1 = stem, aF.w = u along the stem
-    fx.cloud.add(P);
+    fx.cloudPool.add(P);
   }
   // base surge dust ring (flat, tan) + condensation skirt
   const dn = fx.n(70);
@@ -277,7 +277,7 @@ export function nuke(fx, pos, o = {}) {
     const a = (i / dn) * TAU + R.range(-0.1, 0.1), sp = S * R.range(0.5, 1.1);
     setP(P, x + Math.cos(a) * 0.3 * S, gy + 0.06 * S, z + Math.sin(a) * 0.3 * S, Math.cos(a) * sp, S * R.range(0, 0.05), Math.sin(a) * sp, t0 + R.range(0.1, 0.9), R.range(10, 17), R.range(0.25, 0.4) * S, R.range(1.0, 1.7) * S);
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.2, 0.2); const c = R.range(0.55, 0.85); P.r = c * 0.9; P.g = c * 0.8; P.b = c * 0.68; P.a = 0.55; P.drag = 0.7; P.extra = 0.05; P.turb = 0.04 * S;
-    fx.smoke.add(P);
+    fx.smokePool.add(P);
   }
   // shock front (ground ring + vapour dome shell)
   fx.rings.add(x, gy, z, 0, 1, 0, t0, 7.5, 0.5 * S, 7.5 * S, 0.035, 2.4, 1.0, 0.88, 0.7, R.next());
@@ -291,7 +291,7 @@ export function nuke(fx, pos, o = {}) {
     dirHemi(R, _d, 0.3); const sp = S * R.range(0.8, 2.6);
     setP(P, x, cy, z, _d.x * sp, _d.y * sp, _d.z * sp, t0 + R.range(0, 0.4), R.range(1.5, 4.0), S * R.range(0.01, 0.025), S * R.range(0.01, 0.025));
     P.stretch = R.range(0.05, 0.12); P.r = 4; P.g = 2; P.b = 0.7; P.extra = 1.0; P.drag = 0.5;
-    fx.spark.add(P);
+    fx.sparkPool.add(P);
   }
   spawnDebris(fx, fx.rng(seed + 5), x, gy, z, t0, 40, { power: S * 0.5, size: S * 0.022, upBias: 0.5, heat: 0.8, spread: 0.8 });
 }
@@ -309,23 +309,23 @@ export function reentry(fx, from, to, o = {}) {
   const trailTime = o.trailTime ?? Math.min(life * 0.85, 2.6);
   fx.trails.add(ax, ay, az, bx, by, bz, t0, life, size, trailTime, R.next() * 10, o.intensity ?? 1.0, mid[0], mid[1], mid[2], 0);
   // head: white-hot core + orange halo + optional flare, moving linearly with the ribbon head
-  glowSprite(fx, ax, ay, az, t0, life, size * 1.6, size * 2.4, G_SOFT, 9, 8, 6.5, 0, 0, 0, vx, vy, vz);
-  glowSprite(fx, ax, ay, az, t0, life, size * 4.5, size * 6.5, G_SOFT, mid[0] * 2.2, mid[1] * 1.6, mid[2] * 1.0, 0, 0, 0, vx, vy, vz);
-  if (o.flare !== false) glowSprite(fx, ax, ay, az, t0, life, size * 7, size * 13, G_STAR, 1.8, 1.4, 1.0, 0, R.range(0, 6), 0.3, vx, vy, vz);
+  glowSprite(fx, ax, ay, az, t0, life, size * 2.6, size * 3.6, G_SOFT, 12, 11, 8.5, 0, 0, 0, vx, vy, vz);
+  glowSprite(fx, ax, ay, az, t0, life, size * 7, size * 10, G_SOFT, mid[0] * 2.6, mid[1] * 1.9, mid[2] * 1.2, 0, 0, 0, vx, vy, vz);
+  if (o.flare !== false) glowSprite(fx, ax, ay, az, t0, life, size * 12, size * 22, G_STAR, 2.4, 1.8, 1.3, 0, R.range(0, 6), 0.3, vx, vy, vz);
   // shed sparks and smoke along the path (deterministic timeline)
   const n = fx.n(Math.min(160, Math.round(life * 42)));
   for (let i = 0; i < n; i++) {
     const tt = R.range(0, 1) * life, px_ = ax + vx * tt, py_ = ay + vy * tt, pz_ = az + vz * tt; dirSphere(R, _d); const sp = R.range(0.04, 0.22) * size * 3;
     setP(P, px_, py_, pz_, _d.x * sp - vx * 0.03, _d.y * sp - vy * 0.03, _d.z * sp - vz * 0.03, t0 + tt, R.range(0.5, 1.5), size * R.range(0.03, 0.08), size * R.range(0.03, 0.08));
     P.stretch = 0.05; P.r = mid[0] * 4; P.g = mid[1] * 3; P.b = mid[2] * 2; P.drag = 1.5; P.extra = 0.15;
-    fx.spark.add(P);
+    fx.sparkPool.add(P);
   }
   const sm = fx.n(Math.min(80, Math.round(life * 9)));
   for (let i = 0; i < sm; i++) {
     const tt = (i + R.next()) / sm * life; dirSphere(R, _d);
     setP(P, ax + vx * tt, ay + vy * tt, az + vz * tt, _d.x * size * 0.25, _d.y * size * 0.25, _d.z * size * 0.25, t0 + tt, R.range(7, 12), size * R.range(0.9, 1.5), size * R.range(3.5, 6));
     P.rnd = R.next(); P.rot = R.range(0, 6.28); P.rotVel = R.range(-0.1, 0.1); const c = R.range(0.38, 0.55); P.r = c * 1.05; P.g = c; P.b = c * 0.95; P.a = 0.34; P.heat = 0.7; P.heatDecay = 0.9; P.extra = 0.0; P.drag = 1.0; P.turb = size * 0.4;
-    fx.smoke.add(P);
+    fx.smokePool.add(P);
   }
   fx.emit('reentry', ax, ay, az, bx, by, bz, t0, life);
   if (o.explodeAtEnd || o.impact) {

@@ -54,7 +54,7 @@ window.__run = async function (W, H, Qlevel, params, spec) {
 
 const res = await build({ stdin: { contents: entry, resolveDir: root, sourcefile: 'harness-entry.js' }, bundle: true, format: 'iife', write: false, minify: false, target: ['es2020'], logLevel: 'error', charset: 'utf8', nodePaths: [path.join(root, 'node_modules')] });
 const js = res.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
-const html = `<!doctype html><html><body style="margin:0;background:#000"><canvas id="c" width="${W}" height="${H}"></canvas><script>${js}</script></body></html>`;
+const html = `<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#000"><canvas id="c" width="${W}" height="${H}"></canvas><script>${js}</script></body></html>`;
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-angle=swiftshader', '--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--no-sandbox', '--enable-webgl', '--autoplay-policy=no-user-gesture-required'] });
 const page = await browser.newPage({ viewport: { width: W, height: H } });
 let errors = 0;

@@ -5,3 +5,4 @@ export { createWarRoom } from './inst/war.js';
 export { createUNHall } from './inst/un.js';
 export { createObservatory, createMissionControl } from './inst/space.js';
 export { createLab } from './inst/lab.js';
+export { createDataCenter, createBunker, createCommandPost, createLaunchSite, createSiloControl } from './inst/ops.js';

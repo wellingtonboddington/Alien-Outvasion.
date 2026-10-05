@@ -51,7 +51,7 @@ export function shellMaps() {
     const base = field(FN, 2, 4, 3), warp = field(FN, 3, 3, 5), crk = field(FN, 7, 4, 8), crk2 = field(FN, 13, 3, 9), pits = field(FN, 30, 2, 12), swirl = field(FN, 4, 3, 14);
     const col = makeCanvas(N), nh = makeCanvas(N), rg = makeCanvas(N);
     const cd = col.getContext('2d').createImageData(N, N), hd = nh.getContext('2d').createImageData(N, N), rd = rg.getContext('2d').createImageData(N, N);
-    const dark = hexRGB('#9c8860'), mid = hexRGB('#cbb98f'), light = hexRGB('#e4d7b4'), pale = hexRGB('#f3ecd6'), tmp = [0, 0, 0], tmp2 = [0, 0, 0], o = { d1: 0, d2: 0, id: 0 };
+    const dark = hexRGB('#948568'), mid = hexRGB('#c8b998'), light = hexRGB('#e1d6bb'), pale = hexRGB('#f1ebd9'), tmp = [0, 0, 0], tmp2 = [0, 0, 0], o = { d1: 0, d2: 0, id: 0 };
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       const u = x / N, v = y / N, i = (y * N + x) * 4;
       const b = sampleF(base, FN, u, v), w = sampleF(warp, FN, u, v), c1 = sampleF(crk, FN, u, v), c2 = sampleF(crk2, FN, u, v), pt = sampleF(pits, FN, u, v), sw = sampleF(swirl, FN, u, v);

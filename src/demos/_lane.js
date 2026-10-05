@@ -1,0 +1,2 @@
+import * as City from '../world/city.js';
+export default async function setup() { const b = City.createCityBlock('manhattan', { seed: 1 }); const l = b.layout; console.log('LAYOUT keys', Object.keys(l).join(','), 'roadsX', JSON.stringify(l.roadsX), 'roadsZ', JSON.stringify(l.roadsZ), 'bounds', JSON.stringify(b.bounds), 'fire', b.fireAnchors && b.fireAnchors.length, JSON.stringify(b.fireAnchors && b.fireAnchors[0])); return { update() {}, shots: [{ name: 'x', t: 0 }] }; }

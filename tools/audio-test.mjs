@@ -31,7 +31,12 @@ window.__lists = () => ({ sfx: Object.keys(RECIPES), cues: Object.keys(CUES || {
 window.__live = async (secs) => { // real-time AudioContext smoke test: scheduling, cleanup, tick cost
   const a = createAudio(); await a.resume(); const out = { state: a.ctx.state, timer: a.timer, sampleRate: a.ctx.sampleRate, samples: [], warns: [] };
   const ow = console.warn; console.warn = (...x) => out.warns.push(x.map(String).join(' ').slice(0, 160));
-  a.setListener(null); a.music.play('title', { fade: 1, intensity: 0.8 }); a.amb.set('war_near', 0.8, 1); a.amb.set('city_day', 0.5, 1);
+  const cam = { matrixWorld: { elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1.6, 0, 1] } }; a.setListener(cam); a.setMuffle(0.4, 0.2); a.setMuffle(0, 0.2); a.setVolumes({ music: 0.9, sfx: 1, voice: 1, amb: 0.8 }); a.setMaster(0.9); a.duck(0.4, 1);
+  out.api = ['music.play', 'music.setIntensity', 'music.stop', 'music.stinger', 'amb.set', 'amb.clear', 'sfx.play', 'sfx.stopAll', 'voice.say', 'voice.setMode', 'voice.stopAll', 'resume', 'suspend', 'dispose', 'duck', 'setListener', 'setMaster', 'setVolumes', 'now'].filter((k) => { const [x, y] = k.split('.'); return typeof (y ? a[x][y] : a[x]) !== 'function'; });
+  a.music.stinger('sting_news'); const hh = a.sfx.play('laser_fire', { pos: { x: 5, y: 1.6, z: -20 }, to: { x: -5, y: 1.6, z: -20 } }); hh.setGain(0.5); hh.setPitch(1.1); hh.setPos({ x: 1, y: 1, z: -5 });
+  a.voice.setMode('tts'); out.ttsMode = a.voice.mode; out.hasTTS = a.voice.hasTTS; const th = a.voice.say({ text: 'Hello there, this is a test line.', gender: 'M', character: 'bead', duration: 2 }); out.ttsHandle = { tts: th.tts, dur: th.dur };
+  for (const st of ['alien', 'robot', 'radio', 'ai']) a.voice.say({ text: 'Testing ' + st, style: st, duration: 1.2 });
+  a.voice.setMode('babble'); a.music.play('title', { fade: 1, intensity: 0.8 }); a.amb.set('war_near', 0.8, 1); a.amb.set('city_day', 0.5, 1);
   a.sfx.play('engine_idle', { loop: true, pos: { x: 8, y: 0, z: -12 } }); a.sfx.play('footstep', { loop: true, interval: 0.5 }); a.voice.setMode('babble');
   const t0 = performance.now(); let n = 0; const tickCost = []; const origNow = performance.now.bind(performance);
   while ((performance.now() - t0) / 1000 < secs) {
@@ -41,7 +46,7 @@ window.__live = async (secs) => { // real-time AudioContext smoke test: scheduli
     if (n === 7) { a.music.setIntensity(0.2, 2); a.sfx.stopAll(); a.amb.clear(1); }
     out.samples.push({ t: n, ctxTime: +a.ctx.currentTime.toFixed(2), live: { ...a.live }, sfx: a.sfx.active });
   }
-  a.music.stop(0.5); await new Promise((r) => setTimeout(r, 3000)); out.after = { ...a.live }; console.warn = ow; a.dispose(); return out;
+  await a.suspend(); out.suspended = a.ctx.state; await a.resume(); out.resumed = a.ctx.state; a.music.stop(0.5); await new Promise((r) => setTimeout(r, 3000)); out.after = { ...a.live }; console.warn = ow; a.dispose(); return out;
 };
 const b64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 window.__job = async (job) => {
@@ -108,6 +113,14 @@ if (calArg) {
       const r = await run({ kind: 'sfx', name: n, secs: SFX_SECS[n] || 3.5, opts: {}, mix: { music: {}, sfx: {} } }); if (r.error) { console.log('sfx', n, 'ERR', r.error.split('\n')[0]); continue; }
       const target = SFX_PEAK[n] ?? -10; const k = Math.max(0.05, Math.min(8, db2k(target - r.peakDb))); MIXV.sfx[n] = +k.toFixed(3);
       console.log(`sfx ${n.padEnd(18)} peak ${r.peakDb.toFixed(1).padStart(6)} -> ${target}  k=${k.toFixed(3)}`);
+    }
+  }
+  if (calArg === 'cues') {
+    for (const cue of lists.cues) {
+      if (filter && !new RegExp(filter, 'i').test(cue)) continue;
+      const r2 = await run({ kind: 'music', name: cue, secs: 28, intensity: 0.6, mix: { music: {}, sfx: {} } });
+      const vol = Math.max(0.05, Math.min(3, db2k(-23 - r2.rmsDb))); MIXV.music[cue] = { vol: +vol.toFixed(3), layers: [] };
+      console.log(`cue ${cue.padEnd(14)} rms ${r2.rmsDb.toFixed(1)} pk ${r2.peakDb.toFixed(1)} -> -23  vol=${vol.toFixed(3)}`);
     }
   }
   if (doMusic) {

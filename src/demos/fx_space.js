@@ -26,9 +26,9 @@ export default async function setup(stage, params = {}) {
   } else {
     world = createDemoWorld(stage, { preset: 'dusk', buildings: true, radius: 700, seed: 5 }); scene.fog.density = 0.0009; createStars(scene);
     fx = createFX(scene, { ground: 0 }); fx.syncLights();
-    fx.reentry([-900, 700, -1400], [200, 12, -1500], { life: 3.4, size: 14, explodeAtEnd: true, explodeSize: 80, impact: 'big' });
-    fx.reentry([900, 900, -1700], [-400, 15, -1800], { life: 4.2, size: 18, color: [0.5, 0.75, 1.0], delay: 0.4 });
-    fx.reentry([-300, 800, -1300], [500, 20, -1400], { life: 5.0, size: 9, delay: 1.0, flare: false });
+    fx.reentry([-900, 700, -1400], [200, 12, -1500], { life: 3.4, size: 60, explodeAtEnd: true, explodeSize: 160, impact: 'big' });
+    fx.reentry([900, 900, -1700], [-400, 15, -1800], { life: 4.2, size: 80, color: [0.5, 0.75, 1.0], delay: 0.4 });
+    fx.reentry([-300, 800, -1300], [500, 20, -1400], { life: 5.0, size: 40, delay: 1.0, flare: false });
     shots = [0.8, 1.6, 2.4, 3.3, 4.6, 6].map((t) => ({ name: 'comets_' + String(t).replace('.', 'p'), t, cam: [0, 8, 40, 0, 220, -1500], fov: 55 }));
   }
   return { shots, update(t, dt) { fx.update(dt, t); } };

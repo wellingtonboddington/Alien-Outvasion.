@@ -38,8 +38,9 @@ export function torsoStations(P, L, { off = 0, n = 24, y0 = 0.47, y1 = 0.862, fl
   for (let i = 0; i < n; i++) {
     const yf = y0 + (y1 - y0) * (i / (n - 1));
     const s = sec(yf);
-    const y = yf * H;
-    // flare near the top (neck/collars) handled by caller via `flare`
+    // above the armpit the table is remapped so that the top of the torso sits at the neck base for every head size
+    const yTop = L.dims.neckY + 0.012;
+    const y = yf <= 0.76 ? yf * H : 0.76 * H + (yf - 0.76) / (0.862 - 0.76) * (yTop - 0.76 * H);
     rows.push({ c: V(0, y, s.cz), rx: s.rx + off, rz: s.rz + off, pw: s.pw, y, yf });
   }
   return rows;

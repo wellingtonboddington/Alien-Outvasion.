@@ -35,7 +35,7 @@ export const G_SOFT = 0, G_STAR = 1, G_RING = 2, G_STREAK = 3;
 export function glowSprite(fx, x, y, z, birth, life, s0, s1, frame, r, g, b, decay, rot = 0, rotVel = 0, vx = 0, vy = 0, vz = 0) {
   const P = setP(fx.P, x, y, z, vx, vy, vz, birth, life, s0, s1);
   P.frame = frame; P.r = r; P.g = g; P.b = b; P.a = decay; P.rot = rot; P.rotVel = rotVel; P.extra = 0; P.drag = 0;
-  fx.glow.add(P);
+  fx.glowPool.add(P);
 }
 
 /** random unit vector in the upper hemisphere biased toward `up` (bias 0 = uniform sphere, 1 = straight up) written to out */

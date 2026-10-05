@@ -102,7 +102,7 @@ PAINT.leather = (L, S) => {
 };
 PAINT.metal = (L, S) => {
   const f = field(S, 3, 2, 51); const r = new RNG(52);
-  L.px('a', (x, y) => { const streak = field.cache?.[S] ? 0 : 0; const v = 0.55 + 0.12 * Math.sin(y * 0.9 + f[y * S + x] * 5) * 0.5 + 0.1 * f[y * S + x]; const k = v * 255; return [k, k, k]; });
+  L.px('a', (x, y) => { const v = 0.55 + 0.12 * Math.sin(y * 0.9 + f[y * S + x] * 5) * 0.5 + 0.1 * f[y * S + x]; const k = v * 255; return [k, k, k]; });
   L.px('m', () => 0.0); L.px('h', () => 0.5); L.px('r', (x, y) => 0.38 + 0.2 * f[y * S + x]);
   for (let i = 0; i < 70; i++) { const x = r.range(0, S), y = r.range(0, S), l = r.range(S * 0.04, S * 0.2); L.line((c) => { c.moveTo(x, y); c.lineTo(x + l, y + r.range(-2, 2)); }, { a: '#d8d8d8', h: 0.8, r: 0.7, w: 1, alpha: 0.45 }); }
   for (let i = 0; i < 6; i++) { const y = (i + 0.5) / 6 * S; L.line((c) => { c.moveTo(0, y); c.lineTo(S, y); }, { a: '#202020', h: 0.1, w: 1.5, alpha: 0.7 }); }
@@ -170,6 +170,21 @@ PAINT.molle = (L, S) => {
   for (let y = 0; y < S; y += Math.round(16 * u)) for (let x = 0; x < S; x += Math.round(24 * u)) L.line((c) => { c.moveTo(x + 2, y + 5 * u); c.lineTo(x + 2, y + 9 * u); }, { a: '#151515', w: 1.2 * u, alpha: 0.7 });
   L.px('r', () => 0.9);
 };
+PAINT.gore = (L, S) => { // worn cloth with dark blood stains, grime and rips (stains are untinted: tint mask 0)
+  PAINT.weave(L, S);
+  const f = field(S, 5, 3, 161), g = field(S, 9, 3, 162), r = new RNG(163), u = S / 256;
+  L.px('a', (x, y) => { const i = y * S + x; const t = ((x + y) & 3) / 3; let v = 0.72 + 0.1 * f[i] + 0.05 * Math.sin(t * 6.283); v *= 0.7 + 0.45 * g[i]; const k = v * 255; return [k, k, k]; });
+  for (let n = 0; n < 3; n++) { const x = r.range(0, S), y = r.range(0, S), rr = r.range(7, 16) * u; L.shape((c) => { c.ellipse(x, y, rr, rr * r.range(0.5, 1.2), r.range(0, 3), 0, 6.283); }, { a: r.chance(0.5) ? '#4a0a0a' : '#2c0808', m: 0.12, alpha: r.range(0.35, 0.6), r: 0.3, h: 0.55 }); }
+  for (let n = 0; n < 2; n++) { const x = r.range(0, S), y = r.range(0, S * 0.8); L.line((c) => { c.moveTo(x, y); c.lineTo(x + r.range(-4, 4), y + r.range(S * 0.1, S * 0.3)); }, { a: '#3a0707', m: 0.1, w: r.range(1.5, 4) * u, alpha: 0.7 }); }
+  for (let n = 0; n < 2; n++) { const x = r.range(0, S), y = r.range(0, S), l = r.range(14, 30) * u, a0 = r.range(0, 6.28); L.line((c) => { c.moveTo(x, y); c.lineTo(x + Math.cos(a0) * l, y + Math.sin(a0) * l); }, { a: '#141414', m: 0.3, w: 2.2 * u, alpha: 0.75, h: 0.1 }); }
+};
+PAINT.frost = (L, S) => { // padded winter cloth dusted with frost
+  PAINT.weave(L, S);
+  const f = field(S, 7, 3, 171), g = field(S, 24, 1, 172), r = new RNG(173), u = S / 256;
+  L.px('a', (x, y) => { const i = y * S + x; const t = ((x + y) & 3) / 3; let v = 0.78 + 0.12 * f[i] + 0.05 * Math.sin(t * 6.283); v += 0.35 * Math.max(0, g[i] - 0.62) * 2.2 * Math.max(0, f[i] - 0.35); const k = Math.min(255, v * 255); return [k * 0.96, k * 0.99, k]; });
+  for (let n = 0; n < 260; n++) L.shape((c) => c.arc(r.range(0, S), r.range(0, S), r.range(0.5, 1.4) * u, 0, 6.283), { a: '#ffffff', m: 0.7, alpha: 0.7, h: 0.8 });
+  L.px('r', (x, y) => 0.7 - 0.3 * g[y * S + x]);
+};
 PAINT.hair = (L, S) => {
   const f = field(S, 3, 2, 141), r = new RNG(142);
   L.px('a', (x, y) => { const v = 0.35 + 0.5 * f[y * S + (x * 3) % S]; const k = v * 255; return [k, k, k]; }); L.px('h', (x, y) => 0.4 + 0.4 * f[y * S + (x * 3) % S]); L.px('r', () => 0.55);
@@ -186,7 +201,7 @@ function face(L, S, o = {}) {
   L.px('a', () => [255, 255, 255]); L.px('m', () => 1); L.px('h', () => 0.5); L.px('r', () => o.rough ?? 0.55); L.px('e', () => 0);
   const soft = (ch, x, y, rx, ry, col, alpha) => { const c = L[ch]; c.save(); c.translate(x, y); c.scale(rx, ry); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.globalAlpha = alpha; c.beginPath(); c.arc(0, 0, 1, 0, 6.283); c.fill(); c.restore(); };
   const eyeY = S * 0.5, eyeDX = S * 0.165, noseY = S * 0.665, mouthY = S * 0.775, browY = S * 0.36;
-  const hollow = o.hollow ?? 0.18, ew = (o.eyeW ?? 20) * u, eh = (o.eyeH ?? 10.5) * u;
+  const hollow = o.hollow ?? 0.18, ew = (o.eyeW ?? 19) * u, eh = (o.eyeH ?? 9) * u;
   // cheek blush / shading
   if (o.blush) for (const sg of [-1, 1]) soft('a', cx + sg * 50 * u, noseY + 4 * u, 22 * u, 15 * u, '#d9756a', o.blush);
   for (const sgn of [-1, 1]) {
@@ -253,8 +268,8 @@ PAINT.faceRobot = (L, S) => {
   const bw = S * 0.045; for (const [ch, col] of [['a', '#ebebee'], ['m', '#ffffff'], ['h', gray(0.6)], ['e', '#000']]) { const c = L[ch]; c.fillStyle = col; c.fillRect(0, 0, bw, S); c.fillRect(S - bw, 0, bw, S); c.fillRect(0, 0, S, bw); c.fillRect(0, S - bw, S, bw); }
 };
 
-const ORDER = ['weave', 'camo', 'knit', 'denim', 'leather', 'metal', 'skin', 'fleshUS', 'fleshIN', 'fleshDE', 'circuit', 'faceHuman', 'faceZomb', 'faceRobot', 'robotShell', 'molle', 'faceCebu', 'faceIndia', 'hair', 'fur', 'faceRus', 'fleshRU'];
-const NSTRENGTH = { weave: 2.2, camo: 1.2, knit: 3.5, denim: 2.4, leather: 3, metal: 1.2, skin: 1.2, fleshUS: 4, fleshIN: 3, fleshDE: 4, fleshRU: 2.5, circuit: 2, faceHuman: 2.2, faceZomb: 3, faceRobot: 1.5, faceCebu: 2.5, faceIndia: 3, faceRus: 3, robotShell: 1.8, molle: 1.4, hair: 2.5, fur: 4 };
+const ORDER = ['weave', 'camo', 'knit', 'denim', 'leather', 'metal', 'skin', 'fleshUS', 'fleshIN', 'fleshDE', 'circuit', 'faceHuman', 'faceZomb', 'faceRobot', 'robotShell', 'molle', 'faceCebu', 'faceIndia', 'hair', 'fur', 'faceRus', 'fleshRU', 'gore', 'frost'];
+const NSTRENGTH = { weave: 2.2, camo: 1.2, knit: 3.5, denim: 2.4, leather: 3, metal: 1.2, skin: 1.2, fleshUS: 4, fleshIN: 3, fleshDE: 4, fleshRU: 2.5, circuit: 2, faceHuman: 2.2, faceZomb: 3, faceRobot: 1.5, faceCebu: 2.5, faceIndia: 3, faceRus: 3, robotShell: 1.8, gore: 2, frost: 2.5, molle: 1.4, hair: 2.5, fur: 4 };
 
 /** Build (cached) texture arrays. size follows Q.texSize (128 on phones, 256 otherwise). */
 export function getCrowdTextures() {

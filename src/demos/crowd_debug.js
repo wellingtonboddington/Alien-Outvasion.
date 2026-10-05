@@ -11,6 +11,7 @@ export default async function setup(stage, params = {}) {
   const kind = params.kind || 'soldier';
   const crowd = createCrowd(kind, 40, { seed: params.seed || 3, castShadow: true });
   stage.scene.add(crowd.root);
+  if (params.look) crowd.lookAt({ x: params.look[0], y: params.look[1], z: params.look[2] }, 1);
   const names = params.states || STATE_NAMES;
   const gap = params.gap || 1.7;
   names.forEach((n, i) => {

@@ -15,6 +15,7 @@ const ZERO = new THREE.Vector3(0, 0, 0);
 // tile = metres covered by one texture tile.  env = envMapIntensity (0 = none).
 export const MATS = {
   plaster: { map: 'plaster', color: 0xe8e4da, rough: 0.92, tile: 2.4 },
+  soffit: { map: 'plaster', color: 0xf4f0e6, rough: 0.95, tile: 3.0, selfLit: 0.3 },
   paint: { color: 0xcccccc, rough: 0.7 },
   matte: { color: 0xcccccc, rough: 0.95 },
   plastic: { color: 0xcccccc, rough: 0.28, env: 0.5 },
@@ -108,7 +109,7 @@ export class Kit {
       if (def.alphaTest) mat.alphaTest = def.alphaTest;
       if (def.selfLit && mat.map) { mat.emissive.set(0xffffff); mat.emissiveMap = mat.map; mat.emissiveIntensity = def.selfLit; }
       if (def.emissive) { mat.emissive.set(def.emissive); mat.emissiveIntensity = def.emissiveIntensity ?? 1; }
-      this._patchAmbience(mat);
+      if (!def.noAmb) this._patchAmbience(mat);
       if (def.noShadow) mat.userData.noShadow = true;
     }
     mat.name = name; mat.userData.tile = def.tile || 1; mat.userData.uv = def.uv || 'world'; mat.userData.sway = !!def.sway;

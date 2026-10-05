@@ -39,7 +39,7 @@ const ARMS = { reach: armsReach, fling: armsFling, hang: armsHang, stiff: armsSt
 const STRAINS = {
   us: {
     layout: { shoulderY: 1.5, neckY: 1.53, headY: 1.65, shoulderX: 0.275, hipX: 0.11, hipY: 0.95, kneeY: 0.51, armU: 0.34, armF: 0.31, waistY: 1.08, chestY: 1.31 },
-    torso: { hipRx: 0.2, hipRz: 0.13, waistRx: 0.19, waistRz: 0.12, chestRx: 0.275, chestRz: 0.165, shRx: 0.305, shRz: 0.145, neckR: 0.095, chestCz: 0.025 },
+    torso: { hipRx: 0.2, hipRz: 0.13, waistRx: 0.19, waistRz: 0.12, chestRx: 0.275, chestRz: 0.165, shRx: 0.3, shRz: 0.15, neckR: 0.135, chestCz: 0.03 },
     arm: { r0: 0.085, r1: 0.07, fr0: 0.072, fr1: 0.052, bulge: 0.3, fbulge: 0.25 }, leg: { t0: 0.108, t1: 0.075, s0: 0.07, s1: 0.05, mid: 0.14, calf: 0.15 },
     head: { scale: 0.95, rx: 0.084 }, handSize: 1.5, footW: 0.125, neckR: 0.062,
     skin: [0x849080, 0x788a72, 0x6e8068, 0x8a9078, 0x7a8a74, 0x647860], hair: [0x1a1510, 0x2a2018, 0x4a3a28, 0x302820, 0x6a5a48, 0x8a8478],
@@ -55,7 +55,7 @@ const STRAINS = {
   },
   giant: {
     layout: { hipY: 1.26, kneeY: 0.68, ankleY: 0.115, waistY: 1.45, chestY: 1.77, shoulderY: 2.02, neckY: 2.08, headY: 2.27, shoulderX: 0.38, hipX: 0.155, armU: 0.47, armF: 0.43, handL: 0.13, weaponPivot: [0, 1.5, 0.1] },
-    torso: { hipRx: 0.275, hipRz: 0.18, waistRx: 0.26, waistRz: 0.17, chestRx: 0.38, chestRz: 0.23, shRx: 0.42, shRz: 0.2, neckR: 0.13, chestCz: 0.03 },
+    torso: { hipRx: 0.275, hipRz: 0.18, waistRx: 0.26, waistRz: 0.17, chestRx: 0.38, chestRz: 0.23, shRx: 0.42, shRz: 0.2, neckR: 0.19, chestCz: 0.04 },
     arm: { r0: 0.125, r1: 0.1, fr0: 0.105, fr1: 0.078, bulge: 0.28, fbulge: 0.22 }, leg: { t0: 0.15, t1: 0.105, s0: 0.1, s1: 0.072, mid: 0.1, calf: 0.12 },
     head: { scale: 1.0, rx: 0.088 }, handSize: 2.0, footW: 0.17, footL: 0.4, neckR: 0.085, giant: true,
     skin: [0x74866e, 0x687a64, 0x7e8c74, 0x5e7060], hair: [0x1a1510, 0x2a2018, 0x4a3a28, 0x302820],
@@ -91,8 +91,8 @@ const STRAINS = {
     head: { scale: 1.02, rx: 0.082 }, handSize: 1.2, neckR: 0.05,
     skin: [0xb0c4dc, 0xa4bad6, 0xbccee4, 0x98aecc, 0xaabfd8, 0x8ca4c4], hair: [0xb8b8b8, 0x8a8a8e, 0x5a5a60, 0xd8d8dc, 0x3a3a40, 0x706a60],
     skinLayer: LAYER.fleshRU, face: LAYER.faceRus,
-    top: [0x3e4638, 0x303338, 0x4a4036, 0x2a2e36, 0x56564e, 0x3a3030, 0x424a52, 0x5c5444], bot: [0x2e3036, 0x383c34, 0x44423a, 0x282a30, 0x4a4c46, 0x34343a],
-    acc: [0x6a6a66, 0x4e4e4c, 0x7a7466, 0x8a8a88, 0x5a5e5a, 0x9a9a98], shoe: [0x1c1a18, 0x24201c, 0x14120f, 0x2e2a24],
+    top: [0x7a8272, 0x6a7078, 0x8a8470, 0x5e6878, 0x96968a, 0x7a6a66, 0x6a7480, 0x8c8266], bot: [0x5a5e66, 0x666c60, 0x6e6c62, 0x4e5260, 0x76786e, 0x5c5c68],
+    acc: [0xc0beb4, 0xa8a8a2, 0xd0c8b4, 0xb4b8b8, 0x9a9e98, 0xdedcd6], shoe: [0x1c1a18, 0x24201c, 0x14120f, 0x2e2a24],
     bareChest: 0.0, bareArm: 0.0, bareLeg: 0.0, dirt: 0.2, kneeBend: 0.05,
     walk: { v: 1.25, f: 0.85, duty: 0.62, lift: 0.07, drop: 0.02, width: 0.045, toeOut: 0.04, roll: 0.18, lean: 0.03, twist: 0.02, sway: 0.006, roll2: 0.01 },
     run: { v: 3.4, f: 1.3, duty: 0.42, lift: 0.17, drop: 0.045, width: 0.04, toeOut: 0.03, roll: 0.1, toe: 0.8, lean: 0.14, twist: 0.02, sway: 0.006, roll2: 0.01 },
@@ -139,8 +139,8 @@ export function buildZombie(strain) {
   const L = makeLayout(Z.layout);
   const M = new FigureMesh();
   const sk = (layer = Z.skinLayer) => mat(SLOT.SKIN, layer);
-  const cloth = (slot, layer = LAYER.weave) => mat(slot, layer);
-  const pantsLayer = strain === 'cebu' ? LAYER.weave : LAYER.denim;
+  const cloth = (slot, layer = strain === 'russia' ? LAYER.frost : LAYER.gore) => mat(slot, layer);
+  const pantsLayer = strain === 'russia' ? LAYER.frost : LAYER.gore;
   const topSlot = Z.bareChest > 0 ? SLOT.CHEST : SLOT.TOP;
   const m = {
     torso: cloth(topSlot), pelvis: cloth(SLOT.BOT, pantsLayer), upperArm: cloth(Z.bareArm > 0.6 ? SLOT.SLEEVE : SLOT.TOP), foreArm: cloth(SLOT.SLEEVE), hand: sk(),
@@ -161,18 +161,12 @@ export function buildZombie(strain) {
   } else {
     M.add(capHat(L, { s: hs, brim: 0.125, crown: 0.095, y: 0.05, visor: 0.045 }), { j: J.HEAD, gate: gate(1, 3), ...mat(SLOT.ACC, LAYER.weave), name: 'cap' });
   }
-  // ---- extras (group 2): 0 none 1 torn rags / scarf 2 backpack 3 rags
-  const rag = (x, z, w, h, d, yTop) => xf(box(w, h, d, { taperBottom: [0.7, 1] }), { pos: [x, yTop - h / 2, z], rot: [0.05, 0, 0.03 * (x > 0 ? 1 : -1)] });
-  const ragY = L.hipY + 0.02;
-  if (strain !== 'russia' && strain !== 'giant') {
-    M.add(rag(0.06, 0.13, 0.14, 0.34, 0.012, ragY), { j: J.ROOT_ROT, gate: gate(2, 1, 3), ...mat(SLOT.TOP2, LAYER.weave, 0xffffff, 0.75), name: 'rag' });
-    M.add(rag(-0.07, -0.125, 0.15, 0.3, 0.012, ragY), { j: J.ROOT_ROT, gate: gate(2, 1, 3), ...mat(SLOT.TOP2, LAYER.weave, 0xffffff, 0.7), name: 'rag2' });
-  }
+  // ---- extras (group 2): 0 none 1 scarf/plate 2 backpack 3 -
   if (strain === 'russia') {
     M.add(loft([{ y: L.neckY - 0.045, rx: 0.1, rz: 0.1 }, { y: L.neckY + 0.02, rx: 0.075, rz: 0.075 }], { R: 6, k: 2 }), { j: J.HEAD, gate: gate(2, 1, 3), ...mat(SLOT.TOP2, LAYER.knit), name: 'scarf' });
-    for (const sg of [1, -1]) M.add(xf(loft([{ y: L.kneeY - 0.1, rx: 0.14, rz: 0.17 }, { y: L.kneeY + 0.2, rx: 0.13, rz: 0.15 }, { y: L.hipY + 0.035, rx: 0.115, rz: 0.14 }], { R: 8, k: 2.2 }), { pos: [sg * 0.09, 0, 0] }), { j: sg > 0 ? J.SKIRT_L : J.SKIRT_R, gate: gate(3, 1), ...cloth(SLOT.TOP), name: 'coat' });
+    for (const sg of [1, -1]) M.add(xf(loft([{ y: L.kneeY - 0.1, rx: 0.14, rz: 0.17 }, { y: L.kneeY + 0.2, rx: 0.13, rz: 0.15 }, { y: L.hipY + 0.035, rx: 0.115, rz: 0.14 }], { R: 8, k: 2.2 }), { pos: [sg * 0.09, 0, 0] }), { j: sg > 0 ? J.SKIRT_L : J.SKIRT_R, gate: gate(3, 1), ...cloth(SLOT.TOP, LAYER.frost), name: 'coat' });
     M.add(xf(box(0.3, 0.38, 0.16, { taperBottom: [0.9, 0.9] }), { pos: [0, L.chestY - 0.02, -0.22] }), { j: J.SPINE, gate: gate(2, 2), ...mat(SLOT.ACC, LAYER.weave), name: 'pack' });
-  } else if (strain === 'us' || strain === 'germany') {
+  } else if (strain === 'germany') {
     for (const sg of [1, -1]) M.add(xf(loft([{ y: L.kneeY + 0.05, rx: 0.12, rz: 0.15 }, { y: L.hipY + 0.035, rx: 0.1, rz: 0.12 }], { R: 6, k: 2.2 }), { pos: [sg * 0.082, 0, 0] }), { j: sg > 0 ? J.SKIRT_L : J.SKIRT_R, gate: gate(3, 1), ...cloth(SLOT.TOP, LAYER.weave), shade: 0.8, name: 'coattail' });
   }
   if (strain === 'giant') {
@@ -211,7 +205,7 @@ export function buildZombie(strain) {
     if (tw > 0.3) { P.eAdd(J.FORE_L, 0.4 * t2, 0, 0); P.eAdd(J.FORE_R, 0.4 * t3, 0, 0); }
   };
   const K = {
-    skirt: (strain === 'russia' || strain === 'us' || strain === 'germany') ? 0.55 : 0,
+    skirt: (strain === 'russia' || strain === 'germany') ? 0.55 : 0,
     crawlSpeed: 0.5, fireRate: 1.5,
     gait: { walk: Z.walk, run: Z.run, sprint: Z.sprint, lunge: Z.lunge, panic: { ...Z.sprint, v: Z.run.v, f: Z.run.f } },
     arms: { walk: 'none', run: 'none', sprint: 'none', lunge: 'none', panic: 'none' },
@@ -254,7 +248,7 @@ export function buildZombie(strain) {
     mix: { kid: strain === 'giant' ? 0 : 0.06, elder: strain === 'giant' ? 0 : 0.12, female: strain === 'giant' ? 0 : 0.4 }, scale: strain === 'giant' ? [0.96, 1.06] : [0.94, 1.08],
     heightScale: strain === 'giant' ? 1.45 : 1.05, lookWeight: Z.look || 0,
     groups: { head: 1, extra: 2, coat: 3 },
-    variant: (r) => ({ head: r.pick(strain === 'russia' ? [0, 3, 3, 3, 3, 3] : [0, 0, 1, 1, 2, 3]), extra: r.pick(strain === 'russia' ? [0, 1, 1, 2] : [0, 1, 1, 3, 0]), coat: r.chance(0.5) ? 1 : 0 }),
+    variant: (r) => ({ head: r.pick(strain === 'russia' ? [0, 3, 3, 3, 3, 3] : [0, 0, 1, 1, 2, 3]), extra: r.pick(strain === 'russia' ? [0, 1, 1, 2] : [0, 0, 1, 2, 0]), coat: r.chance(0.5) ? 1 : 0 }),
   };
   if (Z.emit) { def.emitMask = 3.2; def.emitColor = 0x30ff30; def.emitSlot = 1; }
   return def;

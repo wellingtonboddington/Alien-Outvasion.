@@ -155,7 +155,7 @@ void main() {
 
 export class ShellPool extends InstPool {
   constructor(shared, cap) {
-    const base = new THREE.IcosahedronGeometry(1, Q.level >= 2 ? 4 : Q.level === 1 ? 3 : 2);
+    const base = new THREE.IcosahedronGeometry(1, Q.level >= 2 ? 14 : Q.level === 1 ? 9 : 5);
     const g = new THREE.InstancedBufferGeometry(); g.setAttribute('position', base.attributes.position); g.setIndex(base.index); base.dispose();
     super(g, ['aA', 'aB', 'aC', 'aD'], cap);
     this.mesh = new THREE.Mesh(this.geo, makeMat(shared, { vs: SHELL_VS, fs: SHELL_FS })); this.mesh.frustumCulled = false; this.mesh.renderOrder = 99; this.mesh.visible = false; this.mesh.name = 'fx_shells';
@@ -243,7 +243,7 @@ void main() {
   vec2 dir = mb.xy - ma.xy; float dl = length(dir); dir = dl > 1e-6 ? dir / dl : vec2(1.0, 0.0);
   vec2 perp = vec2(-dir.y, dir.x);
   float pxm = max(-m0.z, 0.01) * 2.0 / (uViewH * projectionMatrix[1][1]);
-  float grow = 0.12 + pow(s, 0.8) * 1.5;           // plume widens away from the head
+  float grow = 0.55 + pow(s, 0.75) * 2.6;           // plume widens away from the head
   float w = max(aC.x * grow * 0.5, pxm * 0.9);
   // lateral turbulence of the plume
   float wob = (vnoise(vec3(s * 9.0 + aC.z * 7.0, av * 0.9, 1.7)) - 0.5) * aC.x * s * 1.3;
@@ -267,10 +267,10 @@ void main() {
   float s = vInfo.x, y = vUv.y;
   float across = pow(max(1.0 - abs(y), 0.0), 1.4);
   float streak = 0.55 + 0.9 * vnoise(vec3(s * 26.0 - vInfo.z * 14.0, y * 3.0, 3.1)) * (0.6 + 0.4 * vnoise(vec3(s * 70.0, y * 9.0 - vInfo.z * 9.0, 8.3)));
-  float heat = pow(max(1.0 - s * 1.35, 0.0), 1.6) * streak;
+  float heat = pow(max(1.0 - s * 0.95, 0.0), 1.5) * streak;
   // hot core -> glowing orange -> dark smoke
   vec3 mid = vCol;
-  vec3 hotc = mix(mid, vec3(1.0, 0.97, 0.88), smoothstep(0.35, 1.0, heat)) * (0.4 + 2.4 * heat);
+  vec3 hotc = mix(mid, vec3(1.0, 0.97, 0.88), smoothstep(0.3, 0.9, heat)) * (0.6 + 4.2 * heat);
   vec3 smoke = vec3(0.16, 0.14, 0.13);
   float core = exp(-y * y * 9.0);
   float aSmoke = across * (1.0 - smoothstep(0.0, 0.3, s)) * 0.0 + across * 0.55 * smoothstep(0.1, 0.5, s) * (1.0 - smoothstep(0.75, 1.0, s));

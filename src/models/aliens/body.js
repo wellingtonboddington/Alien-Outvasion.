@@ -56,12 +56,12 @@ export function buildBody(kind, seed, mats) {
   // ======================= TORSO (skin) =======================
   {
     const secs = TORSO.map((s) => ({ t: s.y, rx: s.rx * (isH ? 1.04 : isD ? 0.96 : 1), ry: s.rz, cy: s.cz, power: 2.2 }));
-    const g = loft(secs, { axis: 'y', radial: 28, tile: 0.3 }); add('skin', spineSkin(g, 0.08));
+    const g = loft(secs, { axis: 'y', radial: 22, tile: 0.3 }); add('skin', spineSkin(g, 0.08));
   }
   // neck
   {
     const joints = [new V3(0, 1.88, 0.07), new V3(0, 1.98, 0.10), new V3(0, 2.09, 0.145), new V3(0, 2.20, 0.19)];
-    const g = sweep(joints, [0.092, 0.07, 0.058, 0.064], [0.08, 0.066, 0.056, 0.06], { radial: 12, samples: 14, round: 0, tile: 0.2 }); add('skin', spineSkin(g, 0.05));
+    const g = sweep(joints, [0.092, 0.07, 0.058, 0.064], [0.08, 0.066, 0.056, 0.06], { radial: 9, samples: 12, round: 0, tile: 0.2 }); add('skin', spineSkin(g, 0.05));
   }
   // pelvis/hip blobs and groin
   for (const [S, s] of SIDES) { const g = blob([DIM.hipX * s, 1.32, -0.02], 0.14, 0.14, 0.14, { w: 14, h: 10 }); bindRigid(g, B['thigh_' + S]); add('skin', g); }
@@ -69,8 +69,8 @@ export function buildBody(kind, seed, mats) {
   // ======================= LEGS =======================
   for (const [S, s] of SIDES) {
     const L = rest.leg[S]; const joints = [L.hip, L.knee, L.hock, L.ball];
-    const cp = chainPath(joints, [0.145, 0.082, 0.052, 0.040], { sub: 5, bulge: [0.14, 0.34, 0.0] });
-    const g = sweep(cp.pts, cp.r, cp.r.map((r) => r * 0.95), { radial: 12, round: 2, tile: 0.25, up: new V3(1, 0, 0) });
+    const cp = chainPath(joints, [0.145, 0.082, 0.052, 0.040], { sub: 4, bulge: [0.14, 0.34, 0.0] });
+    const g = sweep(cp.pts, cp.r, cp.r.map((r) => r * 0.95), { radial: 9, round: 2, tile: 0.25, up: new V3(1, 0, 0) });
     add('skin', bindAlong(g, joints.concat([L.ball.clone().add(new V3(0, -0.02, 0.1))]), [B['thigh_' + S], B['shin_' + S], B['meta_' + S]], 0.08));
     // knee cap + hock bulge (skin)
     const kb = blob(L.knee.clone().add(new V3(0, 0.0, 0.03)), 0.062, 0.07, 0.066, { w: 12, h: 8 }); bindAlong(kb, joints, [B['thigh_' + S], B['shin_' + S], B['meta_' + S]], 0.05); add('skin', kb);
@@ -101,8 +101,8 @@ export function buildBody(kind, seed, mats) {
   for (const [sfx, sc] of armSets) for (const [S, s] of SIDES) {
     const A = rest.arm[sfx + S]; const joints = [A.sh, A.elbow, A.wrist, A.wrist.clone().add(new V3(0, -0.11 * sc, 0.0))];
     const bonesA = [B['uarm' + sfx + '_' + S], B['farm' + sfx + '_' + S], B['hand' + sfx + '_' + S]];
-    const cp = chainPath(joints, [0.084 * sc, 0.058 * sc, 0.044 * sc, 0.044 * sc], { sub: 5, bulge: [0.18, 0.22, 0.0] });
-    const g = sweep(cp.pts, cp.r, cp.r.map((r) => r * 0.92), { radial: 11, round: 2, tile: 0.22, up: new V3(0, 0, 1) });
+    const cp = chainPath(joints, [0.084 * sc, 0.058 * sc, 0.044 * sc, 0.044 * sc], { sub: 4, bulge: [0.18, 0.22, 0.0] });
+    const g = sweep(cp.pts, cp.r, cp.r.map((r) => r * 0.92), { radial: 9, round: 2, tile: 0.22, up: new V3(0, 0, 1) });
     // upper arm meets chest: pull clav bone in for first part
     add('skin', bindAlong(g, joints, bonesA, 0.07));
     const del = blob(A.sh.clone().add(new V3(0.01 * s, 0.0, 0)), 0.095 * sc, 0.095 * sc, 0.09 * sc, { w: 12, h: 8 }); bindRigid(del, B['clav' + sfx + '_' + S]); add('skin', del);
@@ -114,8 +114,8 @@ export function buildBody(kind, seed, mats) {
       const isT = d.n === 't'; const pts = [...d.rest, d.tip];
       const base = pts.map((p) => p.clone());
       const rr = isT ? [0.019, 0.016, 0.012, 0.0075] : [0.018, 0.015, 0.011, 0.007]; const rrr = rr.map((r) => r * sc);
-      const cp2 = chainPath(base, rrr, { sub: 3 });
-      const fg = sweep(cp2.pts, cp2.r, cp2.r.map((r) => r * 0.85), { radial: 7, round: 2, tile: 0.1, up: new V3(s, 0, 0) });
+      const cp2 = chainPath(base, rrr, { sub: 2 });
+      const fg = sweep(cp2.pts, cp2.r, cp2.r.map((r) => r * 0.85), { radial: 5, round: 2, tile: 0.1, up: new V3(s, 0, 0) });
       const bn = [0, 1, 2].map((k) => B['f' + sfx + d.n + k + '_' + S]);
       add('skin', bindAlong(fg, base, bn, 0.02));
       const claw = spike(d.tip.clone().add(d.dirV.clone().multiplyScalar(-0.012 * sc)), d.tip.clone().addScaledVector(d.dirV, 0.05 * sc).add(new V3(-0.4 * s * 0.0, 0, 0.012)), 0.0075 * sc, { radial: 5, curve: 0.6, bend: new V3(-s * 0.2, 0, 0.4) });
@@ -231,7 +231,7 @@ function buildHead(rig, kind, bk, add, probes, rng) {
     { t: 0.0, rx: 0.142, ry: 0.165, cy: 0.14, bot: 0.5, power: 2.2 }, { t: 0.10, rx: 0.14, ry: 0.162, cy: 0.122, bot: 0.48, power: 2.2 }, { t: 0.19, rx: 0.127, ry: 0.142, cy: 0.100, bot: 0.48 },
     { t: 0.26, rx: 0.102, ry: 0.11, cy: 0.082, bot: 0.5 }, { t: 0.31, rx: 0.068, ry: 0.074, cy: 0.07, bot: 0.5 }, { t: 0.345, rx: 0.032, ry: 0.036, cy: 0.062 }, { t: 0.36, rx: 0.008, ry: 0.01, cy: 0.06 },
   ]);
-  const helm = loft(helmSecs, { axis: 'z', radial: 40, tile: 0.35 }); helm.translate(H0[0], H0[1], H0[2]); head(helm); add('shell', helm);
+  const helm = loft(helmSecs, { axis: 'z', radial: 32, tile: 0.35 }); helm.translate(H0[0], H0[1], H0[2]); head(helm); add('shell', helm);
   probes.cran = makeProbe(helm.clone());
   // panel seams: thin dark grooves running along the dome (meridians) + a transverse seam
   {
@@ -248,7 +248,7 @@ function buildHead(rig, kind, bk, add, probes, rng) {
     { t: -0.08, rx: 0.088, ry: 0.08, cy: -0.035 }, { t: 0.05, rx: 0.112, ry: 0.105, cy: -0.05 }, { t: 0.16, rx: 0.104, ry: 0.118, cy: -0.062 }, { t: 0.25, rx: 0.084, ry: 0.113, cy: -0.062, power: 2.3 },
     { t: 0.31, rx: 0.06, ry: 0.098, cy: -0.058 }, { t: 0.348, rx: 0.036, ry: 0.068, cy: -0.05 }, { t: 0.365, rx: 0.012, ry: 0.025, cy: -0.046 },
   ]);
-  const face = loft(faceSecs, { axis: 'z', radial: 28, tile: 0.25 }); face.translate(H0[0], H0[1], H0[2]); head(face); add('skin', face);
+  const face = loft(faceSecs, { axis: 'z', radial: 22, tile: 0.25 }); face.translate(H0[0], H0[1], H0[2]); head(face); add('skin', face);
   probes.face = makeProbe(face.clone());
   // mouth: dark wet recess with a lip ring
   { const cav = blob(hl(0, -0.09, 0.328), 0.04 * hs, 0.068 * hs, 0.026 * hs, { w: 12, h: 10 }); head(cav); add('mouth', cav);
@@ -275,6 +275,13 @@ function buildHead(rig, kind, bk, add, probes, rng) {
     for (const [S, s] of [['L', 1], ['R', -1]]) {
       const o = rig.R['tendril_' + S]; const g = sweep([o.clone().add(new V3(0, 0.0, -0.02)), o.clone().add(new V3(0.012 * s, -0.07, 0.01)), o.clone().add(new V3(0.02 * s, -0.15, 0.03)), o.clone().add(new V3(0.02 * s, -0.24, 0.06))], [0.012 * hs, 0.009 * hs, 0.0065 * hs, 0.002], [0.012 * hs, 0.009 * hs, 0.0065 * hs, 0.002], { radial: 6, samples: 12, round: 1, tile: 0.1 });
       bindFn(g, (x, y, z, i, w) => { w[0] = B['tendril_' + S]; w[1] = 1; }); add('dark', g);
+    }
+  }
+  // jaw guards: bone bands hugging the sides of the lower face + chin plate
+  for (const [S, s] of [['L', 1], ['R', -1]]) {
+    for (const [y0, y1, z0, z1] of [[-0.005, -0.09, 0.10, 0.26], [-0.05, -0.145, 0.06, 0.2]]) {
+      const pts = []; for (let i = 0; i <= 8; i++) { const t = i / 8; const y = y0 + (y1 - y0) * t, z = z0 + (z1 - z0) * t; const r = rayHit([probes.face], hl(0, y / hs * 1, z / hs * 1).clone().setX(H0[0]), new V3(s, 0, 0)); if (r) pts.push(r.p.clone().addScaledVector(r.n, 0.007 * hs)); }
+      if (pts.length > 4) { const g = sweep(pts, [0.004, 0.015 * hs, 0.018 * hs, 0.017 * hs, 0.015 * hs, 0.012 * hs, 0.01 * hs, 0.006 * hs, 0.002], [0.003, 0.009 * hs, 0.011 * hs, 0.01 * hs, 0.009 * hs, 0.008 * hs, 0.006 * hs, 0.004 * hs, 0.002], { radial: 8, samples: 16, round: 1, tile: 0.2, up: new V3(s, 0, 0) }); head(g); add('shell', g); }
     }
   }
   // --- mandibles: four-part cross. upper pair hangs & curls inward; lower pair rises from the jaw corners and crosses in front of the mouth ---

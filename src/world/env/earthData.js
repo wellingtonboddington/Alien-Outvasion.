@@ -92,7 +92,7 @@ export function buildEarthTextures(seed = 1) {
     const c = makeCanvas(W, H); const ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     for (const k in LAND) drawPoly(ctx, LAND[k], W, H, '#fff');
     for (const k in SEAS) drawPoly(ctx, SEAS[k], W, H, '#000');
-    const id = ctx.getImageData(0, 0, W, H).data; const mask = new Float32Array(W * H); for (let i = 0; i < W * H; i++) mask[i] = id[i * 4] / 255;
+    const id = ctx.getImageData(0, 0, W, H).data; const mask = new Float32Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) mask[y * W + x] = id[((H - 1 - y) * W + x) * 4] / 255; // texture rows run south -> north
     const rB = Math.max(1, Math.round(W / 300)); const blur1 = boxBlur(mask, W, H, rB, 2); const blur2 = boxBlur(mask, W, H, Math.max(3, Math.round(W / 45)), 2);
     // 2) pixel pass
     const map = new Uint8Array(W * H * 4), lights = new Uint8Array(W * H), clouds = new Uint8Array(W * H);
@@ -100,12 +100,12 @@ export function buildEarthTextures(seed = 1) {
     const sx = seed * 11.3, sy = seed * 7.7, sz = seed * 3.1;
     // coarse population grid
     const PW = 256, PH = 128; const pop = new Float32Array(PW * PH);
-    for (let j = 0; j < PH; j++) for (let i = 0; i < PW; i++) { const lon = (i + 0.5) / PW * 360 - 180, lat = 90 - (j + 0.5) / PH * 180; let s = 0; for (const p of POP) s += p[3] * gaussPlain(lon, lat, p); pop[j * PW + i] = Math.min(1.6, s); }
+    for (let j = 0; j < PH; j++) for (let i = 0; i < PW; i++) { const lon = (i + 0.5) / PW * 360 - 180, lat = -90 + (j + 0.5) / PH * 180; let s = 0; for (const p of POP) s += p[3] * gaussPlain(lon, lat, p); pop[j * PW + i] = Math.min(1.6, s); }
     // low-res analytic fields (mountains, dry, wet, cyclones) -> bilinear in the pixel loop
     const GW = 384, GH = 192; const gMt = new Float32Array(GW * GH), gDry = new Float32Array(GW * GH), gWet = new Float32Array(GW * GH), gCyc = new Float32Array(GW * GH);
     const CYCS = [[-45, 48, 1], [160, -48, -1], [-130, 35, 1], [-60, -42, -1], [20, 62, 1], [88, 15, 1]];
     for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-      const lon = (i + 0.5) / GW * 360 - 180, lat = 90 - (j + 0.5) / GH * 180; const k = j * GW + i;
+      const lon = (i + 0.5) / GW * 360 - 180, lat = -90 + (j + 0.5) / GH * 180; const k = j * GW + i;
       let mt = 0; for (const m of MOUNTAINS) mt += m[4] * gauss(lon, lat, m); gMt[k] = mt;
       let dry = 0; for (const g of DRY) dry += gaussPlain(lon, lat, g); gDry[k] = dry;
       let wet = 0; for (const g of WET) wet += gaussPlain(lon, lat, g); gWet[k] = wet;
@@ -114,7 +114,7 @@ export function buildEarthTextures(seed = 1) {
     const samp = (grid, u, v) => { const x = u * GW - 0.5, y = v * GH - 0.5; const x0 = Math.floor(x), y0 = Math.max(0, Math.min(GH - 2, Math.floor(y))); const fx = x - x0, fy = Math.max(0, Math.min(1, y - y0)); const g = (xx, yy) => grid[yy * GW + ((xx + GW) % GW)]; return lerp(lerp(g(x0, y0), g(x0 + 1, y0), fx), lerp(g(x0, y0 + 1), g(x0 + 1, y0 + 1), fx), fy); };
     const popAt = (u, v) => { const x = u * PW - 0.5, y = v * PH - 0.5; const x0 = Math.floor(x), y0 = Math.max(0, Math.min(PH - 2, Math.floor(y))); const fx = x - x0, fy = Math.max(0, Math.min(1, y - y0)); const g = (xx, yy) => pop[yy * PW + ((xx + PW) % PW)]; return lerp(lerp(g(x0, y0), g(x0 + 1, y0), fx), lerp(g(x0, y0 + 1), g(x0 + 1, y0 + 1), fx), fy); };
     for (let y = 0; y < H; y++) {
-      const lat = 90 - (y + 0.5) / H * 180; const latR = lat * Math.PI / 180;
+      const lat = -90 + (y + 0.5) / H * 180; const latR = lat * Math.PI / 180;
       for (let x = 0; x < W; x++) {
         const lon = (x + 0.5) / W * 360 - 180; dirOf(lon, lat, d); const i = y * W + x;
         // coast: blurred outline + 3D noise jitter
@@ -140,8 +140,8 @@ export function buildEarthTextures(seed = 1) {
         // night lights
         const pp = popAt((x + 0.5) / W, (y + 0.5) / H); const sp = noise3(d[0] * 160 + sx, d[1] * 160 + sy, d[2] * 160 + sz) * 0.5 + 0.5; const sp2 = noise3(d[0] * 60 + sz, d[1] * 60 + sx, d[2] * 60) * 0.5 + 0.5;
         const coastB = smoothstep(0.55, 0.9, blur2[i]) * 0.0 + 1;
-        let L = land > 0.5 && ice < 0.5 ? pp * (0.25 + 0.75 * sp2) * smoothstep(0.35, 0.9, sp * 0.8 + pp * 0.5) : 0; // sparse specks around centres
-        L += land > 0.5 && ice < 0.5 ? 0.12 * smoothstep(0.7, 1.0, sp) * smoothstep(0.1, 0.5, pp) : 0;
+        let L = land > 0.5 && ice < 0.5 ? Math.min(1.4, pp * 1.15) * (0.3 + 0.7 * sp2) * smoothstep(0.22, 0.6, sp * 0.75 + pp * 0.42) : 0; // specks around centres
+        L += land > 0.5 && ice < 0.5 ? 0.25 * smoothstep(0.62, 0.95, sp) * smoothstep(0.05, 0.4, pp) : 0;
         lights[i] = Math.round(clamp(L * coastB) * 255);
         // clouds: banded latitude coverage + warped fbm
         const w1 = fbm3(d[0] * 2.2 + sx, d[1] * 2.2 + sy, d[2] * 2.2 + sz, 3); const wx = d[0] + (w1 - 0.5) * 0.5, wy = d[1] + (w1 - 0.5) * 0.35, wz = d[2] + (w1 - 0.5) * 0.5;
@@ -150,7 +150,7 @@ export function buildEarthTextures(seed = 1) {
         const band = 0.5 + 0.3 * Math.exp(-Math.pow(abLat / 9, 2)) + 0.28 * Math.exp(-Math.pow((abLat - 52) / 12, 2)) - 0.3 * Math.exp(-Math.pow((abLat - 26) / 8, 2));
         // a few big cyclone swirls
         const cyc = samp(gCyc, gu, gv);
-        let cv = smoothstep(1 - band * 1.05, 1 - band * 1.05 + 0.3, cn + cyc * 0.18) ; cv = clamp(cv + cyc * 0.2);
+        const cov = 0.4 + 0.24 * clamp(band); let cv = smoothstep(1 - cov - 0.1, 1 - cov + 0.22, cn + cyc * 0.2); cv = clamp(cv + cyc * 0.12);
         clouds[i] = Math.round(cv * 255);
       }
     }
@@ -167,15 +167,15 @@ export function buildMoonTextures(seed = 1) {
     const ac = makeCanvas(W, H); const ax = ac.getContext('2d');
     // base albedo from noise (maria = dark smooth basalt plains)
     const img = ax.createImageData(W, H); const d = [0, 0, 0]; const s0 = seed * 5.1;
-    for (let y = 0; y < H; y++) { const lat = 90 - (y + 0.5) / H * 180; for (let x = 0; x < W; x++) { dirOf((x + 0.5) / W * 360 - 180, lat, d); const n = fbm3(d[0] * 2.2 + s0, d[1] * 2.2, d[2] * 2.2 + s0, 4); const maria = smoothstep(0.52, 0.6, n); const hi = fbm3(d[0] * 12 + s0, d[1] * 12, d[2] * 12, 4); const v = lerp(0.62, 0.3, maria) * (0.88 + 0.24 * hi); const i = (y * W + x) * 4; img.data[i] = v * 255 * 1.02; img.data[i + 1] = v * 255; img.data[i + 2] = v * 255 * 0.97; img.data[i + 3] = 255; } }
+    for (let y = 0; y < H; y++) { const lat = 90 - (y + 0.5) / H * 180; for (let x = 0; x < W; x++) { dirOf((x + 0.5) / W * 360 - 180, lat, d); const n = fbm3(d[0] * 2.2 + s0, d[1] * 2.2, d[2] * 2.2 + s0, 4); const maria = smoothstep(0.50, 0.58, n); const hi = fbm3(d[0] * 12 + s0, d[1] * 12, d[2] * 12, 4); const v = lerp(0.46, 0.13, maria) * (0.82 + 0.36 * hi); const i = (y * W + x) * 4; img.data[i] = v * 255 * 1.02; img.data[i + 1] = v * 255; img.data[i + 2] = v * 255 * 0.97; img.data[i + 3] = 255; } }
     ax.putImageData(img, 0, 0);
-    const N = Q.level === 0 ? 500 : Q.level === 1 ? 1400 : 3200;
+    const N = Q.level === 0 ? 900 : Q.level === 1 ? 3000 : 7000;
     for (let k = 0; k < N; k++) {
-      const big = Math.pow(r.next(), 3.2); const rad = (0.5 + big * 40) * (W / 1024); const lat = Math.asin(r.range(-1, 1)) * 180 / Math.PI; const lon = r.range(-180, 180);
+      const big = Math.pow(r.next(), 5.5); const rad = (0.6 + big * 34) * (W / 1024); const lat = Math.asin(r.range(-1, 1)) * 180 / Math.PI; const lon = r.range(-180, 180);
       const x = (lon + 180) / 360 * W, y = (90 - lat) / 180 * H; const sxs = 1 / Math.max(0.15, Math.cos(lat * Math.PI / 180)); // stretch horizontally near poles
       for (const dx of [0, -W, W]) {
         hx.save(); hx.translate(x + dx, y); hx.scale(Math.min(sxs, 6), 1);
-        const g = hx.createRadialGradient(0, 0, 0, 0, 0, rad); g.addColorStop(0, 'rgba(60,60,60,0.85)'); g.addColorStop(0.62, 'rgba(105,105,105,0.55)'); g.addColorStop(0.82, 'rgba(210,210,210,0.55)'); g.addColorStop(0.95, 'rgba(150,150,150,0.2)'); g.addColorStop(1, 'rgba(128,128,128,0)'); hx.fillStyle = g; hx.beginPath(); hx.arc(0, 0, rad, 0, 7); hx.fill(); hx.restore();
+        const g = hx.createRadialGradient(0, 0, 0, 0, 0, rad); g.addColorStop(0, 'rgba(70,70,70,0.7)'); g.addColorStop(0.6, 'rgba(100,100,100,0.45)'); g.addColorStop(0.83, 'rgba(200,200,200,0.5)'); g.addColorStop(0.95, 'rgba(150,150,150,0.15)'); g.addColorStop(1, 'rgba(128,128,128,0)'); hx.fillStyle = g; hx.beginPath(); hx.arc(0, 0, rad, 0, 7); hx.fill(); hx.restore();
         if (big > 0.12) { ax.save(); ax.translate(x + dx, y); ax.scale(Math.min(sxs, 6), 1); const g2 = ax.createRadialGradient(0, 0, rad * 0.7, 0, 0, rad * 2.2 * (1 + big)); g2.addColorStop(0, `rgba(255,255,250,${0.12 + big * 0.2})`); g2.addColorStop(1, 'rgba(255,255,250,0)'); ax.fillStyle = g2; ax.beginPath(); ax.arc(0, 0, rad * 2.4 * (1 + big), 0, 7); ax.fill(); ax.restore(); }
       }
     }
@@ -184,7 +184,7 @@ export function buildMoonTextures(seed = 1) {
     // grain on height
     const hd = hx.getImageData(0, 0, W, H); for (let i = 0; i < W * H; i++) { const nz = (rng01(i) - 0.5) * 10; hd.data[i * 4] = hd.data[i * 4 + 1] = hd.data[i * 4 + 2] = Math.max(0, Math.min(255, hd.data[i * 4] + nz)); } hx.putImageData(hd, 0, 0);
     // normal map from height
-    const hdat = hx.getImageData(0, 0, W, H).data; const nrm = new Uint8Array(W * H * 4); const Hf = (x, y) => hdat[(((y + H) % H) * W + ((x + W) % W)) * 4] / 255; const str = 3.2;
+    const hdat = hx.getImageData(0, 0, W, H).data; const nrm = new Uint8Array(W * H * 4); const Hf = (x, y) => hdat[((H - 1 - Math.max(0, Math.min(H - 1, y))) * W + ((x + W) % W)) * 4] / 255; const str = 2.4;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = (Hf(x + 1, y) - Hf(x - 1, y)) * str, dy = (Hf(x, y + 1) - Hf(x, y - 1)) * str; const l = Math.hypot(dx, dy, 1); const i = (y * W + x) * 4; nrm[i] = (-dx / l * 0.5 + 0.5) * 255; nrm[i + 1] = (dy / l * 0.5 + 0.5) * 255; nrm[i + 2] = (1 / l * 0.5 + 0.5) * 255; nrm[i + 3] = 255; }
     const albedo = new THREE.CanvasTexture(ac); albedo.colorSpace = THREE.SRGBColorSpace; albedo.wrapS = THREE.RepeatWrapping; albedo.anisotropy = 4;
     const normal = new THREE.DataTexture(nrm, W, H, THREE.RGBAFormat, THREE.UnsignedByteType); normal.wrapS = THREE.RepeatWrapping; normal.magFilter = THREE.LinearFilter; normal.minFilter = THREE.LinearMipmapLinearFilter; normal.generateMipmaps = true; normal.anisotropy = 4; normal.needsUpdate = true;

@@ -53,7 +53,7 @@ function bakePoseTexture() {
 
 // ---------------------------------------------------------------- geometry
 const C = { skin: new THREE.Color(0x35506b), skinD: new THREE.Color(0x1f3146), shell: new THREE.Color(0xc9b588), dark: new THREE.Color(0x10161d), glow: new THREE.Color(0xffffff) };
-function tag(g, part, color, { shell = 0, glow = 0, flash = 0 } = {}) {
+export function tag(g, part, color, { shell = 0, glow = 0, flash = 0 } = {}) {
   const n = g.attributes.position.count; const col = new Float32Array(n * 3), av = new Float32Array(n * 4);
   for (let i = 0; i < n; i++) { col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b; av[i * 4] = part; av[i * 4 + 1] = glow; av[i * 4 + 2] = shell; av[i * 4 + 3] = flash; }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('aV', new THREE.BufferAttribute(av, 4));
@@ -63,7 +63,7 @@ function tag(g, part, color, { shell = 0, glow = 0, flash = 0 } = {}) {
   return g;
 }
 /** spindle: pointed-ended tapered prism between a and b. radial sides (default 5) */
-function spindle(a, b, r0, r1, radial = 5, k = 0.18) {
+export function spindle(a, b, r0, r1, radial = 5, k = 0.18) {
   const pos = [], idx = []; const A = a.clone ? a : new V3(...a), B = b.clone ? b : new V3(...b); const ax = B.clone().sub(A); const L = ax.length(); ax.normalize();
   const u = Math.abs(ax.y) < 0.9 ? new V3(0, 1, 0) : new V3(1, 0, 0); const e1 = new V3().crossVectors(ax, u).normalize(), e2 = new V3().crossVectors(ax, e1);
   const ringAt = (t, r) => { const c = A.clone().addScaledVector(ax, t * L); for (let i = 0; i < radial; i++) { const an = (i / radial) * Math.PI * 2; pos.push(c.x + (e1.x * Math.cos(an) + e2.x * Math.sin(an)) * r, c.y + (e1.y * Math.cos(an) + e2.y * Math.sin(an)) * r, c.z + (e1.z * Math.cos(an) + e2.z * Math.sin(an)) * r); } };

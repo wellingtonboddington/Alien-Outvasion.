@@ -39,7 +39,7 @@ export function createAudio(opts = {}) {
   const A = {
     ctx, offline, q, vtime: 0, rng: new RNG(hashStr('alien-outvasion-audio') ^ (opts.seed || 0)),
     live: { sfx: 0, music: 0, amb: 0, voice: 0 },
-    caps: { sfx: [16, 28, 46][cl(q, 0, 2)], music: [56, 100, 160][cl(q, 0, 2)], amb: 40, voice: 12 },
+    caps: offline ? { sfx: 1e9, music: 1e9, amb: 1e9, voice: 1e9 } : { sfx: [16, 28, 46][cl(q, 0, 2)], music: [70, 130, 200][cl(q, 0, 2)], amb: 40, voice: 12 }, // (offline: nothing ends before rendering, so counters would never drop)
     lookahead: offline ? 0.2 : (q === 0 ? 0.55 : 0.38),
     now() { return offline ? A.vtime : ctx.currentTime; },
     tickers: new Set(), bus: {}, listener: { x: 0, y: 0, z: 0, rx: 1, ry: 0, rz: 0, fx: 0, fy: 0, fz: -1, ux: 0, uy: 1, uz: 0, cam: null },
@@ -178,6 +178,7 @@ export function createAudio(opts = {}) {
     },
     async suspend() { wantRunning = false; try { if (!offline) await ctx.suspend(); } catch (e) { /* */ } voice._pause && voice._pause(); },
     get state() { return ctx.state; },
+    get timer() { return offline ? 'manual' : A.workerTimer ? 'worker' : 'interval'; },
     setMaster(v) { A.masterLevel = cl(v, 0, 1.5); master.gain.setTargetAtTime(A.masterLevel, A.now(), 0.03); },
     setVolumes(v = {}) { for (const k of ['music', 'sfx', 'voice', 'amb']) if (v[k] !== undefined && A.bus[k]) { A.bus[k].vol = cl(v[k], 0, 2); A.bus[k].apply(A.now(), 0.05); } if (v.voice !== undefined) voice._setVol && voice._setVol(cl(v.voice, 0, 2)); return api; },
     /** duck music (and ambience, a little less) by `amount` (0..1) for `seconds`, smooth attack/release */
@@ -192,7 +193,7 @@ export function createAudio(opts = {}) {
     },
     /** global reverb return level (0..2, 1 = default) */
     setReverb(v = 1) { revS.ret.gain.setTargetAtTime(revS.base * v, A.now(), 0.1); revL.ret.gain.setTargetAtTime(revL.base * v, A.now(), 0.1); },
-    setQuality(l) { A.q = cl(l, 0, 2); A.caps.sfx = [16, 28, 46][A.q]; A.caps.music = [56, 100, 160][A.q]; A.lookahead = offline ? 0.2 : (A.q === 0 ? 0.55 : 0.38); },
+    setQuality(l) { A.q = cl(l, 0, 2); if (!offline) { A.caps.sfx = [16, 28, 46][A.q]; A.caps.music = [70, 130, 200][A.q]; } A.lookahead = offline ? 0.2 : (A.q === 0 ? 0.55 : 0.38); },
     /** optional per-frame call (the engine already runs its own 40 Hz timer); keeps positioned sounds tight to the camera */
     update(dt) { if (offline) return; frameDt = dt; pump(A.now()); },
     now: () => A.now(),

@@ -1,7 +1,7 @@
 // Tripod: standing, walking (IK gait with planted feet), head / cannon / tentacle close-ups, with 1.8 m human silhouettes for scale.
 import * as THREE from 'three';
 import { addStudioLights } from '../engine/stage.js';
-import { createTripod } from '../models/alientech/index.js';
+import { createTripod, assetStats } from '../models/alientech/index.js';
 import { RNG } from '../engine/common.js';
 
 function humanSilhouette() {
@@ -36,12 +36,13 @@ export default async function setup(stage, params) {
   const gt = gridTexture(); gt.repeat.set(200, 200);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ map: gt, roughness: 0.95, color: 0xb0a090 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
   const trip = createTripod(1, params.size ? { size: params.size } : {}); scene.add(trip.root);
+  console.log('TRIPOD stats', JSON.stringify(assetStats(trip.root)), 'height', trip.height);
   const hum = []; for (let i = 0; i < 6; i++) { const h = humanSilhouette(); h.position.set(15 + (i % 2) * 6, 0, i * 34 - 6); scene.add(h); hum.push(h); }
   // a few block "buildings" for scale
   const rng = new RNG(5); const bm = new THREE.MeshStandardMaterial({ color: 0x8a8f96, roughness: 0.85 });
   for (let i = 0; i < 24; i++) { const h = rng.range(30, 130); const b = new THREE.Mesh(new THREE.BoxGeometry(rng.range(18, 40), h, rng.range(18, 40)), bm); b.position.set((rng.chance(0.5) ? -1 : 1) * rng.range(70, 140), h / 2, rng.range(-80, 420)); b.castShadow = b.receiveShadow = true; scene.add(b); }
   const tgt = new THREE.Vector3(30, 8, 50), aimV = new THREE.Vector3();
-  const tl = (t) => ({ speed: t < 1.0 ? 0 : t < 14 ? 3.0 : 0 });
+  const tl = (t) => ({ speed: t < 1.0 ? 0 : t < 14 ? 2.5 : 0 });
   const prevF = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], prevPl = [true, true, true]; let maxSlide = 0, steps = 0, swingFrames = 0, lastLog = 0;
   return {
     update(t, dt) {
@@ -51,6 +52,11 @@ export default async function setup(stage, params) {
       if (t > 15 && t < 19) trip.aimAt(aimV.set(trip.root.position.x + 25, 2, trip.root.position.z + 45));
       trip.update(dt, t);
       if (params.debug) {
+        const pel = trip.bones[0].position.y, hd = trip.bones[1].quaternion;
+        if (!this._pp) { this._pp = pel; this._mx = 0; this._fs = 0; this._pf = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]; }
+        this._mx = Math.max(this._mx, Math.abs(pel - this._pp)); this._pp = pel;
+        const ff = trip.footWorldPositions(); for (let i = 0; i < 3; i++) { const sp = ff[i].distanceTo(this._pf[i]) / dt; if (t > 1) this._fs = Math.max(this._fs, sp); this._pf[i].copy(ff[i]); }
+        if (t > 14.9 && t < 15.0) console.log('pelvis max dY/frame', this._mx.toFixed(3), 'max foot speed m/s', this._fs.toFixed(1));
         const f = trip.footWorldPositions(); const L = trip.legsState;
         for (let i = 0; i < 3; i++) { if (L[i].planted && prevPl[i]) { const d = Math.hypot(f[i].x - prevF[i].x, f[i].z - prevF[i].z); if (t > 1.5) maxSlide = Math.max(maxSlide, d); } if (!L[i].planted && prevPl[i]) steps++; prevF[i].copy(f[i]); prevPl[i] = L[i].planted; }
         if (t - lastLog > 1.0) { lastLog = t; console.log('t=' + t.toFixed(1) + ' root z=' + trip.root.position.z.toFixed(1) + ' speed=' + trip.gaitSpeed.toFixed(2) + ' planted=' + L.map((l) => (l.planted ? 'P' : 'S')).join('') + ' maxPlantedSlide=' + maxSlide.toFixed(4) + ' steps=' + steps + ' feetZ=' + f.map((v) => v.z.toFixed(1)).join(',')); }

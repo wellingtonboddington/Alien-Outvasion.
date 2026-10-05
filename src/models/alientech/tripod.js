@@ -106,11 +106,11 @@ function legBone(S, rest, bone, len, r0, r1, rng, shin) {
   const M = boneMatrix(rest, bone);
   const ribs = Math.round(len / 1.15);
   const rad = (t) => lerp(r0, r1, t) * (1 + 0.07 * Math.sin(Math.PI * t));
-  S.add('flesh', revolve(len, (t, y) => rad(t) * (0.9 + 0.12 * ribBump(t * ribs)), { rings: ribs * 5, radial: 10, tile: 3 }), bone, { matrix: M });
+  S.add('flesh', revolve(len, (t, y) => rad(t) * (0.9 + 0.12 * ribBump(t * ribs)), { rings: ribs * 3, radial: 8, tile: 2.5 }), bone, { matrix: M });
   // shell collars every 3rd rib boundary
   for (let k = 1; k * 3 < ribs; k++) {
     const t = k * 3 / ribs, y = t * len, R = rad(t);
-    S.add('shell', revolve(0.55, (u) => R * (1.1 + 0.2 * Math.pow(Math.sin(Math.PI * u), 0.55)), { rings: 6, radial: 12, tile: 1.5 }).translate(0, y - 0.275, 0), bone, { matrix: M, color: 0xfff4e0 });
+    S.add('shell', revolve(0.55, (u) => R * (1.1 + 0.2 * Math.pow(Math.sin(Math.PI * u), 0.55)), { rings: 4, radial: 10, tile: 1.0 }).translate(0, y - 0.275, 0), bone, { matrix: M, color: 0xfff4e0 });
   }
   // dorsal armour strip on the knee-bend (+Z) side: segmented bone plates
   const nseg = Math.round(len / 1.8);
@@ -124,10 +124,10 @@ function legBone(S, rest, bone, len, r0, r1, rng, shin) {
   }
   // luminous organs
   const lights = [];
-  for (let k = 1; k < ribs; k += 2) { const t = (k + 0.5) / ribs; const g = new THREE.SphereGeometry(0.11, 8, 6); g.scale(1, 1.4, 1); g.translate(0, t * len, rad(t) * 0.98); lights.push(g); }
+  for (let k = 1; k < ribs; k += 3) { const t = (k + 0.5) / ribs; const g = new THREE.SphereGeometry(0.12, 6, 4); g.scale(1, 1.4, 1); g.translate(0, t * len, rad(t) * 0.98); lights.push(g); }
   if (lights.length) S.add('glow', mergeAll(lights), bone, { matrix: M });
   // joint balls
-  if (!shin) { S.add('shell', blob(1.2, 1.2, 1.2, { w: 16, h: 10, tile: 2 }), bone, { matrix: M, color: 0xfff4e0 }); }
+  if (!shin) { S.add('shell', blob(1.2, 1.2, 1.2, { w: seg(16, 10), h: seg(10, 6), tile: 1.2 }), bone, { matrix: M, color: 0xfff4e0 }); }
 }
 
 function buildTripodGeometry(rest, rng) {
@@ -135,7 +135,7 @@ function buildTripodGeometry(rest, rng) {
   const Mp = boneMatrix(rest, B.pelvis);
   // ===== pelvis hub + torso (bone: pelvis) =====
   S.add('flesh', blob(3.0, 1.55, 3.2, { w: 28, h: 14, tile: 4 }).translate(0, 0.0, 0.1), B.pelvis, { matrix: Mp });
-  S.add('flesh', revolve(TORSO_H + 0.6, (t, y) => TORSO_R(y) * (1 + 0.05 * ribBump(y / 0.5, 1.0)), { rings: 90, radial: seg(36, 16), tile: 4, ratio: TORSO_RATIO }), B.pelvis, { matrix: Mp });
+  S.add('flesh', revolve(TORSO_H + 0.6, (t, y) => TORSO_R(y) * (1 + 0.05 * ribBump(y / 0.5, 1.0)), { rings: seg(46, 26), radial: seg(26, 12), tile: 4, ratio: TORSO_RATIO }), B.pelvis, { matrix: Mp });
   // dorsal armour (overlapping plates), chest plate with ridges, and lateral bone ribs; dark ribbed flesh shows between
   const torsoPlate = (y0, y1, c, half, thick, ridges = 0) => {
     const g = surface(16, 8, (u, v, o) => {
@@ -151,7 +151,7 @@ function buildTripodGeometry(rest, rng) {
   for (let k = 0; k < 6; k++) for (const sd of [-1, 1]) {
     const y = 1.0 + k * 0.7 + 0.1 * sd; const pts = []; const n = 7; const c = sd * Math.PI / 2;
     for (let i = 0; i <= n; i++) { const f = i / n; const a = c + lerp(-0.85, 0.85, f); const yy = y + 0.22 * Math.sin((f - 0.5) * 3.0) * sd; const R = TORSO_R(yy) + 0.1; pts.push(new V3(Math.sin(a) * R, yy, Math.cos(a) * R * TORSO_RATIO)); }
-    const g = tube(pts, [0.06, 0.15, 0.2, 0.22, 0.22, 0.2, 0.15, 0.06], { radial: 7, segsPerPoint: 3 }); scaleUV(g, 1, 6);
+    const g = tube(pts, [0.06, 0.15, 0.2, 0.22, 0.22, 0.2, 0.15, 0.06], { radial: 6, segsPerPoint: 2 }); scaleUV(g, 1, 6);
     S.add('shell', g, B.pelvis, { matrix: Mp, color: 0xe8dcc0 });
   }
   // hip sockets: bone rings around each leg root
@@ -199,7 +199,7 @@ function buildTripodGeometry(rest, rng) {
     legBone(S, rest, B.thigh + i, L1, 0.82, 0.5, rng, false);
     // knee knuckle + spikes on the shin origin (bone shin)
     const Ms = boneMatrix(rest, B.shin + i);
-    S.add('shell', blob(0.95, 0.95, 1.15, { w: 16, h: 10, tile: 2 }), B.shin + i, { matrix: Ms, color: 0xfff4e0 });
+    S.add('shell', blob(0.95, 0.95, 1.15, { w: seg(16, 10), h: seg(10, 6), tile: 1.1 }), B.shin + i, { matrix: Ms, color: 0xfff4e0 });
     const ks = spike(2.8, 0.42, 6); place(ks, [0, 0, 0.7], alignYdir(new V3(0, 0.25, 1))); S.add('shell', ks, B.shin + i, { matrix: Ms, color: 0xfff4e0 });
     for (const sx of [-1, 1]) { const s2 = spike(1.5, 0.22, 5); place(s2, [sx * 0.5, 0.5, 0.6], alignYdir(new V3(sx * 0.7, 0.45, 0.8))); S.add('shell', s2, B.shin + i, { matrix: Ms, color: 0xfff4e0 }); }
     legBone(S, rest, B.shin + i, L2, 0.54, 0.3, rng, true);
@@ -214,7 +214,7 @@ function buildTripodGeometry(rest, rng) {
       const up = [0.5, 0.72, 0.9, 1.0]; // along the thigh
       for (const u of up) pts.push(new V3(ox * (0.5 + 0.3 * u), L1 * u * 0.995, oz * (0.7 + 0.2 * u)).applyMatrix4(Mt));
       for (const u of [0.1, 0.28, 0.5]) pts.push(new V3(ox * 0.7, L2 * u, oz * 0.8).applyMatrix4(Msh));
-      const g = tube(pts, [0.07, 0.065, 0.06, 0.06, 0.06, 0.055, 0.05], { radial: 5, segsPerPoint: 4 });
+      const g = tube(pts, [0.07, 0.065, 0.06, 0.06, 0.06, 0.055, 0.05], { radial: 5, segsPerPoint: 2 });
       const axis = new V3().subVectors(ankP, hipP).normalize();
       S.addBlend('flesh', g, (x, y, z) => { const t = sstep(-1.1, 1.1, (x - kneeP.x) * axis.x + (y - kneeP.y) * axis.y + (z - kneeP.z) * axis.z); return [B.thigh + i, 1 - t, B.shin + i, t]; }, { color: 0x20303c });
     }
@@ -238,12 +238,12 @@ function buildFoot(S, rest, i, rng) {
     const wf = (x, y, z) => { const w = sstep(zK - 0.7, zK + 0.7, z); return [toeIdx(i, t, 0), 1 - w, toeIdx(i, t, 1), w]; };
     // flesh proximal toe (base -> knuckle), toe-local coords along +Z
     const p0 = [new V3(0, 0.0, 0), new V3(0, 0.25, zK * 0.5), new V3(0, 0.45, zK), new V3(0, 0.3, zK + 0.7)];
-    const toe = tube(p0, [0.5, 0.44, 0.36, 0.3], { radial: 8, segsPerPoint: 5 }); scaleUV(toe, 1, 2);
+    const toe = tube(p0, [0.5, 0.44, 0.36, 0.3], { radial: 6, segsPerPoint: 3 }); scaleUV(toe, 1, 2);
     S.addBlend('flesh', toe, wf, { matrix: Mt0 });
     const kn = blob(0.5, 0.46, 0.5, { w: 10, h: 8, tile: 1.5 }); kn.translate(0, 0.45, zK); S.addBlend('shell', kn, wf, { matrix: Mt0, color: 0xfff4e0 });
     // claw: shell, curves down into the ground
     const p1 = [new V3(0, 0.45, zK - 0.1), new V3(0, 0.5, zK + (len - zK) * 0.4), new V3(0, 0.3, zK + (len - zK) * 0.78), new V3(0, -0.12, len)];
-    const claw = tube(p1, [0.34, 0.28, 0.17, 0.02], { radial: 7, segsPerPoint: 5 }); scaleUV(claw, 1, 2); S.addBlend('shell', claw, wf, { matrix: Mt0, color: 0xfff4e0 });
+    const claw = tube(p1, [0.34, 0.28, 0.17, 0.02], { radial: 6, segsPerPoint: 3 }); scaleUV(claw, 1, 2); S.addBlend('shell', claw, wf, { matrix: Mt0, color: 0xfff4e0 });
   }
   // heel spur is the 4th toe (az=180)
 }
@@ -260,7 +260,7 @@ function buildHead(S, rest, rng) {
   const bone = B.head, M = boneMatrix(rest, bone);
   const SH = 0xf2e6cc, SH2 = 0xe2d2b0;
   // main shell: displaced ellipsoid
-  const g = blob(HEAD_R.x, HEAD_R.y, HEAD_R.z, { w: seg(44, 22), h: seg(32, 14), tile: 4 }); g.translate(HEAD_C.x, HEAD_C.y, HEAD_C.z);
+  const g = blob(HEAD_R.x, HEAD_R.y, HEAD_R.z, { w: seg(38, 20), h: seg(26, 12), tile: 4 }); g.translate(HEAD_C.x, HEAD_C.y, HEAD_C.z);
   { const p = g.attributes.position, n = g.attributes.normal; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i); const d = 0.07 * Math.sin(x * 1.9 + z * 1.3) * Math.sin(y * 1.7 + 0.5) + 0.05 * Math.sin(z * 3.1 + x * 2.3); p.setXYZ(i, x + n.getX(i) * d, y + n.getY(i) * d, z + n.getZ(i) * d); } smoothNormals(g); }
   S.add('shell', g, bone, { matrix: M, color: SH });
   const base = ellipsoidBase(HEAD_C.x, HEAD_C.y, HEAD_C.z, HEAD_R.x, HEAD_R.y, HEAD_R.z);
@@ -270,7 +270,7 @@ function buildHead(S, rest, rng) {
     [1.18, 1.35, 0.32, 0.4, 0.45, 0.2, 2.6], [1.18, -1.35, 0.32, 0.4, 0.45, -0.2, 2.6], [0.95, 0.0, 0.3, 0.3, 0.5, 0.0, 3.0], [0.62, 0.0, 0.3, 0.32, 0.55, 0.0, 3.0], [0.3, 0.0, 0.24, 0.5, 0.55, 0.0, 3.0],
     [1.1, Math.PI, 0.55, 0.8, 0.5, 0.0, 2.6], [1.7, 1.55, 0.36, 0.45, 0.4, 0.3, 2.6], [1.7, -1.55, 0.36, 0.45, 0.4, -0.3, 2.6], [2.05, 0.55, 0.22, 0.34, 0.34, 0.2, 2.6], [2.05, -0.55, 0.22, 0.34, 0.34, -0.2, 2.6]];
   let seed = 1;
-  for (const [th, ph, dth, dph, thick, rot, e] of plates) S.add('shell', scute(base, th, ph, dth, dph, thick, { na: 24, nr: 6, rot, e, tile: 3.5, seed: seed++, bevel: 0.32 }), bone, { matrix: M, color: SH2 });
+  for (const [th, ph, dth, dph, thick, rot, e] of plates) S.add('shell', scute(base, th, ph, dth, dph, thick, { na: 18, nr: 4, rot, e, tile: 3.5, seed: seed++, bevel: 0.32 }), bone, { matrix: M, color: SH2 });
   // eye slit: bone rim, dark recess, luminous nodes
   const EA = 2.0, EB = 0.62;
   const eyeSurf = (x, y, off, out = new V3()) => { const z = headSurfZ(x, y); const n = new V3(x / HEAD_R.x ** 2, (y - HEAD_C.y) / HEAD_R.y ** 2, (z - HEAD_C.z) / HEAD_R.z ** 2).normalize(); return out.set(x, y, z).addScaledVector(n, off); };
@@ -288,7 +288,7 @@ function buildHead(S, rest, rng) {
       return out.copy(P).addScaledVector(dir, L * v).add(new V3(0, -0.5 * v * v * L * 0.25, 0)); };
     const mem = surface(36, 8, (u, v, o) => frillPt(u, v, o), { uvScale: [3, 2] }); orient(mem, 0, 1.3, 0);
     S.add('flesh', thinSheet(mem, 0.08), bone, { matrix: M, color: 0x46647a });
-    for (let k = 0; k < nS; k++) { const u = (k + 0.5) / nS; const pts = []; for (let i = 0; i <= 6; i++) pts.push(frillPt(u, i / 6, new V3())); const t = tube(pts, [0.2, 0.17, 0.14, 0.11, 0.09, 0.06, 0.02], { radial: 6, segsPerPoint: 3 }); S.add('shell', t, bone, { matrix: M, color: SH2 }); } }
+    for (let k = 0; k < nS; k++) { const u = (k + 0.5) / nS; const pts = []; for (let i = 0; i <= 6; i++) pts.push(frillPt(u, i / 6, new V3())); const t = tube(pts, [0.2, 0.17, 0.14, 0.11, 0.09, 0.06, 0.02], { radial: 6, segsPerPoint: 2 }); S.add('shell', t, bone, { matrix: M, color: SH2 }); } }
   // crest blades along the top midline (taller, swept back)
   for (let k = 0; k < 7; k++) {
     const f = k / 6; const z = lerp(2.8, -3.0, f), y = HEAD_C.y + HEAD_R.y * Math.sqrt(Math.max(0, 1 - ((z - HEAD_C.z) / HEAD_R.z) ** 2)) - 0.15;
@@ -312,7 +312,7 @@ function buildCannon(S, rest, rng) {
   const bone = B.cannon, M = boneMatrix(rest, bone);
   S.add('shell', blob(1.55, 1.15, 1.55, { w: 16, h: 10, tile: 2.5 }), bone, { matrix: M, color: 0xfff4e0 });
   const LEN = 4.4; const rr = (t) => (t < 0.5 ? lerp(0.95, 0.78, t / 0.5) : lerp(0.78, 1.55, Math.pow((t - 0.5) / 0.5, 1.7)));
-  S.add('flesh', revolve(LEN, (t, y) => rr(t) * (1 + 0.07 * ribBump(y / 0.42, 0.8)), { rings: 44, radial: 20, tile: 2.5 }), bone, { matrix: M });
+  S.add('flesh', revolve(LEN, (t, y) => rr(t) * (1 + 0.07 * ribBump(y / 0.42, 0.8)), { rings: 32, radial: seg(18, 12), tile: 2.5 }), bone, { matrix: M });
   const lip = torus(1.52, 0.24, 28, 8, { tile: 1.4 }); lip.translate(0, LEN, 0); S.add('shell', lip, bone, { matrix: M, color: 0xfff4e0 });
   // teeth: 2 rings pointing inward/forward
   const teeth = [], teeth2 = [];
@@ -331,7 +331,7 @@ function buildTentacle(S, rest, rng) {
   const rad = (t) => lerp(0.85, 0.15, Math.pow(t, 0.85));
   const wf = (x, y) => { const f = clamp(y / TSEG, 0, NT - 1); const j = Math.min(NT - 2, Math.floor(f)); const w = f - j; return [B.tent + j, 1 - w, B.tent + j + 1, w]; };
   const ribsN = 46;
-  const g = revolve(TENT_LEN, (t, y) => rad(t) * (0.9 + 0.13 * ribBump(t * ribsN, 0.7)) * (1 + 0.1 * Math.max(0, Math.sin(y * 0.5)) * 0), { rings: 150, radial: 10, tile: 2.5 });
+  const g = revolve(TENT_LEN, (t, y) => rad(t) * (0.9 + 0.13 * ribBump(t * ribsN, 0.7)) * (1 + 0.1 * Math.max(0, Math.sin(y * 0.5)) * 0), { rings: seg(70, 40), radial: 8, tile: 2.5 });
   S.addBlend('flesh', g, wf, { matrix: M, color: (x, y, z, nx, ny, nz) => { const u = 0.62 + 0.25 * Math.max(0, -nz * 0.5 + 0.5); return [u, u, u]; } });
   // shell collars every 3 joints + glow nodes
   for (let j = 2; j < NT - 1; j += 2) { const t = j / (NT - 1), y = j * TSEG; const R = rad(t);
@@ -359,6 +359,7 @@ function defaultState() {
 }
 /** rest pose (bone positions/quaternions in rig space, design scale 30 m) + design constants, shared with the horde. */
 export function tripodRest() { const p = newPose(); computePose(defaultState(), p); return p; }
+export function _buildForTest() { const st = defaultState(); const p = newPose(); computePose(st, p); return buildTripodGeometry(p, new RNG(1)); }
 export const TC = { PH, HIP_R, HIP_DY, LEG_AZ, HOME_R, L1, L2, ANK, TOE_AZ, TOE_LEN, HEAD_PIVOT, HEAD_C, HEAD_R, EYE_Y, CANNON_BASE, CANNON_DIR, TENT_BASE, TENT_DIR, TORSO_R, TORSO_RATIO, TORSO_H, HIP_LOCAL, POLE, B, boneMatrix, headSurfZ };
 
 // ------------------------------------------------------------------------------------------------ factory
@@ -400,7 +401,7 @@ export function createTripod(seed = 1, opts = {}) {
     cannon: 0, cannonSm: 0, tentMode: 'idle', tentW: { idle: 1, reach: 0, sweep: 0 }, tentTarget: null, tentReachW: 0, clawOpen: 0.5,
     aim: null, headYawT: 0, headYawS: 0, headPitchS: 0, cannonYawS: 0, cannonPitchS: 0, t: 0, infect: 0, horn: 0, lookT: 0,
   };
-  const cfg = { stride: 8.5 * Sc, lift: 3.4 * Sc, duty: 0.75, maxStray: 3.4 * Sc, minCycle: 1.5 * Math.sqrt(Sc), maxSpeed: 12 * Sc, accel: 2.5 * Math.sqrt(Sc), turnRate: 0.45 };
+  const cfg = { stride: 8.5 * Sc, lift: 3.4 * Sc, duty: 0.7, maxStray: 3.4 * Sc, minCycle: 1.5 * Math.sqrt(Sc), maxSpeed: 12 * Sc, accel: 2.5 * Math.sqrt(Sc), turnRate: 0.45 };
   const homeW = [new V3(), new V3(), new V3()];
   const inv = new M4(), tmpV = new V3(), tmpV2 = new V3(), tmpV3 = new V3();
   const pose = newPose();

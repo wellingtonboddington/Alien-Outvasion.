@@ -129,6 +129,7 @@ const chordMidi = (e, inst, lo, k = 0) => { // k-th chord tone upward from the r
 };
 const vel = (base, rng, hum = 0.1) => cl(base * (1 + (rng.next() - 0.5) * 2 * hum), 0.05, 1.4);
 
+const SHED1 = { bell: 1, tex: 1, arp: 1 }, SHED2 = { ost: 1, mel: 0, rise: 1 }, SHED3 = { perc: 1, hit: 1, drone: 1 };
 const KINDS = {
   drone(L, e) { // sustained low notes, re-struck every `every` bars (or on each chord change when follow)
     const d = L.def, every = d.every || 4; if (!(d.follow ? e.cstart && e.si === 0 : e.si === 0 && e.bar % every === 0)) return;
@@ -255,10 +256,12 @@ class CueInst {
     let guard = 0; const A = this.A;
     while (this.nextT < until && guard++ < 96) {
       const bar = Math.floor(this.step / this.spBar), si = this.step % this.spBar; const loopBar = bar % this.loopBars, loop = Math.floor(bar / this.loopBars); const chord = this.bars[loopBar];
-      if (this.nextT >= now - 0.05 && A.live.music < A.caps.music) {
+      if (this.nextT >= now - 0.05) {
+        const load = A.live.music / A.caps.music; // polyphony governor: shed the least important layers first
+
         const e = { si, bar, loopBar, loop, loopBars: this.loopBars, t: Math.max(this.nextT, now), sd: this.sd, chord, cstart: chord.cstart, left: chord.left, spb: this.spb, spBar: this.spBar, barDur: this.barDur, rng: null };
         for (const L of this.layers) {
-          if (L.level < 0.02) continue; e.rng = L.rngFor(bar);
+          if (L.level < 0.02) continue; if (load >= 1 && SHED1[L.kind]) continue; if (load >= 1.25 && SHED2[L.kind]) continue; if (load >= 1.6 && !SHED3[L.kind]) continue; e.rng = L.rngFor(bar);
           try { KINDS[L.kind](L, e); } catch (err) { if (!this.warned) { this.warned = true; console.warn('[audio] music layer error', this.name, L.kind, err); } }
         }
       }

@@ -25,7 +25,24 @@ import { analyze, spectrogram, wavBytes } from ${JSON.stringify(path.join(root, 
 import { RECIPES } from ${JSON.stringify(path.join(root, 'src/audio/sfx_recipes.js'))};
 import { CUES, STINGERS } from ${JSON.stringify(path.join(root, 'src/audio/music.js'))};
 import { BEDS } from ${JSON.stringify(path.join(root, 'src/audio/amb.js'))};
+import { INST } from ${JSON.stringify(path.join(root, 'src/audio/music_inst.js'))};
+window.__INST = INST;
 window.__lists = () => ({ sfx: Object.keys(RECIPES), cues: Object.keys(CUES || {}), stingers: Object.keys(STINGERS || {}), amb: Object.keys(BEDS || {}) });
+window.__live = async (secs) => { // real-time AudioContext smoke test: scheduling, cleanup, tick cost
+  const a = createAudio(); await a.resume(); const out = { state: a.ctx.state, timer: a.timer, sampleRate: a.ctx.sampleRate, samples: [], warns: [] };
+  const ow = console.warn; console.warn = (...x) => out.warns.push(x.map(String).join(' ').slice(0, 160));
+  a.setListener(null); a.music.play('title', { fade: 1, intensity: 0.8 }); a.amb.set('war_near', 0.8, 1); a.amb.set('city_day', 0.5, 1);
+  a.sfx.play('engine_idle', { loop: true, pos: { x: 8, y: 0, z: -12 } }); a.sfx.play('footstep', { loop: true, interval: 0.5 }); a.voice.setMode('babble');
+  const t0 = performance.now(); let n = 0; const tickCost = []; const origNow = performance.now.bind(performance);
+  while ((performance.now() - t0) / 1000 < secs) {
+    await new Promise((r) => setTimeout(r, 1000)); n++;
+    if (n === 3) { a.sfx.play('tripod_horn'); a.voice.say({ text: 'They are already here. Run!', gender: 'F', duration: 2.5, character: 'mirrah' }); }
+    if (n === 5) { a.music.play('battle', { fade: 2, intensity: 0.9 }); a.sfx.play('mg', { loop: true, pos: { x: -30, y: 1, z: -40 } }); }
+    if (n === 7) { a.music.setIntensity(0.2, 2); a.sfx.stopAll(); a.amb.clear(1); }
+    out.samples.push({ t: n, ctxTime: +a.ctx.currentTime.toFixed(2), live: { ...a.live }, sfx: a.sfx.active });
+  }
+  a.music.stop(0.5); await new Promise((r) => setTimeout(r, 3000)); out.after = { ...a.live }; console.warn = ow; a.dispose(); return out;
+};
 const b64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 window.__job = async (job) => {
   const sr = job.sr; const secs = job.secs;
@@ -41,6 +58,11 @@ window.__job = async (job) => {
     }
     else if (job.kind === 'layer') {
       a.music.play(job.name, { fade: 0.05, intensity: job.intensity }); const L = a.music._layers(); info.layers = L; if (job.layer >= 0) a.music._solo(job.layer); a.advance(secs);
+    }
+    else if (job.kind === 'notes') { // record every pitched note the cue plays (name, start time, midi, duration)
+      const log = []; const orig = {}; for (const k of Object.keys(INST)) { orig[k] = INST[k]; INST[k] = function (L, t, dur, m, v, o) { log.push([k, +t.toFixed(3), m, +dur.toFixed(3)]); return orig[k].apply(this, arguments); }; }
+      a.music.play(job.name, { fade: 0.05, intensity: job.intensity }); const step = 0.5; let tt = 0; while (tt < secs) { a.advance(Math.min(step, secs - tt)); tt += step; }
+      for (const k of Object.keys(INST)) INST[k] = orig[k]; info.notes = log;
     }
     else if (job.kind === 'stinger') { a.music.stinger(job.name); a.advance(secs); }
     else if (job.kind === 'amb') { a.amb.set(job.name, 1, 0.2); a.advance(secs); }
@@ -58,7 +80,7 @@ window.__job = async (job) => {
 `;
 const res = await build({ stdin: { contents: entry, resolveDir: root, sourcefile: 'audio-test-entry.js' }, bundle: true, format: 'iife', write: false, minify: false, target: ['es2020'], logLevel: 'error', charset: 'utf8', nodePaths: [path.join(root, 'node_modules')] });
 const js = res.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
-const html = `<!doctype html><html><body><script>${js}</script></body></html>`;
+const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><script>${js}</script></body></html>`;
 const htmlPath = path.join(root, 'out', `_audiotest_${process.pid}.html`); fs.mkdirSync(path.dirname(htmlPath), { recursive: true }); fs.writeFileSync(htmlPath, html);
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required', '--disable-gpu'] });
 const page = await browser.newPage();
@@ -108,6 +130,19 @@ if (calArg) {
   console.log('wrote src/audio/mix.js'); await browser.close(); try { fs.unlinkSync(htmlPath); } catch { } process.exit(0);
 }
 
+if (get('live', false)) {
+  const r = await page.evaluate((s) => window.__live(s), +get('secs', 10)); console.log(JSON.stringify({ ...r, samples: undefined }, null, 1)); for (const x of r.samples) console.log(JSON.stringify(x)); await browser.close(); try { fs.unlinkSync(htmlPath); } catch { } process.exit(0);
+}
+const notesCue = get('notes', null);
+if (notesCue && notesCue !== true) {
+  const bars = +get('bars', 8); const probe = await page.evaluate(() => 0); const NN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']; const nn = (m) => NN[m % 12] + (Math.floor(m / 12) - 1);
+  const bpm = +get('bpm', 0); const jobSecs = secsArg ? +secsArg : 40;
+  const r = await page.evaluate((job) => window.__job(job), { kind: 'notes', name: notesCue, secs: jobSecs, intensity, sr: 22050, raw: true });
+  const byInst = {}; for (const [k, t, m, d] of r.info.notes) (byInst[k] = byInst[k] || []).push([t, m, d]);
+  const beat = bpm ? 60 / bpm : 0.5;
+  for (const k of Object.keys(byInst)) { console.log('== ' + k); const evs = byInst[k]; let line = '', lastBar = -1; for (const [t, m, d] of evs) { const b = t / (beat * 4); const bar = Math.floor(b); if (bar !== lastBar) { if (line) console.log(line); line = 'bar ' + String(bar + 1).padStart(2) + ': '; lastBar = bar; } line += nn(m) + '@' + ((b - bar) * 4).toFixed(1) + ' '; } if (line) console.log(line); }
+  await browser.close(); try { fs.unlinkSync(htmlPath); } catch { } process.exit(0);
+}
 const jobs = []; const layersCue = get('layers', null);
 const want = (k) => !get('layers', null) && (kind === 'all' || kind === k);
 if (want('sfx')) for (const n of lists.sfx) jobs.push({ kind: 'sfx', name: n, secs: SFX_SECS[n] || 3.5, opts: loopTest ? { loop: true } : {} });

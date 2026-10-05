@@ -5,9 +5,9 @@ import { canvasTex, paintNoise, speckle, normalTex } from '../engine/proc.js';
 
 const PRESETS = {
   day: { sky: 0x8fb0d8, fog: 0xa9c0da, fogD: 0.0022, sun: 0xfff0d8, sunI: 3.0, sunPos: [60, 90, 40], hemiSky: 0xbfd6ff, hemiGnd: 0x4a4038, hemiI: 0.9, win: 0.0, ground: 0x9a9da3 },
-  dusk: { sky: 0x3a2f4c, fog: 0x5a3f48, fogD: 0.004, sun: 0xff9a5a, sunI: 2.4, sunPos: [90, 28, -30], hemiSky: 0x6a6fa8, hemiGnd: 0x2a2020, hemiI: 0.45, win: 0.5, ground: 0x3c3c40 },
-  night: { sky: 0x05070f, fog: 0x070a14, fogD: 0.0035, sun: 0x6c88c8, sunI: 0.5, sunPos: [-40, 70, 30], hemiSky: 0x1a2440, hemiGnd: 0x0a0a10, hemiI: 0.35, win: 1.0, ground: 0x1c1d22 },
-  overcast: { sky: 0x6a7078, fog: 0x777d86, fogD: 0.007, sun: 0xd8dde8, sunI: 1.2, sunPos: [30, 80, 50], hemiSky: 0x9aa6b8, hemiGnd: 0x3a3a3a, hemiI: 0.9, win: 0.1, ground: 0x45474a },
+  dusk: { sky: 0x3a2f4c, fog: 0x5a3f48, fogD: 0.004, sun: 0xff9a5a, sunI: 2.4, sunPos: [90, 28, -30], hemiSky: 0x6a6fa8, hemiGnd: 0x2a2020, hemiI: 0.45, win: 0.5, ground: 0xa8a8b0 },
+  night: { sky: 0x05070f, fog: 0x070a14, fogD: 0.0035, sun: 0x6c88c8, sunI: 0.5, sunPos: [-40, 70, 30], hemiSky: 0x1a2440, hemiGnd: 0x0a0a10, hemiI: 0.35, win: 1.0, ground: 0x8a8c96 },
+  overcast: { sky: 0x6a7078, fog: 0x777d86, fogD: 0.007, sun: 0xd8dde8, sunI: 1.2, sunPos: [30, 80, 50], hemiSky: 0x9aa6b8, hemiGnd: 0x3a3a3a, hemiI: 0.9, win: 0.1, ground: 0xa0a2a8 },
   space: { sky: 0x000004, fog: null, fogD: 0, sun: 0xffffff, sunI: 2.5, sunPos: [60, 40, 80], hemiSky: 0x202838, hemiGnd: 0x000000, hemiI: 0.15, win: 0, ground: null },
 };
 

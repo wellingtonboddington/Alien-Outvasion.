@@ -259,7 +259,7 @@ export function createCityBlock(style = 'generic', opts = {}) {
     if (group) { root.remove(group); group.traverse((m) => m.geometry && m.geometry.dispose()); }
     const { B, ctx, maxH, anchors } = emitBlock(S, layout, o, lv, sd, mats);
     group = meshesFromBuilder(B, mats, { shadows: o.shadows }); group.name = 'cityGeo'; root.add(group);
-    api.stats = { tris: B.tris(), buckets: B.buckets.size }; api.bounds.h = maxH; api.fireAnchors = ctx.fires; api.streetAnchors = anchors; root.userData.fireAnchors = ctx.fires;
+    api.stats = { tris: B.tris(), buckets: B.buckets.size, byBucket: B.byBucket() }; api.bounds.h = maxH; api.fireAnchors = ctx.fires; api.streetAnchors = anchors; root.userData.fireAnchors = ctx.fires;
     for (const [name] of B.buckets) { /* ensure materials exist (already created lazily) */ }
     mats.setNight(mats.night);
   }

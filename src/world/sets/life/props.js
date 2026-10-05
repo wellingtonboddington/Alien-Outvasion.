@@ -119,7 +119,8 @@ export function pot(K, r = 0.18, h = 0.3, color = '#b5623a', { soil = true, rim 
   if (soil) K.cyl('paint#2a1d14', r * 0.92, 0.01, 0, h - 0.045, 0, { seg: 18 });
 }
 /** leafy potted plant. kind 'ficus' | 'dracaena' | 'fern' | 'snake' */
-export function plant(K, kind = 'ficus', { s = 1, potColor = '#b5623a', seed = 3, potted = true } = {}) {
+export function plant(K, kind = 'ficus', o = {}) {
+  const { s = 1, potColor = '#b5623a', seed = 3, potted = true } = o;
   const r = new RNG(seed); const ph = 0.3 * s;
   if (potted) pot(K, 0.17 * s, ph, potColor);
   const base = potted ? ph : 0;
@@ -129,7 +130,7 @@ export function plant(K, kind = 'ficus', { s = 1, potColor = '#b5623a', seed = 3
   }
   if (kind === 'ficus' || kind === 'dracaena') {
     const trunkH = (kind === 'ficus' ? 0.9 : 0.7) * s; K.tinted('#5a4030', () => K.cyl('woodGrain', 0.02 * s, trunkH, 0, base, 0, { seg: 6, rt: 0.012 * s }));
-    const n = kind === 'ficus' ? 34 : 22;
+    const n = o.n || (kind === 'ficus' ? 34 : 22);
     for (let i = 0; i < n; i++) { const t = i / n, a = i * 2.4 + r.range(-0.3, 0.3), hh = base + trunkH * (0.45 + 0.55 * t) + r.range(0, 0.15) * s; const sp = (kind === 'ficus' ? 0.12 + t * 0.22 : 0.05 + t * 0.08) * s;
       K.tinted(GREENS[i % 5], () => K.at([Math.cos(a) * sp * 0.4, hh, Math.sin(a) * sp * 0.4], [0, a, 0], () => K.geo('leaf', leafGeo((kind === 'ficus' ? 0.2 : 0.5) * s * r.range(0.8, 1.2), (kind === 'ficus' ? 0.1 : 0.07) * s, 0.5), 0, 0, 0, [Math.PI / 2 - r.range(0.2, 0.9) * (kind === 'ficus' ? 1 : 0.7) - (kind === 'dracaena' ? 0.2 : 0), 0, 0]))); }
     return;

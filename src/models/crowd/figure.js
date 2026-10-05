@@ -66,7 +66,7 @@ export function bodyParts(M, L, s, m) {
   }
   for (const sgn of [-1, 1]) { // ears (single quads)
     const ex = sgn * (H.rx * hs + 0.003);
-    const ear = { p: [ex, hy - 0.03 * hs, -0.03 * hs, ex + sgn * 0.016, hy - 0.012 * hs, 0.0, ex + sgn * 0.016, hy + 0.028 * hs, 0.0, ex, hy + 0.02 * hs, -0.03 * hs], n: [sgn, 0, 0, sgn, 0, 0, sgn, 0, 0, sgn, 0, 0], uv: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03], i: sgn > 0 ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3] };
+    const ear = { p: [ex, hy - 0.03 * hs, -0.03 * hs, ex + sgn * 0.016, hy - 0.012 * hs, 0.0, ex + sgn * 0.016, hy + 0.028 * hs, 0.0, ex, hy + 0.02 * hs, -0.03 * hs], n: [sgn, 0, 0, sgn, 0, 0, sgn, 0, 0, sgn, 0, 0], uv: [0.5, 0.97, 0.5, 0.97, 0.5, 0.97, 0.5, 0.97], i: sgn > 0 ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3] };
     M.add(ear, { j: J.HEAD, ...m.head, name: 'ear' });
   }
   // ---- arms / legs (left built, right mirrored)

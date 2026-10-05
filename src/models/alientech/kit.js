@@ -146,6 +146,7 @@ export function mergeAll(list) {
 export class SkinSet {
   constructor(matKeys) { this.keys = matKeys; this.b = {}; for (const k of matKeys) this.b[k] = []; }
   _prep(g, color, matrix, wFn, bone) {
+    if (SkinSet.trace) SkinSet.trace.push([g.index ? g.index.count / 3 : g.attributes.position.count / 3, (new Error().stack.split('\n')[3] || '').trim()]);
     if (!g.index) { const n = g.attributes.position.count, ix = new Uint32Array(n); for (let i = 0; i < n; i++) ix[i] = i; g.setIndex(new THREE.BufferAttribute(ix, 1)); }
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));

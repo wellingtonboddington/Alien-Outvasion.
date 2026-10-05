@@ -359,8 +359,14 @@ export function windowCutGLSL(cfg, pos = 'vArchPos') {
     calls.push(`_wp${k}(${pos}.zy)`);
   });
   const reg = (r) => `(${pos}.z>${r.z0.toFixed(4)} && ${pos}.z<${r.z1.toFixed(4)} && abs(${pos}.x) < mix(${r.x0.toFixed(4)}, ${r.x1.toFixed(4)}, (${pos}.z-(${r.z0.toFixed(4)}))/${(r.z1 - r.z0).toFixed(4)}))`;
-  let cond = calls.length ? `(abs(${pos}.x) > ${(cfg.xMin ?? 0.25).toFixed(3)} && (${calls.join(' || ')}))` : 'false';
+  const xm = (cfg.xMin ?? 0.25).toFixed(3);
+  const polyFn = (arr, tag) => { (arr || []).forEach((poly, k) => { const n = poly.length; const a = poly.map((p) => `vec2(${p[0].toFixed(4)},${p[1].toFixed(4)})`).join(','); fn += `bool _w${tag}${k}(vec2 p){ vec2 v[${n}] = vec2[${n}](${a}); bool c=false; for(int i=0,j=${n - 1};i<${n};j=i++){ if(((v[i].y>p.y)!=(v[j].y>p.y)) && (p.x < (v[j].x-v[i].x)*(p.y-v[i].y)/(v[j].y-v[i].y)+v[i].x)) c=!c; } return c; }\n`; }); };
+  polyFn(cfg.sideR, 'R'); polyFn(cfg.sideL, 'L');
+  const rc = (cfg.sideR || []).map((_, k) => `_wR${k}(${pos}.zy)`), lc = (cfg.sideL || []).map((_, k) => `_wL${k}(${pos}.zy)`);
+  let cond = calls.length ? `(abs(${pos}.x) > ${xm} && (${calls.join(' || ')}))` : 'false';
+  if (rc.length) cond += ` || (${pos}.x > ${xm} && (${rc.join(' || ')}))`; if (lc.length) cond += ` || (${pos}.x < -${xm} && (${lc.join(' || ')}))`;
   if (cfg.ws) cond += ' || ' + reg(cfg.ws); if (cfg.rear) cond += ' || ' + reg(cfg.rear);
+  for (const b of cfg.boxes || []) cond += ` || (${pos}.z>(${b.z0.toFixed(4)}) && ${pos}.z<(${b.z1.toFixed(4)}) && ${pos}.y>(${b.y0.toFixed(4)}) && ${pos}.y<(${b.y1.toFixed(4)}) && abs(${pos}.x)<(${b.x.toFixed(4)}))`;
   return { fn, test: cond };
 }
 export function windowable(mat, cfg) {

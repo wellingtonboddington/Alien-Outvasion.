@@ -31,6 +31,7 @@ export class Builder {
   }
   has(name) { const b = this.buckets.get(name); return !!(b && b.count); }
   tris() { let n = 0; for (const b of this.buckets.values()) n += b.i.length / 3; return n; }
+  byBucket() { const o = {}; for (const [k, b] of this.buckets) o[k] = Math.round(b.i.length / 3); return o; }
   // ---- transform stack ----
   push(x = 0, y = 0, z = 0, yaw = 0, sx = 1, sy = sx, sz = sx, pitch = 0, roll = 0) {
     this.stack.push(this.m.clone());

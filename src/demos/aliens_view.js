@@ -1,11 +1,11 @@
 // Debug viewer: one Vessari kind / clip from arbitrary cameras.  --params '{"kind":"soldier","clip":"idle","inf":0}'
 import * as THREE from 'three';
 import { addStudioLights } from '../engine/stage.js';
-import { createVessari } from '../models/aliens/index.js';
+import { createVessari, createCrawler } from '../models/aliens/index.js';
 
 export default async function setup(stage, params) {
   addStudioLights(stage, { shadows: true });
-  const kind = params.kind || 'soldier'; const h = createVessari(kind, params.seed || 3, params.opts || {});
+  const kind = params.kind || 'soldier'; const h = kind === 'crawler' ? createCrawler(params.seed || 3, params.opts || {}) : createVessari(kind, params.seed || 3, params.opts || {});
   stage.scene.add(h.root); h.play(params.clip || 'idle', { time: 0 }); if (params.inf) h.setInfection(params.inf); if (params.blood) h.setBloody(params.blood);
   if (params.mouth) h.setMouth(params.mouth); if (params.look) h.lookAt(new THREE.Vector3(...params.look));
   if (params.hold !== undefined) h.hold(params.hold ? 'rifle' : null);

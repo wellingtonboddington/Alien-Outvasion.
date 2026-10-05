@@ -185,7 +185,7 @@ export function drawTicker(ctx, w, h, t, S = {}, o = {}) { // red BREAKING NEWS 
   const tagW = w * 0.2, fs = h * 0.5; ctx.fillStyle = '#d8141c'; ctx.fillRect(0, 0, tagW, h); ctx.fillStyle = '#fff'; ctx.font = `900 ${h * 0.42}px ${SANS}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
   const flash = fract(t * 0.8) < 0.5 ? 1 : 0.82; ctx.globalAlpha = flash; ctx.fillText(o.tag || 'BREAKING', tagW / 2, h * 0.52); ctx.globalAlpha = 1;
   ctx.textAlign = 'left'; ctx.font = `bold ${fs}px ${SANS}`; ctx.fillStyle = '#f2f6ff'; ctx.save(); ctx.beginPath(); ctx.rect(tagW + 4, 0, w - tagW, h); ctx.clip();
-  const heads = o.headlines || HEADLINES; const sep = '   ◆   '; const text = heads.join(sep) + sep; const tw = ctx.measureText(text).width; const x = tagW + 12 - ((t * (w * 0.09)) % tw);
+  const heads = o.headlines || HEADLINES; const sep = '   //   '; const text = heads.join(sep) + sep; const tw = ctx.measureText(text).width; const x = tagW + 12 - ((t * (w * 0.09)) % tw);
   ctx.fillText(text, x, h * 0.55); ctx.fillText(text, x + tw, h * 0.55); ctx.restore();
   ctx.fillStyle = '#ffd400'; ctx.fillRect(tagW, 0, 4, h);
 }

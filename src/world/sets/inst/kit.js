@@ -25,7 +25,7 @@ const PRESET = {
   carpetNavy: { tex: 'carpet', color: 0x3a4a80, tile: 2.5 },
   carpetGrey: { tex: 'carpet', color: 0xa6a8b0, tile: 2.5 },
   carpetRed: { tex: 'carpet', color: 0xb04a52, tile: 2.5 },
-  domeWhite: { tex: 'metalPanel', color: 0xf0f2f6, tile: 2.5, metalness: 0.25, side: THREE.DoubleSide },
+  domeWhite: { tex: 'paint', color: 0xe8eaee, tile: 2.5, metalness: 0.0, side: THREE.DoubleSide },
   gunmetal: { tex: 'metalPanel', color: 0xb4bcc8, tile: 2, metalness: 0.8 },
   steel: { tex: 'brushed', color: 0xd4d8de, tile: 1.5, metalness: 0.92 },
   steelDark: { tex: 'brushed', color: 0x70747c, tile: 1.5, metalness: 0.85 },

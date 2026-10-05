@@ -69,6 +69,15 @@ export function holoEmissiveTexture() {
     const t = texFromCanvas(c, { aniso: 4 }); t.userData.shared = true; return t;
   });
 }
+export function glowEyeTexture() {
+  return cached('human.iris.glow', () => {
+    const W = texRes(256), Hh = W / 2; const c = makeCanvas(W, Hh), ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 0, Hh);
+    g.addColorStop(0, '#000'); g.addColorStop(0.06, '#031a00'); g.addColorStop(0.075, '#caff9a'); g.addColorStop(0.14, '#6bff2e'); g.addColorStop(0.18, '#3cff1a'); g.addColorStop(0.24, '#2bd410'); g.addColorStop(1, '#1d8f0c');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, Hh);
+    const t = texFromCanvas(c, { aniso: 4 }); t.userData.shared = true; return t;
+  });
+}
 export function buildEyeGeometry(head, bi) {
   const H = head.H, list = [];
   for (const side of [1, -1]) {
@@ -311,7 +320,7 @@ export class FaceRig {
     this.idx = {}; this.names.forEach((n, i) => { this.idx[n] = i; });
     this.mouth = { jaw: 0, wide: 0, round: 0, press: 0, tuck: 0, teeth: 0, tongue: 0 };
     this.mouthS = { jaw: 0, wide: 0, round: 0, press: 0, tuck: 0, teeth: 0, tongue: 0 };
-    this.expr = { smile: 0, frown: 0, surprise: 0, fear: 0, anger: 0, sad: 0 }; this.exprS = { ...this.expr };
+    this.expr = { smile: 0, frown: 0, surprise: 0, fear: 0, anger: 0, sad: 0 }; this.exprS = { ...this.expr }; this.cexpr = null;
     this.blinkOverride = undefined; this.baseSmile = profile.baseSmile || 0;
     this.blinks = []; this.sacc = []; this.rngB = new RNG(profile.seed ^ 0xb11c); this.rngS = new RNG(profile.seed ^ 0x5acc);
     this.bt = 0; this.st = 0; this.gazeYaw = 0; this.gazePitch = 0; this.gazeW = 0; this.talk = 0;
@@ -338,7 +347,7 @@ export class FaceRig {
   /** apply: dt, film time t, extra gaze offsets (yaw,pitch radians in head frame) already limited by caller */
   update(dt, t, gaze) {
     const k = 1 - Math.exp(-14 * dt);
-    for (const n in this.exprS) this.exprS[n] += (this.expr[n] - this.exprS[n]) * k;
+    for (const n in this.exprS) { const tg = Math.max(this.expr[n], this.cexpr ? (this.cexpr[n] || 0) : 0); this.exprS[n] += (tg - this.exprS[n]) * k; }
     for (const n in this.mouthS) this.mouthS[n] += (this.mouth[n] - this.mouthS[n]) * (1 - Math.exp(-40 * dt));
     const e = this.exprS, m = this.mouthS; const o = this.o || (this.o = {});
     for (const n of this.names) o[n] = 0;

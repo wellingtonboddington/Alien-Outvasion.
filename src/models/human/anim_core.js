@@ -127,7 +127,7 @@ export class PoseBuilder {
   arm(side, { raise = 0, abd = 0, rot = 0, elbow = 0.12, pron = 0, wflex = 0, wdev = 0 } = {}) {
     const S = this.S(side), s = S === 'L' ? 1 : -1;
     this._eul.set(-raise, rot * -s, s * abd, 'ZXY'); this.pq['upperArm' + S].setFromEuler(this._eul);
-    this._eul.set(-elbow, pron * s, 0, 'ZXY'); this.pq['foreArm' + S].setFromEuler(this._eul);
+    this._eul.set(-elbow, -pron * s, 0, 'ZXY'); this.pq['foreArm' + S].setFromEuler(this._eul);
     this._eul.set(wdev * 0.0, 0, -s * wflex, 'ZXY'); this.pq['hand' + S].setFromEuler(this._eul);
     if (wdev) { _qd.setFromAxisAngle(AX, wdev); this.pq['hand' + S].premultiply(_qd); }
     return this;
@@ -135,7 +135,7 @@ export class PoseBuilder {
   /** leg FK: hip flexion (fwd +), abduction (out +), rot, knee flexion (+ bends), ankle (plantar +) */
   leg(side, { hip = 0, abd = 0, rot = 0, knee = 0, ankle = 0, toe = 0 } = {}) {
     const S = this.S(side), s = S === 'L' ? 1 : -1;
-    this._eul.set(-hip, rot * s, s * abd, 'ZXY'); this.pq['upperLeg' + S].setFromEuler(this._eul);
+    this._eul.set(-hip, -rot * s, s * abd, 'ZXY'); this.pq['upperLeg' + S].setFromEuler(this._eul);
     this.set('lowerLeg' + S, knee); this.set('foot' + S, ankle); this.set('toes' + S, toe);
     return this;
   }

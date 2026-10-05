@@ -259,7 +259,7 @@ export function createFoodCourtMcD(opts = {}) {
   Ko.at([5, 0, hd + 2.2], 0, () => { for (let i = 0; i < 4; i++) Ko.at([i * 3.5 - 6, 0, 0], 0, () => bench(Ko, 1.6, { color: '#5a4030', back: false })); });
   Ko.at([12, 0, hd + 2.0], 0, () => plant(Ko, 'ficus', { s: 1.8, potColor: '#c8c0b0', seed: 9 })); Ko.at([-9, 0, hd + 2.0], 0, () => plant(Ko, 'ficus', { s: 1.6, potColor: '#c8c0b0', seed: 10 }));
   Ko.build();
-  const lights = [new THREE.HemisphereLight(0xfff4e4, 0xb8a888, 0.95)]; const pl = new THREE.PointLight(0xffecd0, 16, 0, 2); pl.position.set(-2, 3.5, 1.5); const pl2 = new THREE.PointLight(0xffecd0, 12, 0, 2); pl2.position.set(3, 3.5, -3); lights.push(pl, pl2);
+  const lights = [new THREE.HemisphereLight(0xfff4e4, 0xb8a888, 0.95)]; const pl = new THREE.PointLight(0xffecd0, 16, 0, 2); pl.position.set(-2, 3.0, 1.5); const pl2 = new THREE.PointLight(0xffecd0, 12, 0, 2); pl2.position.set(3, 3.0, -3); lights.push(pl, pl2);
   const tvScreen = rr.screens[0];
   const set = finishSet(K, { clock: rr.clk }, {
     bounds: { w: W, d: D, h: H }, anchors: rr.anchors, lights, screens: rr.screens, extraObjs: [Ko.root],
@@ -293,7 +293,7 @@ export function createMcDCalifornia(opts = {}) {
   K.defMat('goldArch', { color: 0xffc72c, rough: 0.35, emissive: 0xffa800, emissiveIntensity: 0.35, env: 0.8 });
   const rng = new RNG(33);
   // ground: lot asphalt, sidewalk ring, grass strips
-  K.slab('asphalt#b8b8bc', -60, -0.5, -45, 60, 0, 50);
+  K.slab('grass', -140, -0.8, -120, 140, -0.05, 120); K.slab('asphalt', -50, -0.5, -22, 50, 0, 34); K.slab('asphalt', -60, -0.5, 34, 60, 0, 38); K.slab('concrete#d0cdc6', -60, -0.45, 38, 60, 0.12, 41);
   K.slab('concrete#d9d6cf', -hw - 1.6, 0, -hd - 1.6, hw + 1.6, 0.15, hd + 2.6);   // building pad / sidewalk
   K.slab('concrete#cfccc4', -hw - 1.6, 0.15, hd + 1.6, hw + 1.6, 0.17, hd + 2.6);
   // building shell: exterior walls (stucco) — interior walls were built by the interior kit; add an outer wrap + roof + parapet
@@ -335,7 +335,7 @@ export function createMcDCalifornia(opts = {}) {
   K.slab('paint#2a5ac0', -14 + 4 * 2.8 + 0.3, 0.004, stallZ - 1.6, -14 + 4 * 2.8 + 2.5, 0.007, stallZ + 0.4);
   // drive-thru lane (east side, runs north along x=+13 then west behind the building)
   const laneX = hw + 5.0;
-  K.slab('asphalt#9a9aa0', laneX - 1.9, 0.0, -18, laneX + 1.9, 0.02, 24); K.slab('asphalt#9a9aa0', -30, 0.0, -18, laneX + 1.9, 0.02, -14.2);
+  K.slab('asphalt#c8c8d0', laneX - 1.9, 0.0, -18, laneX + 1.9, 0.02, 24); K.slab('asphalt#c8c8d0', -30, 0.0, -18, laneX + 1.9, 0.02, -14.2);
   for (let z = 22; z > -14; z -= 3.2) K.slab('paint#f2d24a', laneX - 0.06, 0.021, z - 0.8, laneX + 0.06, 0.024, z);
   K.slab('concrete#d6d3cb', laneX - 2.4, 0.0, -18, laneX - 1.9, 0.18, 24); K.slab('concrete#d6d3cb', laneX + 1.9, 0.0, -18, laneX + 2.4, 0.18, 24);
   K.slab('concrete#d6d3cb', -30, 0.0, -14.2, laneX + 2.4, 0.18, -13.7); K.slab('concrete#d6d3cb', -30, 0.0, -18.7, laneX + 2.4, 0.18, -18.2);
@@ -361,7 +361,7 @@ export function createMcDCalifornia(opts = {}) {
   K.build(); Ki.build();
   // east-wall window hole: interior wall has no hole, so cut one by rebuilding? (interior face stays; window shows the glass on the exterior shell only)
   const sun = null;
-  const lights = [new THREE.HemisphereLight(0xfff6e8, 0xb8a888, 0.95)]; const pl = new THREE.PointLight(0xfff0d8, 14, 0, 2); pl.position.set(-2, 3.8, 1.5); lights.push(pl);
+  const lights = [new THREE.HemisphereLight(0xfff6e8, 0xb8a888, 0.95)]; const pl = new THREE.PointLight(0xfff0d8, 14, 0, 2); pl.position.set(-2, 3.0, 1.5); lights.push(pl);
   const set = finishSet(Ki, { exterior: K.root, interior: Ki.root, clock: rr.clk }, {
     bounds: { w: 120, d: 95, h: 12 }, anchors: {
       ...rr.anchors,

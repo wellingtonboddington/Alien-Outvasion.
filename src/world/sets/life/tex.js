@@ -74,10 +74,10 @@ P.tileFloor = (ctx, w, h) => {
     const v = r.range(-8, 8), x = i * s, y = j * s; ctx.fillStyle = `rgb(${158 + v},${167 + v},${162 + v})`; ctx.fillRect(x + 2, y + 2, s - 4, s - 4);
     ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(x + 2, y + 2, s - 4, 2); ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(x + 2, y + s - 4, s - 4, 2);
   }
-  blobs(ctx, w, h, { n: 40, rmin: 20, rmax: w * 0.22, colors: ['#4c5450', '#d3dbd6', '#8e8466'], alpha: [0.04, 0.12], seed: 8 });
+  blobs(ctx, w, h, { n: 40, rmin: 20, rmax: w * 0.22, colors: ['#8a928e', '#e3ebe6', '#a29a7a'], alpha: [0.03, 0.08], seed: 8 });
   specks(ctx, w, h, { n: w * 6, size: [0.6, 2.4], colors: ['#fff', '#2a2f2c', '#a5afa8', '#6d756f'], alpha: [0.2, 0.55], seed: 6 });
   grain(ctx, w, h, 6, 3);
-  cracks(ctx, w, h, { n: 5, len: w * 0.15, color: '#222', alpha: 0.18, seed: 12 });
+  cracks(ctx, w, h, { n: 2, len: w * 0.1, color: '#444', alpha: 0.1, seed: 12 });
 };
 P.tileFloorH = (ctx, w, h) => { const n = 4, s = w / n; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#e0e0e0'; for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) ctx.fillRect(i * s + 2, j * s + 2, s - 4, s - 4); specks(ctx, w, h, { n: 2500, colors: ['#fff', '#444'], alpha: [0.2, 0.5], seed: 3 }); };
 P.checker = (ctx, w, h) => {
@@ -142,8 +142,8 @@ P.concrete = (ctx, w, h) => {
 };
 P.concreteH = (ctx, w, h) => { ctx.fillStyle = '#777'; ctx.fillRect(0, 0, w, h); specks(ctx, w, h, { n: w * 14, size: [0.8, 3], colors: ['#000', '#fff', '#ccc'], alpha: [0.1, 0.6], seed: 8 }); blobs(ctx, w, h, { n: 40, rmin: 10, rmax: 60, colors: ['#000', '#fff'], alpha: [0.05, 0.2], seed: 2 }); cracks(ctx, w, h, { n: 5, len: w * 0.4, color: '#000', alpha: 0.8, width: 1.4, seed: 7 }); };
 P.asphalt = (ctx, w, h) => {
-  ctx.fillStyle = '#34353a'; ctx.fillRect(0, 0, w, h);
-  blobs(ctx, w, h, { n: 60, rmin: 20, rmax: w * 0.25, colors: ['#1c1d20', '#4a4b50', '#3e3a36'], alpha: [0.1, 0.3], seed: 5 });
+  ctx.fillStyle = '#6a6b70'; ctx.fillRect(0, 0, w, h);
+  blobs(ctx, w, h, { n: 60, rmin: 20, rmax: w * 0.25, colors: ['#4a4b50', '#7e7f84', '#6e6a64'], alpha: [0.1, 0.3], seed: 5 });
   grain(ctx, w, h, 20, 3); specks(ctx, w, h, { n: w * 8, size: [0.8, 2.6], colors: ['#8a8a8e', '#c8c8c8', '#15151a', '#6b6258'], alpha: [0.25, 0.7], seed: 4 });
   cracks(ctx, w, h, { n: 5, len: w * 0.5, color: '#0a0a0c', alpha: 0.55, width: 1.4, seed: 9 });
 };
@@ -219,7 +219,7 @@ P.frond = (ctx, w, h) => {
   ctx.strokeStyle = '#4e7a2a'; ctx.lineWidth = w * 0.014; ctx.beginPath(); ctx.moveTo(cx, h); ctx.lineTo(cx, h * 0.02); ctx.stroke();
   const n = 46; for (let i = 0; i < n; i++) {
     const t = i / n, y = h * (0.97 - t * 0.93), len = w * 0.47 * Math.sin(Math.PI * (0.12 + t * 0.9)) ** 0.7, droop = h * 0.2 * (1 - t * 0.5);
-    for (const sd of [-1, 1]) { const g = r.range(0, 1); ctx.strokeStyle = `rgb(${50 + g * 40},${110 + g * 50},${36 + g * 20})`; ctx.lineWidth = Math.max(1.4, w * 0.012 * (1 - t * 0.5)); ctx.beginPath(); ctx.moveTo(cx, y); ctx.quadraticCurveTo(cx + sd * len * 0.6, y - h * 0.03, cx + sd * len, y + droop * 0.5); ctx.stroke(); }
+    for (const sd of [-1, 1]) { const g = r.range(0, 1); ctx.strokeStyle = `rgb(${50 + g * 40},${110 + g * 50},${36 + g * 20})`; ctx.lineWidth = Math.max(2.6, w * 0.022 * (1 - t * 0.45)); ctx.beginPath(); ctx.moveTo(cx, y); ctx.quadraticCurveTo(cx + sd * len * 0.6, y - h * 0.03, cx + sd * len, y + droop * 0.5); ctx.stroke(); }
   }
 };
 P.bark = (ctx, w, h) => {
@@ -229,12 +229,28 @@ P.bark = (ctx, w, h) => {
   for (let i = 0; i < 80; i++) { const x = r.range(0, w), y = r.range(0, h); ctx.strokeStyle = `rgba(30,20,12,${r.range(0.1, 0.4)})`; ctx.lineWidth = r.range(0.6, 1.6); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + r.range(-4, 4), y + r.range(6, 30)); ctx.stroke(); }
   grain(ctx, w, h, 14, 4);
 };
+P.grass = (ctx, w, h) => {
+  ctx.fillStyle = '#5a8a3a'; ctx.fillRect(0, 0, w, h);
+  blobs(ctx, w, h, { n: 90, rmin: 10, rmax: w * 0.25, colors: ['#3f7030', '#7aa84a', '#6a9a3a', '#8aa850', '#4a7a30'], alpha: [0.1, 0.3], seed: 11 });
+  const r = new RNG(5); for (let i = 0; i < w * 14; i++) { const x = r.range(0, w), y = r.range(0, h); ctx.strokeStyle = r.chance(0.5) ? `rgba(40,80,25,${r.range(0.2, 0.5)})` : `rgba(160,200,90,${r.range(0.15, 0.4)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + r.range(-2, 2), y - r.range(2, 6)); ctx.stroke(); }
+  grain(ctx, w, h, 10, 3);
+};
 P.stripeBase = (ctx, w, h) => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); const s = w / 8; ctx.fillStyle = '#000'; for (let i = 0; i < 8; i += 2) ctx.fillRect(i * s, 0, s, h); };
 P.noiseGrey = (ctx, w, h) => { ctx.fillStyle = '#888'; ctx.fillRect(0, 0, w, h); blobs(ctx, w, h, { n: 60, rmin: 8, rmax: 50, colors: ['#000', '#fff'], alpha: [0.1, 0.4], seed: 2 }); grain(ctx, w, h, 40, 3); };
 P.water = (ctx, w, h) => { ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, w, h); for (let i = 0; i < 90; i++) { const r = new RNG(i + 3); const x = r.range(0, w), y = r.range(0, h), rad = r.range(8, 40); const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, 'rgba(255,255,255,0.5)'); g.addColorStop(0.7, 'rgba(0,0,0,0.3)'); g.addColorStop(1, 'rgba(128,128,128,0)'); for (const ox of [-w, 0, w]) for (const oy of [-h, 0, h]) { ctx.fillStyle = g; ctx.save(); ctx.translate(ox, oy); ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2); ctx.restore(); } } };
 
+/** alpha-cut foliage texture as a DataTexture whose transparent texels carry the leaf colour (no dark mip fringes) */
+function mkAlpha(key, w, h, draw) {
+  return cached(`life:${key}:a:${w}x${h}`, () => {
+    const c = makeCanvas(w, h); const ctx = c.getContext('2d'); draw(ctx, w, h); const src = ctx.getImageData(0, 0, w, h).data; const out = new Uint8Array(w * h * 4);
+    let r = 0, g = 0, b = 0, n = 0; for (let i = 0; i < src.length; i += 4) if (src[i + 3] > 200) { r += src[i]; g += src[i + 1]; b += src[i + 2]; n++; } r = n ? r / n : 60; g = n ? g / n : 120; b = n ? b / n : 40;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const si = (y * w + x) * 4, di = ((h - 1 - y) * w + x) * 4; const a = src[si + 3]; if (a > 0) { // un-premultiply approx: canvas data is already straight alpha
+        out[di] = src[si]; out[di + 1] = src[si + 1]; out[di + 2] = src[si + 2]; } else { out[di] = r; out[di + 1] = g; out[di + 2] = b; } out[di + 3] = a; }
+    const tx = new THREE.DataTexture(out, w, h, THREE.RGBAFormat); tx.colorSpace = THREE.SRGBColorSpace; tx.wrapS = tx.wrapT = THREE.ClampToEdgeWrapping; tx.generateMipmaps = true; tx.minFilter = THREE.LinearMipmapLinearFilter; tx.magFilter = THREE.LinearFilter; tx.anisotropy = 4; tx.needsUpdate = true; return tx;
+  });
+}
 /** Get a cached texture by painter name. Variants with 'H' height painters become normal maps via normal(). */
-export function tex(name, size = 512, opts = {}) { const n = res(size); return mk(name, n, n, P[name], opts); }
+export function tex(name, size = 512, opts = {}) { const n = res(size); if (name === 'leaf' || name === 'frond') return mkAlpha(name, n, n, P[name]); return mk(name, n, n, P[name], opts); }
 export function normal(name, size = 512, strength = 3, opts = {}) { const n = res(size); return mkNormal(name, n, n, P[name + 'H'], strength, opts); }
 /** striped circus fabric: two colours, vertical stripes; cached per pair */
 export function stripes(c1, c2, n = 8, size = 256) {

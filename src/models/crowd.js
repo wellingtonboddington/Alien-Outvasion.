@@ -68,7 +68,7 @@ export function createCrowd(kindName, capacity, opts = {}) {
   const hashSeed = (i) => { let h = (i * 2654435761 + (seed0 * 97 | 0) * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return ((h >>> 0) % 100000) / 100000; };
 
   const crowd = {
-    root, mesh, blobMesh: blob, kind: kindName, capacity, count: 0, time: 0, uniforms,
+    root, mesh, blobMesh: blob, kind: kindName, capacity, count: 0, time: GLOBAL.time.value || 0, uniforms,
     get triangles() { return kind.tris; },
     get drawCalls() { return blob ? 2 : 1; },
 
@@ -166,5 +166,9 @@ export function createCrowd(kindName, capacity, opts = {}) {
     kindInfo: kind,
   };
   geo.instanceCount = 0;
+  // if the host never calls update(), follow the global film clock
+  let updated = false; const upd = crowd.update; crowd.update = (dt, t) => { updated = true; upd(dt, t); };
+  mesh.onBeforeRender = () => { if (!updated) { crowd.time = GLOBAL.time.value; uniforms.uTime.value = crowd.time; } };
+  uniforms.uTime.value = crowd.time;
   return crowd;
 }

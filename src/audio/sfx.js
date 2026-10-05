@@ -51,7 +51,7 @@ export function createSfx(A) {
       const w = this.wet; const m = this.sp.wetMul; const dg = Math.max(0.12, Math.sqrt(this.sp.dryGain));
       this.gS.gain.setTargetAtTime(Math.min(1.2, w[0] * m / dg * Math.min(1, dg + 0.4)), now, 0.05); this.gL.gain.setTargetAtTime(Math.min(1.6, w[1] * m / dg * Math.min(1, dg + 0.4)), now, 0.05);
       if (this.dopplerOn && this.pitchCtl && this.lastDist !== null && this.lastT !== undefined && now > this.lastT + 0.01) {
-        const vr = (this.sp.dist - this.lastDist) / (now - this.lastT); const f = SOUND_SPEED / Math.max(60, SOUND_SPEED + Math.max(-220, Math.min(220, vr)));
+        const vr = (this.sp.dist - this.lastDist) / (now - this.lastT); const f = SOUND_SPEED / (SOUND_SPEED + 0.55 * Math.max(-250, Math.min(250, vr))); // cinematic: ~half-strength doppler
         this.pitchCtl.offset.setTargetAtTime(1200 * Math.log2(f * this.pitch / this.pitch0), now, 0.06);
       }
       if (this.lastT === undefined || now > this.lastT + 0.01) { this.lastDist = this.sp.dist; this.lastT = now; }

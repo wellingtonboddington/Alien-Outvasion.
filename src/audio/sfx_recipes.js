@@ -216,15 +216,15 @@ reg('missile_launch', { wet: [0.15, 0.45], g: 0.85, doppler: true }, (R) => {
   return D + 0.3;
 });
 reg('jet_pass', { wet: [0.1, 0.35], g: 0.85, doppler: true }, (R, o) => {
-  const t = R.t0, S = R.S; const D = R.D(o.dur || 7); const pk = D * 0.46; const dir = o.dir === -1 ? -1 : 1;
+  const t = R.t0, S = R.S; const D = R.D(o.dur || 7); const pk = D * 0.46; const dir = o.dir === -1 ? -1 : 1; const dp = R.h.sp ? 0 : 1; // positioned: the engine's real doppler takes over
   const out = o.noPan || R.h.sp ? R.out : (() => { const p = S.pan(-0.85 * dir); line(p.pan, t, [[0, -0.85 * dir], [pk - 0.5, -0.5 * dir], [pk + 0.3, 0.55 * dir], [D, 0.9 * dir]]); p.connect(R.out); return p; })();
   const env = S.g(0); env.gain.setValueAtTime(0.01, t); env.gain.exponentialRampToValueAtTime(0.06, t + pk * 0.55); env.gain.exponentialRampToValueAtTime(1, t + pk); env.gain.exponentialRampToValueAtTime(0.1, t + pk + 1.3); env.gain.exponentialRampToValueAtTime(0.004, t + D); env.connect(out);
   const n = S.n('pink', t, D + 0.1), f = S.f('bandpass', 900, 0.9); line(f.frequency, t, [[0, 700], [pk - 0.4, 1500], [pk, 2300], [pk + 0.6, 800], [D, 380]]);
   const f2 = S.f('lowpass', 3000, 0.7); line(f2.frequency, t, [[0, 900], [pk, 6500], [pk + 0.8, 1800], [D, 500]]);
   n.connect(f); f.connect(f2); f2.connect(env);
-  const w = S.o('sawtooth', 1500, t, D + 0.1); line(w.frequency, t, [[0, 1500 * 1.17], [pk - 0.15, 1500 * 1.17], [pk + 0.35, 1500 * 0.84], [D, 1500 * 0.82]]); const wf = S.f('bandpass', 1600, 9), wg = S.g(0.22); line(wf.frequency, t, [[0, 1750], [pk - 0.15, 1750], [pk + 0.35, 1260], [D, 1230]]);
+  const dpl = (x) => 1 + (x - 1) * dp; const w = S.o('sawtooth', 1500, t, D + 0.1); line(w.frequency, t, [[0, 1500 * dpl(1.17)], [pk - 0.15, 1500 * dpl(1.17)], [pk + 0.35, 1500 * dpl(0.84)], [D, 1500 * dpl(0.82)]]); const wf = S.f('bandpass', 1600, 9), wg = S.g(0.22); line(wf.frequency, t, [[0, 1750 * dpl(1.0)], [pk - 0.15, 1750 * dpl(1.0)], [pk + 0.35, 1260 * dpl(1.0)], [D, 1230 * dpl(1.0)]]);
   w.connect(wf); wf.connect(wg); wg.connect(env);
-  const w2 = S.o('square', 330, t, D + 0.1); line(w2.frequency, t, [[0, 330 * 1.17], [pk - 0.1, 330 * 1.17], [pk + 0.4, 330 * 0.84], [D, 330 * 0.82]]); const w2f = S.f('lowpass', 900, 1), w2g = S.g(0.16); w2.connect(w2f); w2f.connect(w2g); w2g.connect(env);
+  const w2 = S.o('square', 330, t, D + 0.1); line(w2.frequency, t, [[0, 330 * dpl(1.17)], [pk - 0.1, 330 * dpl(1.17)], [pk + 0.4, 330 * dpl(0.84)], [D, 330 * dpl(0.82)]]); const w2f = S.f('lowpass', 900, 1), w2g = S.g(0.16); w2.connect(w2f); w2f.connect(w2g); w2g.connect(env);
   const r = S.n('brown', t, D + 0.1), rf = S.f('lowpass', 260, 0.7), rg = S.g(0.9); r.connect(rf); rf.connect(rg); rg.connect(env);
   R.period = D; return D + 0.2;
 });
@@ -413,8 +413,8 @@ reg('door', { wet: [0.2, 0.2], g: 0.8 }, (R, o) => {
 reg('door_open', { wet: [0.2, 0.2], g: 0.7 }, (R) => {
   const t = R.t0, S = R.S; click(R, t, 2400, 0.45, 5);
   const o = S.o('sawtooth', R.F(95), t + 0.08, 1.2); line(o.frequency, t + 0.08, [[0, R.F(95)], [0.4, R.F(180)], [0.9, R.F(150)]]);
-  const f = S.f('bandpass', 520, 9), g = S.g(0); line(g.gain, t + 0.08, [[0, 0], [0.1, 0.16], [0.9, 0.12], [1.05, 0]]); const v = S.o('sine', 11, t, 1.4), vg = S.g(R.F(7)); v.connect(vg); vg.connect(o.frequency); o.connect(f); f.connect(g); g.connect(R.out);
-  nb(R, t + 0.1, { kind: 'pink', type: 'bandpass', f0: 1200, q: 3, dur: 0.9, peak: 0.05, tc: 0.4, atk: 0.1 });
+  const f = S.f('bandpass', 520, 9), g = S.g(0); line(g.gain, t + 0.08, [[0, 0], [0.1, 0.9], [0.9, 0.7], [1.05, 0]]); const v = S.o('sine', 11, t, 1.4), vg = S.g(R.F(7)); v.connect(vg); vg.connect(o.frequency); o.connect(f); f.connect(g); g.connect(R.out);
+  nb(R, t + 0.1, { kind: 'pink', type: 'bandpass', f0: 1200, q: 3, dur: 0.9, peak: 0.2, tc: 0.4, atk: 0.1 });
   return 1.5;
 });
 const FOOT = {

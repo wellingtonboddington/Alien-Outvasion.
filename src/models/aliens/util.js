@@ -221,10 +221,11 @@ export function bindAlong(g, joints, bones, blend = 0.06) {
     }
     // find bone(s)
     let k = 0; while (k < segs - 1 && bestS >= L[k + 1]) k++;
-    let b0 = bones[k], b1 = -1, w1 = 0;
+    const bAt = (j) => bones[Math.min(j, bones.length - 1)];
+    let b0 = bAt(k), b1 = -1, w1 = 0;
     const bw = (j) => (Array.isArray(blend) ? blend[j] : blend);
-    if (k < segs - 1) { const bwk = bw(k); const w = sstep(L[k + 1] - bwk, L[k + 1] + bwk, bestS); if (w > 0) { b1 = bones[k + 1]; w1 = w; } }
-    if (k > 0 && b1 < 0) { const bwk = bw(k - 1); const w = 1 - sstep(L[k] - bwk, L[k] + bwk, bestS); if (w > 0) { b1 = bones[k - 1]; w1 = w; } }
+    if (k < segs - 1) { const bwk = bw(k); const w = sstep(L[k + 1] - bwk, L[k + 1] + bwk, bestS); if (w > 0) { b1 = bAt(k + 1); w1 = w; } }
+    if (k > 0 && b1 < 0) { const bwk = bw(k - 1); const w = 1 - sstep(L[k] - bwk, L[k] + bwk, bestS); if (w > 0) { b1 = bAt(k - 1); w1 = w; } }
     si[i * 4] = b0; sw[i * 4] = 1 - w1; if (b1 >= 0) { si[i * 4 + 1] = b1; sw[i * 4 + 1] = w1; }
   }
   g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4)); return g;

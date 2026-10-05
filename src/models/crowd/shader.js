@@ -192,7 +192,11 @@ vec4 cNx = texture(uNor, vec3(vUvA, cLayer));
 {
   vec3 pc = slotCol(cPal, vInst.x, vInst.y);
   if (cPal == int(uKindF.w + 0.5) && vOvr.a > 0.0) pc = mix(pc, vOvr.rgb * (0.9 + 0.2 * hS(vInst.x, 4.4)), vOvr.a);
-  vec3 alb = mix(cTx.rgb, cTx.rgb * pc, cTx.a);
+  vec3 alb;
+  if (cSlot == 11) { // face layers: tint mask 1 = skin, 0.5 = hair, 0 = untinted (eyes, teeth, blood)
+    float aS = smoothstep(0.78, 0.95, cTx.a); float aH = 1.0 - smoothstep(0.08, 0.2, abs(cTx.a - 0.5));
+    alb = cTx.rgb * mix(mix(vec3(1.0), pc, aS), slotCol(2, vInst.x, vInst.y), aH);
+  } else alb = mix(cTx.rgb, cTx.rgb * pc, cTx.a);
   float dirt = 1.0 - uKindG.x * smoothstep(0.55, 0.0, vInfPos.y) * (0.45 + 0.55 * cTx.g);
   diffuseColor.rgb = alb * vColor.rgb * dirt;
   if (cSlot == 8) { diffuseColor.rgb = vColor.rgb; totalEmissiveRadiance += vColor.rgb * uKindF.x; }

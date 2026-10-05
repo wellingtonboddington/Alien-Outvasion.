@@ -27,13 +27,14 @@ export const MATS = {
   brick: { map: 'brick', nrm: 'brick', nrmS: 1.2, color: 0xffffff, rough: 0.92, tile: 0.9 },
   concrete: { map: 'concrete', nrm: 'concrete', nrmS: 0.8, color: 0xffffff, rough: 0.95, tile: 2.0 },
   asphalt: { map: 'asphalt', color: 0xffffff, rough: 0.96, tile: 3.0 },
+  grass: { map: 'grass', color: 0xffffff, rough: 1.0, tile: 2.0 },
   steel: { map: 'steel', nrm: 'steel', nrmS: 0.25, color: 0xffffff, rough: 0.3, metal: 0.9, tile: 1.2, env: 1.0 },
   diamond: { map: 'diamond', nrm: 'diamond', nrmS: 1.0, color: 0xffffff, rough: 0.42, metal: 0.8, tile: 0.8, env: 0.9 },
   carpet: { map: 'carpet', color: 0xffffff, rough: 1.0, tile: 1.0 },
   fabric: { map: 'fabric', color: 0xffffff, rough: 0.95, tile: 0.5 },
   leather: { map: 'leather', nrm: 'leather', nrmS: 0.6, color: 0xffffff, rough: 0.5, tile: 0.5, env: 0.4 },
   corrugated: { map: 'corrugated', nrm: 'corrugated', nrmS: 0.9, color: 0xffffff, rough: 0.55, metal: 0.45, tile: 0.8, env: 0.7 },
-  ceilTile: { map: 'ceilTile', color: 0xffffff, rough: 0.95, tile: 1.2 },
+  ceilTile: { map: 'ceilTile', color: 0xffffff, rough: 0.95, tile: 1.2, selfLit: 0.28 },
   rubber: { map: 'rubber', color: 0xffffff, rough: 0.9, tile: 0.8 },
   tarp: { map: 'tarp', color: 0xffffff, rough: 0.7, tile: 1.4, side: 'double' },
   sheet: { map: 'sheet', color: 0xffffff, rough: 0.95, tile: 0.8, side: 'double' },
@@ -105,6 +106,7 @@ export class Kit {
       if (def.env) { mat.envMap = envTex(def.envKind || this.envKind); mat.envMapIntensity = def.env; }
       if (def.transparent) { mat.transparent = true; mat.opacity = def.opacity ?? 0.5; mat.depthWrite = false; }
       if (def.alphaTest) mat.alphaTest = def.alphaTest;
+      if (def.selfLit && mat.map) { mat.emissive.set(0xffffff); mat.emissiveMap = mat.map; mat.emissiveIntensity = def.selfLit; }
       if (def.emissive) { mat.emissive.set(def.emissive); mat.emissiveIntensity = def.emissiveIntensity ?? 1; }
       this._patchAmbience(mat);
       if (def.noShadow) mat.userData.noShadow = true;

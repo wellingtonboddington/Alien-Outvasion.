@@ -26,11 +26,32 @@ const SPEC = {
     roof: [-1.55, 0.3], doors: [0.98, -0.0, -1.1], win: { front: [0.9, 0.5], rear: [-1.7, -1.45], bpillar: -0.1, noRear: false }, hl: { x0: 0.3, x1: 0.74, yc: 0.78, h: 0.12 }, tl: { x0: 0.5, x1: 0.8, yc: 0.88, h: 0.2 }, seats: [0.36, -0.75], dashZ: 0.68, tailKind: 'hatch',
   },
   suv: {
-    L: 4.85, hw: 0.97, wr: 0.385, tw: 0.265, rim: 0.23, wheel: 'alloy10', zF: 1.5, zR: -1.38, tx: 0.82, roundF: 0.45, roundB: 0.25,
+    L: 4.85, hw: 0.97, wr: 0.385, tw: 0.265, rim: 0.23, wheel: 'alloy10', zF: 1.5, zR: -1.38, tx: 0.82, roundF: 0.4, roundB: 0.22,
     tubW: [[-2.425, 0.88], [-2.0, 0.955], [-1.2, 0.965], [1.2, 0.965], [2.0, 0.945], [2.425, 0.86]], tubB: [[-2.425, 0.4], [-2.0, 0.32], [-1.3, 0.3], [1.3, 0.3], [2.1, 0.32], [2.425, 0.36]],
-    tubT: [[-2.425, 1.04], [-2.2, 1.14], [-1.4, 1.14], [1.0, 1.1], [1.3, 1.1], [2.0, 1.0], [2.425, 0.88]],
-    cab: { z0: -2.3, z1: 1.2, yb: 1.12, top: [[-2.3, 1.15], [-2.25, 1.4], [-2.1, 1.7], [-1.5, 1.8], [0.2, 1.8], [0.6, 1.74], [1.0, 1.45], [1.2, 1.14]], wb: [[-2.3, 0.88], [-2.0, 0.92], [0.6, 0.93], [1.2, 0.86]], wt: [[-2.3, 0.8], [-2.0, 0.84], [0.6, 0.84], [1.2, 0.66]], p: 4 },
-    roof: [-2.08, 0.5], doors: [1.2, 0.2, -1.2], win: { front: [1.12, 0.7], rear: [-1.7, -1.55], bpillar: -0.5, extra: [[-1.6, -1.65, -2.05, -2.15]] }, hl: { x0: 0.4, x1: 0.88, yc: 0.93, h: 0.13 }, tl: { x0: 0.66, x1: 0.92, yc: 0.92, h: 0.2 }, seats: [0.58, -0.4], dashZ: 0.95, tailKind: 'suv',
+    tubT: [[-2.425, 1.02], [-2.2, 1.12], [-1.4, 1.12], [0.9, 1.1], [1.1, 1.08], [2.0, 1.03], [2.425, 0.92]],
+    cab: { z0: -2.32, z1: 1.0, yb: 1.1, top: [[-2.32, 1.12], [-2.29, 1.38], [-2.2, 1.64], [-2.05, 1.76], [-1.5, 1.8], [0.1, 1.8], [0.45, 1.74], [0.8, 1.42], [1.0, 1.12]], wb: [[-2.32, 0.88], [-2.0, 0.92], [0.6, 0.93], [1.0, 0.88]], wt: [[-2.32, 0.78], [-2.0, 0.84], [0.6, 0.85], [1.0, 0.7]], p: 4 },
+    roof: [-2.1, 0.3], doors: [1.0, 0.15, -1.15], win: { front: [0.92, 0.55], rear: [-1.55, -1.4], bpillar: -0.5, extra: [[-1.6, -1.62, -2.0, -2.12]], m: 0.1 }, hl: { x0: 0.42, x1: 0.88, yc: 0.88, h: 0.12 }, tl: { x0: 0.6, x1: 0.94, yc: 1.0, h: 0.22 }, seats: [0.58, -0.4], dashZ: 0.8, tailKind: 'suv',
+  },
+  van: {
+    L: 5.0, hw: 0.94, wr: 0.34, tw: 0.215, rim: 0.2, wheel: 'steel', zF: 1.58, zR: -1.4, tx: 0.8, roundF: 0.4, roundB: 0.2, p: 4.6,
+    tubW: [[-2.5, 0.86], [-2.1, 0.93], [-1.2, 0.94], [1.4, 0.94], [2.1, 0.92], [2.5, 0.84]], tubB: [[-2.5, 0.4], [-2.0, 0.32], [-1.3, 0.28], [1.3, 0.28], [2.1, 0.3], [2.5, 0.34]],
+    tubT: [[-2.5, 1.02], [-2.3, 1.1], [-1.0, 1.1], [1.1, 1.08], [1.5, 1.05], [2.0, 0.95], [2.5, 0.8]],
+    cab: { z0: -2.46, z1: 1.55, yb: 1.08, top: [[-2.46, 1.1], [-2.44, 1.7], [-2.38, 2.0], [-2.2, 2.06], [0.2, 2.08], [0.8, 2.04], [1.2, 1.7], [1.55, 1.1]], wb: [[-2.46, 0.88], [-2.2, 0.9], [0.8, 0.91], [1.55, 0.86]], wt: [[-2.46, 0.84], [-2.2, 0.86], [0.8, 0.87], [1.55, 0.7]], p: 5 },
+    roof: [-2.2, 0.8], doors: [1.5, 0.62, -0.85], win: { front: [1.38, 0.98], rear: [-1.95, -2.15], bpillar: 0.57, m: 0.12, bm: 0.09 }, hl: { x0: 0.38, x1: 0.82, yc: 0.78, h: 0.13 }, tl: { x0: 0.78, x1: 0.92, yc: 1.3, h: 0.4 }, seats: [0.95, 0.0], dashZ: 1.15, tailKind: 'van',
+  },
+  ambulance: {
+    L: 5.3, hw: 0.97, wr: 0.34, tw: 0.215, rim: 0.2, wheel: 'steel', zF: 1.65, zR: -1.55, tx: 0.82, roundF: 0.4, roundB: 0.15, p: 5,
+    tubW: [[-2.65, 0.9], [-2.2, 0.96], [-1.2, 0.97], [1.4, 0.97], [2.1, 0.95], [2.65, 0.86]], tubB: [[-2.65, 0.4], [-2.0, 0.32], [-1.3, 0.28], [1.3, 0.28], [2.1, 0.3], [2.65, 0.34]],
+    tubT: [[-2.65, 1.05], [-2.4, 1.1], [-1.0, 1.1], [1.1, 1.08], [1.6, 1.05], [2.1, 0.95], [2.65, 0.8]],
+    cab: { z0: -2.6, z1: 1.65, yb: 1.08, top: [[-2.6, 1.1], [-2.58, 2.2], [-2.5, 2.3], [-2.2, 2.34], [0.3, 2.34], [0.85, 2.3], [1.25, 1.75], [1.65, 1.1]], wb: [[-2.6, 0.92], [-2.2, 0.95], [0.8, 0.96], [1.65, 0.9]], wt: [[-2.6, 0.9], [-2.2, 0.92], [0.8, 0.93], [1.65, 0.7]], p: 6 },
+    roof: [-2.2, 0.85], doors: [1.6, 0.7, 0.2], win: { front: [1.5, 1.05], rear: [0.9, 0.82], noRear: true, m: 0.12, bm: 0.09 }, hl: { x0: 0.4, x1: 0.86, yc: 0.78, h: 0.13 }, tl: { x0: 0.82, x1: 0.95, yc: 1.3, h: 0.5 }, seats: [1.05, 0.2], dashZ: 1.2, tailKind: 'van',
+  },
+  pickup: {
+    L: 5.35, hw: 0.95, wr: 0.38, tw: 0.255, rim: 0.22, wheel: 'alloy5', zF: 1.62, zR: -1.55, tx: 0.81, roundF: 0.4, roundB: 0.12, p: 4.6, bed: -0.55,
+    tubW: [[-2.675, 0.92], [-2.0, 0.95], [-1.2, 0.95], [1.3, 0.95], [2.1, 0.93], [2.675, 0.86]], tubB: [[-2.675, 0.42], [-2.0, 0.34], [-1.3, 0.32], [1.3, 0.32], [2.1, 0.34], [2.675, 0.4]],
+    tubT: [[-2.675, 0.7], [-2.4, 0.72], [-0.6, 0.72], [-0.5, 1.1], [0.9, 1.1], [1.3, 1.08], [2.0, 1.02], [2.675, 0.9]],
+    cab: { z0: -0.5, z1: 1.12, yb: 1.1, top: [[-0.5, 1.12], [-0.48, 1.5], [-0.4, 1.76], [-0.1, 1.84], [0.5, 1.82], [0.85, 1.72], [1.12, 1.12]], wb: [[-0.5, 0.9], [0.5, 0.91], [1.12, 0.88]], wt: [[-0.5, 0.78], [0.5, 0.8], [0.85, 0.74], [1.12, 0.62]], p: 4 },
+    roof: [-0.35, 0.5], doors: [1.12, 0.5, -0.3], win: { front: [1.0, 0.62], rear: [-0.35, -0.38], bpillar: 0.28, m: 0.1 }, hl: { x0: 0.42, x1: 0.86, yc: 0.84, h: 0.13 }, tl: { x0: 0.8, x1: 0.94, yc: 0.62, h: 0.14, bedOnly: true }, seats: [0.55, -0.05], dashZ: 0.82, tailKind: 'pickup',
   },
 };
 
@@ -56,17 +77,6 @@ function bodyDecal(kind, spec, tub, livery) {
     // dirt: lower body + arch dust
     g = ctx.createLinearGradient(0, V(0.55), 0, V(0.2)); g.addColorStop(0, 'rgba(90,76,60,0)'); g.addColorStop(1, 'rgba(90,76,60,0.38)'); ctx.fillStyle = g; ctx.fillRect(0, V(0.55), w, V(0.2) - V(0.55));
     speckle(ctx, w, h, { count: 400, colors: ['#554', '#222', '#887'], alpha: [0.03, 0.12], size: [1, 3], seed: kind.length });
-    if (livery === 'police') {
-      // black/white livery: black lower doors? classic: white body with blue/black stripe + POLICE text
-      ctx.fillStyle = 'rgba(20,40,110,0.95)'; ctx.fillRect(U(dR) - 10, V(0.78), U(dF) - U(dR) + 20, h * 0.06); ctx.fillStyle = 'rgba(210,30,40,0.95)'; ctx.fillRect(U(dR) - 10, V(0.78) + h * 0.07, U(dF) - U(dR) + 20, h * 0.015);
-      ctx.fillStyle = 'rgba(20,40,110,0.95)'; ctx.font = `900 ${h * 0.16}px "Liberation Sans", Arial, sans-serif`; ctx.textAlign = 'center'; ctx.fillText('POLICE', U((dF + dR) / 2 - 0.2), V(0.62));
-      ctx.font = `bold ${h * 0.06}px "Liberation Sans", Arial, sans-serif`; ctx.fillText('PNP  -  TO PROTECT AND SERVE', U((dF + dR) / 2 - 0.2), V(0.52));
-    } else if (livery === 'taxi') {
-      ctx.fillStyle = '#111'; const n = 14, y0 = V(0.8); for (let i = 0; i < n * 2; i++) { ctx.fillRect(U(dR) + (i * (U(dF) - U(dR)) / (n * 2)), y0 + (i % 2) * h * 0.035, (U(dF) - U(dR)) / (n * 2), h * 0.035); }
-      ctx.font = `900 ${h * 0.14}px "Liberation Sans", Arial, sans-serif`; ctx.textAlign = 'center'; ctx.fillText('TAXI', U((dF + dR) / 2 - 0.1), V(0.6)); ctx.font = `bold ${h * 0.05}px "Liberation Sans", Arial, sans-serif`; ctx.fillText('METERED  -  24 HRS', U((dF + dR) / 2 - 0.1), V(0.5));
-    } else if (livery === 'ambulance') {
-      ctx.fillStyle = '#d6222a'; ctx.fillRect(0, V(0.62), w, h * 0.07); ctx.fillStyle = '#e8801c'; ctx.fillRect(0, V(0.62) + h * 0.085, w, h * 0.02);
-    }
   }, { wrap: 'clamp', aniso: 8 }));
 }
 
@@ -87,6 +97,30 @@ function surfStrip(ts, x0, x1, yc, h, zEnd, end, off = 0.004, n = 8, rows = 3) {
   }
   for (let j = 0; j < rows; j++) for (let i = 0; i < n; i++) { const a = j * (n + 1) + i, b = a + 1, c = a + n + 1, d = c + 1; if (end > 0) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+/** conforming side panel (both flanks) for text/livery decals. UV reads left->right on both flanks. */
+function sideStrip(ts, z0, z1, y0, y1, side, off = 0.004, nx = 12, ny = 3) {
+  const pos = [], uv = [], idx = [];
+  for (let j = 0; j <= ny; j++) { const y = lerp(y0, y1, j / ny); for (let i = 0; i <= nx; i++) { const z = lerp(z0, z1, i / nx); const x = (ts.xAt(z, y) ?? 0.8) + off; pos.push(side * x, y, z); uv.push(side > 0 ? 1 - i / nx : i / nx, j / ny); } }
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, d = c + 1; if (side < 0) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function liveryTex(kind) {
+  return cached('car:livery:' + kind, () => canvasTex(texRes(1024), texRes(256), (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h); const F = '"Liberation Sans", "DejaVu Sans", Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (kind === 'taxi') { ctx.fillStyle = '#111'; const n = 28; for (let i = 0; i < n; i++) { ctx.fillRect(i * w / n, h * 0.05 + (i % 2) * h * 0.1, w / n, h * 0.1); ctx.fillRect(i * w / n, h * 0.15 + (i % 2) * h * 0.1 - 0, w / n, 0); } ctx.font = `900 ${h * 0.4}px ${F}`; ctx.fillText('TAXI', w * 0.5, h * 0.55); ctx.font = `bold ${h * 0.12}px ${F}`; ctx.fillText('METERED  •  24 HOURS  •  CALL 8-777', w * 0.5, h * 0.87); }
+    else if (kind === 'police') { ctx.fillStyle = '#142a78'; ctx.fillRect(0, h * 0.34, w, h * 0.13); ctx.fillStyle = '#d4222c'; ctx.fillRect(0, h * 0.5, w, h * 0.04); ctx.fillStyle = '#142a78'; ctx.font = `900 ${h * 0.34}px ${F}`; ctx.fillText('POLICE', w * 0.5, h * 0.17); ctx.font = `bold ${h * 0.11}px ${F}`; ctx.fillStyle = '#fff'; ctx.fillText('PNP  -  TO SERVE AND PROTECT', w * 0.5, h * 0.405); ctx.fillStyle = '#142a78'; ctx.beginPath(); ctx.arc(w * 0.1, h * 0.75, h * 0.17, 0, TAU); ctx.fill(); ctx.fillStyle = '#e6c030'; ctx.beginPath(); ctx.arc(w * 0.1, h * 0.75, h * 0.12, 0, TAU); ctx.fill(); ctx.font = `bold ${h * 0.13}px ${F}`; ctx.fillStyle = '#142a78'; ctx.fillText('PNP', w * 0.5, h * 0.75); }
+    else if (kind === 'ambulance') { ctx.fillStyle = '#d6222a'; ctx.fillRect(0, h * 0.5, w, h * 0.12); ctx.fillStyle = '#ee8a1c'; ctx.fillRect(0, h * 0.66, w, h * 0.03); ctx.fillStyle = '#d6222a'; ctx.font = `900 ${h * 0.28}px ${F}`; ctx.fillText('AMBULANCE', w * 0.5, h * 0.25); ctx.fillRect(w * 0.1 - h * 0.14, h * 0.8 - h * 0.04, h * 0.28, h * 0.08); ctx.fillRect(w * 0.1 - h * 0.04, h * 0.8 - h * 0.14, h * 0.08, h * 0.28); ctx.fillStyle = '#1a3a8a'; ctx.font = `bold ${h * 0.1}px ${F}`; ctx.fillText('EMERGENCY MEDICAL SERVICES  -  CALL 911', w * 0.55, h * 0.88); }
+    else if (kind === 'fuel') { ctx.fillStyle = '#c8202a'; ctx.font = `900 ${h * 0.4}px ${F}`; ctx.fillText('PETRON', w * 0.5, h * 0.4); ctx.fillStyle = '#111'; ctx.font = `bold ${h * 0.14}px ${F}`; ctx.fillText('FLAMMABLE  -  DIESEL / UNLEADED', w * 0.5, h * 0.78); }
+    else if (kind === 'box') { ctx.fillStyle = '#1a4aa8'; ctx.font = `900 ${h * 0.34}px ${F}`; ctx.fillText('FASTLINE', w * 0.4, h * 0.4); ctx.fillStyle = '#e8b020'; ctx.fillRect(0, h * 0.62, w, h * 0.08); ctx.fillStyle = '#111'; ctx.font = `bold ${h * 0.12}px ${F}`; ctx.fillText('NATIONWIDE DELIVERY - MANILA - CEBU - DAVAO', w * 0.5, h * 0.84); }
+    else if (kind === 'bus') { ctx.fillStyle = '#fff'; ctx.font = `900 ${h * 0.36}px ${F}`; ctx.fillText('VICTORY LINER', w * 0.45, h * 0.5); ctx.fillStyle = '#ffd21f'; ctx.fillRect(0, h * 0.78, w, h * 0.07); }
+    else if (kind === 'pickup') { ctx.fillStyle = '#111'; ctx.font = `900 ${h * 0.3}px ${F}`; ctx.fillText('4x4', w * 0.5, h * 0.5); }
+  }, { wrap: 'clamp', aniso: 8 }));
+}
+function addSideDecals(r, kind, { z0, z1, y0, y1, off = 0.004 }) {
+  const tex = liveryTex(kind); const m = infectable(new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.5, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, depthWrite: false }));
+  const tsT = r.geo.tub.userData.surf, tsC = r.geo.info.cab.userData.surf; const ts = { xAt: (z, y) => { const a = tsT.xAt(z, y), b = tsC.xAt(z, y); return a === null ? b : b === null ? a : Math.max(a, b); } }; for (const sx of [1, -1]) { const mesh = new THREE.Mesh(sideStrip(ts, z0, z1, y0, y1, sx, off), m); mesh.name = 'decal'; r.chassis.add(mesh); }
+  r.mats.decal = m; return m;
 }
 function headlight(P, ts, zEnd, { x0 = 0.3, x1 = 0.8, yc = 0.8, h = 0.12, hi = true } = {}) {
   const n = hi ? 8 : 4;
@@ -150,7 +184,7 @@ function carGeometry(kind, lod) {
     const cabSpec = (inset) => ({ z0: C.z0 + inset, z1: C.z1 - inset, n: hiq ? 36 : 20, w: (z) => cwb(z) - inset, wt: (z) => cwt(z) - inset, yb: C.yb - 0.01, yt: (z) => ctop(z) - inset, p: C.p, radial: hiq ? 28 : 14, round: [0, 0], uvY: [0.2, 1.3] });
     const cabShell = loftZ(cabSpec(0)); const cabGlass = loftZ(cabSpec(0.014));
     P.add('paint', tub); P.add('paintCab', cabShell); P.add('glass', cabGlass);
-    const wheels = [[spec.zF, spec.wr], [spec.zR, spec.wr]]; info.arches = wheelArches(P, spec, tub, wheels);
+    const wheels = (spec.archZ || [spec.zF, spec.zR]).map((z) => [z, spec.wr]); info.arches = wheelArches(P, spec, tub, wheels);
     info.windows = makeWindowCfg(spec);
     // chrome window-bottom strip along both sides (follows the shell)
     const cs = cabShell.userData.surf; const zA = spec.doors[0] + 0.02, zB = spec.doors[2] - 0.05; const nS = 10;
@@ -187,7 +221,15 @@ function carGeometry(kind, lod) {
     seatShape(P, -0.4, sy, spec.seats[1]); seatShape(P, 0.4, sy, spec.seats[1]); seatShape(P, 0, sy - 0.01, spec.seats[1], { head: false, w: 0.4 });
     P.add('int', rbox(1.5, 0.22, 0.38, 0.06, 2), { pos: [0, 0.9, spec.dashZ], rot: [0.2, 0, 0] });
     P.add('int', rbox(1.0, 0.03, 1.3, 0.01, 1), { pos: [0, ctop(0) - 0.07, (spec.roof[0] + spec.roof[1]) / 2] });
-    info.tub = tub;
+    if (kind === 'pickup') {
+      const bz0 = -2.675, bz1 = spec.bed - 0.05; const bl = bz1 - bz0, bc = (bz0 + bz1) / 2;
+      for (const sx of [1, -1]) { P.add('paint', rbox(0.07, 0.36, bl, 0.025, 1), { pos: [sx * 0.9, 0.9, bc] }); P.add('chrome', rbox(0.09, 0.025, bl, 0.01, 1), { pos: [sx * 0.9, 1.085, bc] }); P.add('liner', rbox(0.5, 0.2, 0.62, 0.05, 1), { pos: [sx * 0.64, 0.82, spec.zR] }); }
+      P.add('paint', rbox(1.8, 0.4, 0.06, 0.02, 1), { pos: [0, 0.9, bz0 + 0.03] }); P.add('chrome', rbox(1.78, 0.025, 0.08, 0.01, 1), { pos: [0, 1.1, bz0 + 0.03] }); P.add('black', rbox(0.2, 0.05, 0.03, 0.01, 1), { pos: [0, 1.0, bz0 - 0.005] });
+      P.add('paint', rbox(1.8, 0.62, 0.08, 0.025, 1), { pos: [0, 1.0, bz1 + 0.04] }); P.add('liner', rbox(1.72, 0.03, bl, 0.01, 1), { pos: [0, 0.745, bc] }); for (let i = -4; i <= 4; i++) P.add('black', rbox(0.06, 0.02, bl - 0.1, 0.008, 1), { pos: [i * 0.19, 0.762, bc] });
+      for (const sx of [1, -1]) P.add('lampTail', rbox(0.1, 0.22, 0.04, 0.02, 1), { pos: [sx * 0.86, 0.95, bz0 - 0.005] });
+      P.add('chrome', rbox(1.9, 0.12, 0.1, 0.04, 1), { pos: [0, 0.4, bz0 - 0.03] }); P.add('chrome', cyl(0.025, 0.025, 0.1, 8), { pos: [0, 0.34, bz0 - 0.1], rot: [Math.PI / 2, 0, 0] });
+    }
+    info.tub = tub; info.cab = cabShell;
     return { geos: P.geos(), info, spec, tub };
   });
 }
@@ -243,9 +285,11 @@ export function createCar(kind = 'sedan', opts = {}) {
   const k = kind;
   let r;
   if (k === 'sedan' || k === 'hatch' || k === 'suv') r = buildCar(k, opts);
-  else if (k === 'taxi') { r = buildCar({ base: 'sedan', name: 'taxi' }, { ...opts, paint: opts.paint ?? 'yellow', livery: 'taxi' }); addRoofSign(r, 'taxi'); }
-  else if (k === 'police') { r = buildCar({ base: 'sedan', name: 'police' }, { ...opts, paint: opts.paint ?? 'police', livery: 'police', plateStyle: 'ph' }); addLightBar(r); }
-  else if (k === 'ambulance' || k === 'van' || k === 'pickup') return createVanLike(k, opts);
+  else if (k === 'taxi') { r = buildCar({ base: 'sedan', name: 'taxi' }, { ...opts, paint: opts.paint ?? 'yellow', livery: 'taxi' }); addSideDecals(r, 'taxi', { z0: -1.15, z1: 1.05, y0: 0.44, y1: 0.88 }); addRoofSign(r, 'taxi'); }
+  else if (k === 'police') { r = buildCar({ base: 'sedan', name: 'police' }, { ...opts, paint: opts.paint ?? 'police', livery: 'police', plateStyle: 'ph' }); addSideDecals(r, 'police', { z0: -1.3, z1: 1.05, y0: 0.3, y1: 0.92 }); addLightBar(r); }
+  else if (k === 'van') r = buildCar('van', opts);
+  else if (k === 'pickup') r = buildCar('pickup', opts);
+  else if (k === 'ambulance') { r = buildCar('ambulance', { ...opts, paint: opts.paint ?? 'white', livery: 'ambulance' }); addSideDecals(r, 'ambulance', { z0: -2.45, z1: 0.35, y0: 0.5, y1: 1.65 }); addAmbulanceBits(r); }
   else r = buildCar('sedan', opts);
   const api = r.api; if (opts.damage) api.setDamage(opts.damage); if (opts.infection) api.setInfection(opts.infection); api.update(0, 0); return api;
 }
@@ -266,5 +310,18 @@ function addLightBar(r) {
   api.setSiren = (on) => { api.state.siren = !!on; }; api.state.siren = false;
   const prevUpdate = api.update; api.update = (dt, t) => { prevUpdate(dt, t); const on = api.state.siren ? 1 : 0; const ph = Math.floor(t * 6) % 2; red.emissiveIntensity = 0.15 + (ph === 0 ? 6 : 0.3) * on; blue.emissiveIntensity = 0.15 + (ph === 1 ? 6 : 0.3) * on; };
 }
-// van / ambulance / pickup are in a second builder below (vanLike)
-function createVanLike() { throw new Error('placeholder'); }
+function addAmbulanceBits(r) {
+  const { mats, spec, chassis, api } = r; const top = spec.cab.top[3][1];
+  const base = new THREE.Mesh(rbox(1.5, 0.07, 0.32, 0.03, 1), mats.black); base.position.set(0, top + 0.045, 0.45); chassis.add(base);
+  const red = infectable(new THREE.MeshStandardMaterial({ color: 0x601010, emissive: 0xff1010, emissiveIntensity: 3, roughness: 0.2 })), blue = infectable(new THREE.MeshStandardMaterial({ color: 0x101060, emissive: 0x1a40ff, emissiveIntensity: 3, roughness: 0.2 }));
+  const l1 = new THREE.Mesh(rbox(0.72, 0.1, 0.28, 0.04, 1), red); l1.position.set(0.38, top + 0.11, 0.45); const l2 = new THREE.Mesh(rbox(0.72, 0.1, 0.28, 0.04, 1), blue); l2.position.set(-0.38, top + 0.11, 0.45); chassis.add(l1, l2);
+  api.state.siren = false; api.setSiren = (on) => { api.state.siren = !!on; };
+  const prev = api.update; api.update = (dt, t) => { prev(dt, t); const on = api.state.siren ? 1 : 0; const ph = Math.floor(t * 6) % 2; red.emissiveIntensity = 0.15 + (ph === 0 ? 6 : 0.3) * on; blue.emissiveIntensity = 0.15 + (ph === 1 ? 6 : 0.3) * on; };
+  // rear doors lines + red cross on the back
+  const tex = canvasTex(128, 128, (ctx, w, h) => { ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#d6222a'; ctx.fillRect(w * 0.38, h * 0.12, w * 0.24, h * 0.76); ctx.fillRect(w * 0.12, h * 0.38, w * 0.76, h * 0.24); }, { wrap: 'clamp' }); tex.userData.shared = false;
+  const cm = infectable(new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, depthWrite: false }));
+  const c1 = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), cm); c1.position.set(0, 1.45, -spec.L / 2 - 0.004); c1.rotation.y = Math.PI; chassis.add(c1);
+  for (const sx of [1, -1]) { const c = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.55), cm); c.position.set(sx * (spec.hw + 0.006), 1.55, -1.3); c.rotation.y = sx * Math.PI / 2; chassis.add(c); }
+}
+
+export const _civ = { SPEC, carGeometry, buildCar, makeWindowCfg, surfStrip, surfZ, sideStrip, liveryTex, addSideDecals, headlight, taillight, wheelArches, seatShape, bodyDecal, carMaterials, wheelPositions, addLightBar, addRoofSign };

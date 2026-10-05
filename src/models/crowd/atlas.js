@@ -48,6 +48,8 @@ class LayerCtx {
   shape(path, v) {
     for (const k of ['a', 'm', 'h', 'r', 'e']) if (v[k] !== undefined) { const ctx = this[k]; ctx.save(); ctx.fillStyle = k === 'a' ? v.a : gray(v[k]); if (v.alpha !== undefined) ctx.globalAlpha = v.alpha; ctx.beginPath(); path(ctx); ctx.fill(); ctx.restore(); }
   }
+  clip(path) { for (const k of ['a', 'm', 'h', 'r', 'e']) { const c = this[k]; c.save(); c.beginPath(); path(c); c.clip(); } }
+  unclip() { for (const k of ['a', 'm', 'h', 'r', 'e']) this[k].restore(); }
   line(path, v) {
     for (const k of ['a', 'm', 'h', 'r', 'e']) if (v[k] !== undefined) { const ctx = this[k]; ctx.save(); ctx.strokeStyle = k === 'a' ? v.a : gray(v[k]); ctx.lineWidth = v.w || 1; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; if (v.alpha !== undefined) ctx.globalAlpha = v.alpha; ctx.beginPath(); path(ctx); ctx.stroke(); ctx.restore(); }
   }
@@ -163,8 +165,8 @@ PAINT.robotShell = (L, S) => {
 };
 PAINT.molle = (L, S) => {
   const f = field(S, 8, 2, 131), u = S / 256;
-  L.px('a', (x, y) => { const band = (y % Math.round(16 * u)) < Math.round(11 * u); const v = (band ? 0.78 : 0.5) * (0.88 + 0.24 * f[y * S + x]); const k = v * 255; return [k, k, k]; });
-  L.px('h', (x, y) => ((y % Math.round(16 * u)) < Math.round(11 * u)) ? 0.75 : 0.2);
+  L.px('a', (x, y) => { const band = (y % Math.round(16 * u)) < Math.round(11 * u); const v = (band ? 0.72 : 0.58) * (0.9 + 0.2 * f[y * S + x]); const k = v * 255; return [k, k, k]; });
+  L.px('h', (x, y) => ((y % Math.round(16 * u)) < Math.round(11 * u)) ? 0.62 : 0.38);
   for (let y = 0; y < S; y += Math.round(16 * u)) for (let x = 0; x < S; x += Math.round(24 * u)) L.line((c) => { c.moveTo(x + 2, y + 5 * u); c.lineTo(x + 2, y + 9 * u); }, { a: '#151515', w: 1.2 * u, alpha: 0.7 });
   L.px('r', () => 0.9);
 };
@@ -226,7 +228,15 @@ function face(L, S, o = {}) {
   }
   if (o.veins) for (let k = 0; k < o.veins; k++) { const sgn = k % 2 ? 1 : -1; const bx = cx + sgn * S * 0.3, by = S * (0.28 + 0.05 * k); L.line((c) => { c.moveTo(bx, by); c.quadraticCurveTo(bx - sgn * 16 * u, by + 22 * u, bx - sgn * 9 * u, by + 50 * u); c.moveTo(bx - sgn * 7 * u, by + 19 * u); c.lineTo(bx - sgn * 30 * u, by + 34 * u); }, { a: o.veinCol || '#4a2a5a', m: 0.3, w: 2.6 * u, alpha: 0.75, h: 0.7, e: o.veinGlow ? 1 : undefined }); }
   if (o.frost) { const r = new RNG(7); for (let k = 0; k < 200; k++) L.shape((c) => c.arc(r.range(0, S), r.range(S * 0.2, S * 0.92), r.range(0.6, 1.8) * u, 0, 6.283), { a: '#ffffff', m: 0.0, alpha: 0.55 }); }
-  const bw = S * 0.045; for (const [ch, col] of [['a', '#ffffff'], ['m', '#ffffff'], ['h', gray(0.5)], ['e', '#000']]) { const c = L[ch]; c.fillStyle = col; c.fillRect(0, 0, bw, S); c.fillRect(S - bw, 0, bw, S); c.fillRect(0, 0, S, bw); c.fillRect(0, S - bw, S, bw); }
+  // hair zone (tint mask 0.5 -> palette HAIR): above the hairline, plus temples/back of head (borders map to the back of the skull)
+  const hairPath = (c) => { c.moveTo(0, 0); c.lineTo(S, 0); c.lineTo(S, S * 0.62); c.lineTo(S * 0.93, S * 0.62); c.lineTo(S * 0.93, S * 0.34); c.quadraticCurveTo(S * 0.5, S * (o.hairline ?? 0.12), S * 0.07, S * 0.34); c.lineTo(S * 0.07, S * 0.62); c.lineTo(0, S * 0.62); c.closePath(); };
+  if (!o.noHair) {
+    L.shape(hairPath, { a: '#8a8a8a', m: 0.5, h: 0.6, r: 0.6 });
+    L.clip(hairPath);
+    const hr = new RNG(77); for (let k = 0; k < 90; k++) { const x = hr.range(0, S), y = hr.range(0, S * 0.5); L.line((c) => { c.moveTo(x, y); c.lineTo(x + hr.range(-5, 5), y + hr.range(S * 0.06, S * 0.2)); }, { a: hr.chance(0.5) ? '#d0d0d0' : '#4a4a4a', m: 0.5, w: 1.6 * u, alpha: 0.4, h: hr.range(0.3, 0.8) }); }
+    L.unclip();
+  }
+  const bw = S * 0.045; for (const [ch, col] of [['a', '#ffffff'], ['m', '#ffffff'], ['h', gray(0.5)], ['e', '#000']]) { const c = L[ch]; c.fillStyle = col; c.fillRect(0, S * 0.62, bw, S * 0.38); c.fillRect(S - bw, S * 0.62, bw, S * 0.38); c.fillRect(0, S - bw, S, bw); }
 }
 PAINT.faceHuman = (L, S) => face(L, S, { smile: 3, blush: 0.14 });
 PAINT.faceZomb = (L, S) => face(L, S, { hollow: 0.55, socket: '#2e2438', sclera: '#c8cdb0', iris: '#7a8260', pupilR: 2.2, irisR: 7.6, mouth: 'gash', blood: true, bloodshot: true, browA: 0.25, veins: 3, mouthW: 30, rough: 0.5, eyeW: 18, eyeH: 9 });
@@ -244,7 +254,7 @@ PAINT.faceRobot = (L, S) => {
 };
 
 const ORDER = ['weave', 'camo', 'knit', 'denim', 'leather', 'metal', 'skin', 'fleshUS', 'fleshIN', 'fleshDE', 'circuit', 'faceHuman', 'faceZomb', 'faceRobot', 'robotShell', 'molle', 'faceCebu', 'faceIndia', 'hair', 'fur', 'faceRus', 'fleshRU'];
-const NSTRENGTH = { weave: 2.2, camo: 1.2, knit: 3.5, denim: 2.4, leather: 3, metal: 1.2, skin: 1.2, fleshUS: 4, fleshIN: 3, fleshDE: 4, fleshRU: 2.5, circuit: 2, faceHuman: 2.2, faceZomb: 3, faceRobot: 1.5, faceCebu: 2.5, faceIndia: 3, faceRus: 3, robotShell: 1.8, molle: 3, hair: 2.5, fur: 4 };
+const NSTRENGTH = { weave: 2.2, camo: 1.2, knit: 3.5, denim: 2.4, leather: 3, metal: 1.2, skin: 1.2, fleshUS: 4, fleshIN: 3, fleshDE: 4, fleshRU: 2.5, circuit: 2, faceHuman: 2.2, faceZomb: 3, faceRobot: 1.5, faceCebu: 2.5, faceIndia: 3, faceRus: 3, robotShell: 1.8, molle: 1.4, hair: 2.5, fur: 4 };
 
 /** Build (cached) texture arrays. size follows Q.texSize (128 on phones, 256 otherwise). */
 export function getCrowdTextures() {

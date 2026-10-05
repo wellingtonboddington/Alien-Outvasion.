@@ -5,6 +5,8 @@ import { Builder } from './builder.js';
 import { MatSet } from './materials.js';
 import { finishObject } from './objects.js';
 import * as A from './landmarks_a.js';
+import * as Bm from './landmarks_b.js';
+import * as C from './landmarks_c.js';
 
 const REG = {
   dumaguete_blvd: { fn: A.boulevard, bounds: { w: 190, d: 60 } },
@@ -12,6 +14,14 @@ const REG = {
   cathedral: { fn: A.cathedral, bounds: { w: 120, d: 130 } },
   berlin_tv_tower: { fn: A.tvTower, bounds: { w: 300, d: 300 } },
   berlin_gate: { fn: A.brandenburgGate, bounds: { w: 220, d: 200 } },
+  moscow_kremlin: { fn: Bm.kremlin, bounds: { w: 600, d: 420 } },
+  newyork_towers: { fn: Bm.newyorkTowers, bounds: { w: 600, d: 300 } },
+  delhi_gate: { fn: Bm.delhiGate, bounds: { w: 200, d: 1100 } },
+  cebu_skyline: { fn: Bm.cebuSkyline, bounds: { w: 600, d: 400 } },
+  pentagon: { fn: C.pentagon, bounds: { w: 1800, d: 1800 } },
+  un_building: { fn: C.unBuilding, bounds: { w: 500, d: 500 } },
+  georgia_mountains: { fn: C.georgiaMountains, bounds: { w: 22000, d: 22000 } },
+  whitehouse_like: { fn: C.whiteHouse, bounds: { w: 520, d: 520 } },
 };
 export const LANDMARK_NAMES = () => Object.keys(REG);
 export function registerLandmarks(extra) { Object.assign(REG, extra); }
@@ -24,6 +34,6 @@ export function createLandmark(name, opts = {}) {
   const info = def.fn(B, ctx) || {}; const api = finishObject(B, mats, { shadows: opts.shadows });
   const g = api.root; g.name = 'landmark_' + name; for (const e of ctx.extra) g.add(e.root || e);
   g.userData = { ...g.userData, landmark: name, bounds: def.bounds, info, api }; g.update = (dt, t) => { api.update(dt, t); for (const e of ctx.extra) e.update && e.update(dt, t); }; g.dispose = () => { api.dispose(); for (const e of ctx.extra) e.dispose && e.dispose(); }; g.setNight = (n) => { api.setNight(n); for (const e of ctx.extra) e.setNight && e.setNight(n); };
-  g.fireAnchors = api.fireAnchors; g.anchors = info.anchors || []; g.stats = api.stats; if (opts.night) g.setNight(opts.night);
+  if (info.heightAt) g.heightAt = info.heightAt; g.fireAnchors = api.fireAnchors; g.anchors = info.anchors || []; g.stats = api.stats; if (opts.night) g.setNight(opts.night);
   return g;
 }

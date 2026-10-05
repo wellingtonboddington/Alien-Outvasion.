@@ -21,7 +21,7 @@ const WONDER = [[5, 2], [8, 2], [10, 2], [9, 1], [8, 1], [9, 2], [11, 2], [13, 2
 /* ---- layer presets */
 const L = {
   drone: (o) => ({ kind: 'drone', inst: 'dronesaw', notes: [0, 7, 12], lo: 26, every: 4, vel: 0.6, fx: 'lp', cut: 900, rev: 0.4, ...o }),
-  sub: (o) => ({ kind: 'drone', inst: 'sub', notes: [0], lo: 26, follow: true, vel: 0.7, fx: 'sat', drive: 2, cut: 700, rev: 0.1, att: 0.6, rel: 1.5, ...o }),
+  sub: (o) => ({ kind: 'drone', inst: 'sub', notes: [0], lo: 31, follow: true, vel: 0.7, fx: 'sat', drive: 2, cut: 700, rev: 0.1, att: 0.6, rel: 1.5, ...o }),
   str: (o) => ({ kind: 'pad', inst: 'strings', fx: 'str', reg: [50, 74], n: 4, vel: 0.6, rev: 0.55, att: 1.2, vib: 6, ...o }),
   warm: (o) => ({ kind: 'pad', inst: 'warm', fx: 'warm', reg: [46, 68], n: 4, vel: 0.6, rev: 0.5, ...o }),
   glass: (o) => ({ kind: 'pad', inst: 'glass', fx: 'none', reg: [72, 96], n: 3, vel: 0.5, rev: 0.8, ...o }),
@@ -52,13 +52,13 @@ export const CUES = {
     L.perc({ pats: ['K...............', '................', '....K...........', '................'], fill: '....k.k.T.T.TTTT', fillEvery: 4, vel: 0.75, i: [0.5, 0.8] }),
     L.hit({ inst: 'braam', dur: 4.5, lo: 26, vel: 0.85, every: 99, at: 0, perc: ['b'], i: [0.3, 0.55] }),
     L.rise({ bar: 0, len: 2, how: 'rev', hit: ['b'], vel: 0.55, i: [0.45, 0.8] }),
-    L.bell({ rate: 0.6, i: [0.2, 0.6], scale: true }),
+    L.bell({ rate: 0.6, i: [0.2, 0.6], scale: true, reg: [74, 93] }),
   ] },
 
   /* ------------------------------------------------------------------ CALM: warm, spacious (F major) */
   calm: { key: 'F', mode: 'major', bpm: 66, prog: 'Iadd9:2 vi7:2 IVM7:2 V Isus4', layers: [
     L.warm({ vel: 0.6, att: 1.8 }),
-    L.sub({ vel: 0.4, lo: 29, i: [0, 1] }),
+    L.sub({ vel: 0.4, i: [0, 1] }),
     L.arp({ inst: 'piano', rate: 2, pattern: 'updown', reg: [58, 82], vel: 0.42, rest: 0.18, i: [0.0, 0.4], rev: 0.7, fx: 'none' }),
     L.arp({ inst: 'harp', rate: 4, pattern: 'up', reg: [65, 90], vel: 0.36, rest: 0.45, i: [0.45, 0.85], rev: 0.8, fx: 'pluck', wet: 0.3 }),
     L.str({ i: [0.3, 0.75], vel: 0.5, att: 2.4, rel: 2.2, reg: [53, 77] }),
@@ -81,7 +81,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ CURIOUS: playful pizzicato, question-mark melodies (A dorian) */
   curious: { key: 'A', mode: 'dorian', bpm: 84, prog: 'i:2 IV:2 i:2 bVII:2', layers: [
     L.warm({ vel: 0.4, att: 1.6, cut: 1800 }),
-    L.sub({ vel: 0.35, lo: 33 }),
+    L.sub({ vel: 0.35 }),
     L.ost({ inst: 'spicc', pat: '1 . 3 . 2 . 5 . 1 . 3 . 5 . 3 .', unit: 1, lo: 57, vel: 0.45, gate: 0.5, o: { tc: 0.05 }, fx: 'pluck', dly: 0.5, wet: 0.2 }),
     L.arp({ inst: 'bell', rate: 4, pattern: 'rand', reg: [72, 93], vel: 0.32, rest: 0.4, i: [0.2, 0.8], rev: 0.8 }),
     L.mel({ inst: 'vox', vowel: 'o', gen: { cells: ['x...x...x.......', 'x.x.....x.......', '..x...x...x.....', 'x.......x...x...'], rest: 0.25, period: 3 }, every: 4, oct: 4, vel: 0.5, i: [0.15, 0.7] }),
@@ -93,7 +93,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ UNEASE: clusters, whispers, heartbeat (C# phrygian) */
   unease: { key: 'C#', mode: 'phrygian', bpm: 54, prog: 'icl:2 bIIcl:2 icl:2 bviicl:2', layers: [
     L.drone({ notes: [0, 1], every: 4, vel: 0.55, lo: 25 }),
-    L.sub({ vel: 0.45, lo: 25 }),
+    L.sub({ vel: 0.45 }),
     L.glass({ i: [0, 1], vel: 0.55, att: 3, rel: 3, reg: [70, 92], n: 4 }),
     L.str({ i: [0.25, 0.8], vel: 0.35, reg: [52, 70], att: 3 }),
     L.tex({ kinds: ['whisper', 'creak', 'scrape', 'drip'], rate: 1.0, vel: 0.7 }),
@@ -109,7 +109,7 @@ export const CUES = {
     L.ost({ inst: 'spicc', pat: '3! . 3 . 5! . 3 . 3! . 3 . 5! . 6 3', unit: 1, lo: 52, vel: 0.5, i: [0.3, 0.8], o: { tc: 0.06 }, gate: 0.6, rev: 0.2 }),
     L.ost({ inst: 'stab', pat: '3! . . . . . 5 . . . . . 3! . . .', unit: 1, lo: 52, vel: 0.8, i: [0.45, 1], fx: 'brass', rev: 0.4 }),
     L.arp({ inst: 'arpsyn', rate: 1, pattern: 'updown', reg: [64, 88], vel: 0.35, i: [0.55, 1], fx: 'pluck', dly: 0.75, wet: 0.25, rest: 0.1 }),
-    L.sub({ vel: 0.5, lo: 28 }),
+    L.sub({ vel: 0.5 }),
     L.perc({ pats: ['k...S...k...S...', 'k...S...k..kS...'], vel: 0.7, i: [0.3, 0.8], rev: 0.25 }),
     L.perc({ pats: ['h.h.h.h.h.h.h.hh'], vel: 0.5, i: [0.4, 1] }),
     L.str({ i: [0.35, 0.9], vel: 0.5, att: 0.9, reg: [55, 76] }),
@@ -119,7 +119,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ DREAD: low, slow, crushing (D phrygian) */
   dread: { key: 'D', mode: 'phrygian', bpm: 48, prog: 'i:4 bII:2 i:2', layers: [
     L.drone({ notes: [0, 7], every: 8, vel: 0.7, lo: 26, cut: 600 }),
-    L.sub({ vel: 0.6, lo: 26 }),
+    L.sub({ vel: 0.6 }),
     L.brass({ i: [0.15, 0.6], vel: 0.55, reg: [38, 58], n: 3, att: 3.2, rel: 3, g: 0.8 }),
     L.glass({ i: [0.0, 0.5], vel: 0.35, reg: [74, 92], n: 3, att: 3.5, rel: 3.5 }),
     L.choir({ i: [0.45, 0.9], vowel: 'o', fs: 0.88, reg: [48, 67], n: 3, vel: 0.5, att: 2.5 }),
@@ -133,7 +133,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ ARRIVAL: awe and menace — the theme in slow brass over choir (A minor) */
   arrival: { key: 'A', mode: 'minor', bpm: 54, prog: 'i bVI bIII bVII bVI bVII i V', layers: [
     L.drone({ notes: [0, 7, 12], every: 8, vel: 0.65, lo: 21 }),
-    L.sub({ vel: 0.6, lo: 21 }),
+    L.sub({ vel: 0.6 }),
     L.choir({ i: [0, 0.55], vel: 0.55, vowel: 'o', att: 2.2, reg: [55, 76] }),
     L.choir({ i: [0.5, 1], vel: 0.55, vowel: 'a', fs: 1.12, att: 1.6, reg: [60, 81], n: 4 }),
     L.str({ i: [0.15, 0.7], vel: 0.55, att: 2.2, reg: [48, 72] }),
@@ -149,7 +149,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ INVASION: aggressive low chugs, brass stabs, war drums (C minor) */
   invasion: { key: 'C', mode: 'minor', bpm: 100, prog: 'i:2 bVI bVII i:2 bII bVII', layers: [
     L.drone({ notes: [0, 7], every: 8, vel: 0.6, lo: 24 }),
-    L.sub({ vel: 0.6, lo: 24, drive: 3 }),
+    L.sub({ vel: 0.6, drive: 3 }),
     L.ost({ inst: 'cello', pat: '1 . 1 1 . 1 1 . 1 . 1 1 . 1 1 .', unit: 1, lo: 36, vel: 0.75, gate: 0.6, i: [0, 1], fx: 'sat', drive: 1.4, cut: 2400, rev: 0.2 }),
     L.ost({ inst: 'stab', pat: '1! . . . . . 3 . . . 1! . . . . .', unit: 1, lo: 48, vel: 0.85, i: [0.3, 0.8], fx: 'brass', rev: 0.45 }),
     L.ost({ inst: 'spicc', pat: '1 3 5 3 1 3 5 3', lo: 60, vel: 0.5, i: [0.55, 1], fx: 'str', rev: 0.3, o: { tc: 0.06 } }),
@@ -164,7 +164,7 @@ export const CUES = {
 
   /* ------------------------------------------------------------------ BATTLE: driving, heroic (D minor) */
   battle: { key: 'D', mode: 'minor', bpm: 138, prog: 'i bVI bIII bVII', layers: [
-    L.sub({ vel: 0.65, lo: 26, drive: 3 }),
+    L.sub({ vel: 0.65, drive: 3 }),
     L.ost({ inst: 'spicc', pat: '1 1 3 1 1 3 1 3 1 1 3 1 1 3 5 3', unit: 1, lo: 50, vel: 0.62, i: [0, 1], fx: 'str', rev: 0.25, gate: 0.55, o: { tc: 0.07 } }),
     L.ost({ inst: 'synbass', pat: 'R R R R R R R R', lo: 38, vel: 0.6, i: [0.2, 0.7], fx: 'sat', drive: 1.5, rev: 0.1, gate: 0.7 }),
     L.ost({ inst: 'stab', pat: '1! . 1 . . 1 . . 1! . 1 . . 3 . .', unit: 1, lo: 50, vel: 0.8, i: [0.35, 0.9], fx: 'brass', rev: 0.4 }),
@@ -181,7 +181,7 @@ export const CUES = {
 
   /* ------------------------------------------------------------------ CHASE: relentless synth/strings pulse (E minor) */
   chase: { key: 'E', mode: 'minor', bpm: 150, prog: 'i bVI bVII V', layers: [
-    L.sub({ vel: 0.6, lo: 28, drive: 3 }),
+    L.sub({ vel: 0.6, drive: 3 }),
     L.arp({ inst: 'arpsyn', rate: 1, pattern: 'updown', reg: [52, 76], vel: 0.45, fx: 'pluck', dly: 0.75, wet: 0.28, i: [0, 1], rev: 0.35, o: { tc: 0.09 } }),
     L.ost({ inst: 'synbass', pat: 'R R . R R . R R', lo: 40, vel: 0.6, fx: 'sat', rev: 0.1, gate: 0.6, i: [0, 1] }),
     L.ost({ inst: 'spicc', pat: '1 1 5 1 1 5 1 5 1 1 5 1 1 3 5 3', unit: 1, lo: 52, vel: 0.5, i: [0.3, 1], fx: 'str', o: { tc: 0.06 }, gate: 0.5 }),
@@ -196,7 +196,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ HORROR: music-box lullaby, clusters, scrapes (F# phrygian) */
   horror: { key: 'F#', mode: 'phrygian', bpm: 64, prog: 'i:2 bII:2 i:2 bV:2', layers: [
     L.drone({ notes: [0, 1], every: 4, vel: 0.5, lo: 30 }),
-    L.sub({ vel: 0.4, lo: 30 }),
+    L.sub({ vel: 0.4 }),
     L.glass({ i: [0, 1], vel: 0.5, reg: [72, 94], n: 4, att: 2.5 }),
     L.str({ i: [0.3, 0.9], vel: 0.35, reg: [62, 84], att: 0.3, n: 3 }),
     L.mel({ inst: 'bell', gen: { cells: ['x...x...x...x...', 'x...x.x.x.......', 'x.......x.x.....', 'x...x...........'], rest: 0.15, pent: true, lo: 76, hi: 94, period: 2 }, every: 4, oct: 5, vel: 0.5, rev: 0.9, o: { tc: 1.1 }, i: [0, 1] }),
@@ -209,7 +209,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ SORROW: solo cello/violin, piano, soft strings (D minor) */
   sorrow: { key: 'D', mode: 'minor', bpm: 56, prog: 'i bVI bIII bVII iv bVI V:2', layers: [
     L.warm({ vel: 0.6, att: 2.2, cut: 1500 }),
-    L.sub({ vel: 0.35, lo: 26 }),
+    L.sub({ vel: 0.35 }),
     L.mel({ inst: 'solo', phr: { A: THEME_A, B: THEME_B, C: THEME_C }, seq: 'ACBC', every: 4, oct: 4, vel: 0.7, i: [0, 1], rev: 0.75, vib: 4 }),
     L.mel({ inst: 'solo', phr: { A: THEME_A, B: THEME_B, C: THEME_C }, seq: 'ACBC', every: 4, oct: 3, vel: 0.5, i: [0.5, 1], rev: 0.75, att: 0.3 }),
     L.arp({ inst: 'piano', rate: 4, pattern: 'up', reg: [55, 79], vel: 0.38, rest: 0.4, i: [0.1, 0.6], rev: 0.75 }),
@@ -221,7 +221,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ NUCLEAR: ringing silence, sub swells, choir clusters (C phrygian) */
   nuclear: { key: 'C', mode: 'phrygian', bpm: 42, prog: 'icl:4 bIIcl:2 bviicl:2', layers: [
     L.drone({ notes: [0, 7, 12], every: 8, vel: 0.7, lo: 24, cut: 500 }),
-    L.sub({ vel: 0.65, lo: 24, att: 2 }),
+    L.sub({ vel: 0.65, att: 2 }),
     L.tex({ kinds: ['tone', 'ping'], rate: 0.7, vel: 0.7, o: {} }),
     L.glass({ i: [0, 1], vel: 0.5, reg: [74, 98], n: 4, att: 4, rel: 4 }),
     L.choir({ i: [0.1, 0.7], vowel: 'o', fs: 0.92, reg: [48, 70], n: 4, att: 3.5, rel: 3, vel: 0.5 }),
@@ -235,7 +235,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ HOPE: rising, warm, major (C major, canon progression) */
   hope: { key: 'C', mode: 'major', bpm: 72, prog: 'I V vi iii IV I IV V', layers: [
     L.warm({ vel: 0.55, att: 1.6 }),
-    L.sub({ vel: 0.4, lo: 24 }),
+    L.sub({ vel: 0.4 }),
     L.arp({ inst: 'piano', rate: 2, pattern: 'updown', reg: [55, 79], vel: 0.45, i: [0, 0.6], rev: 0.65, rest: 0.05 }),
     L.str({ i: [0.25, 0.7], vel: 0.55, att: 1.8, rel: 2, reg: [52, 76] }),
     L.mel({ inst: 'horn', phr: { A: HOPE_A }, seq: 'A', every: 8, oct: 4, vel: 0.65, i: [0.3, 0.75], rev: 0.75 }),
@@ -250,7 +250,7 @@ export const CUES = {
 
   /* ------------------------------------------------------------------ FINALE: the full orchestra, theme in major (E major) */
   finale: { key: 'E', mode: 'major', bpm: 78, prog: 'I V vi iii IV I IV V', layers: [
-    L.sub({ vel: 0.6, lo: 28, drive: 2.5 }),
+    L.sub({ vel: 0.6, drive: 2.5 }),
     L.warm({ vel: 0.5 }),
     L.str({ i: [0, 0.6], vel: 0.6, att: 1.2, reg: [52, 78], g: 0.9 }),
     L.str({ i: [0.4, 1], vel: 0.7, att: 0.9, reg: [55, 82] }),
@@ -269,7 +269,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ CREDITS: bittersweet roll (D major) */
   credits: { key: 'D', mode: 'major', bpm: 92, prog: 'I V vi IV IV I V:2', layers: [
     L.warm({ vel: 0.5, att: 1.5 }),
-    L.sub({ vel: 0.4, lo: 26 }),
+    L.sub({ vel: 0.4 }),
     L.ost({ inst: 'piano', pat: '1 3 2 3 4 3 2 3', lo: 50, vel: 0.5, gate: 0.9, i: [0, 1], fx: 'none', rev: 0.6 }),
     L.ost({ inst: 'pluck', pat: 'R . . R . . R .', lo: 38, vel: 0.6, fx: 'sat', drive: 1.2, i: [0.2, 1], o: { bright: 0.3 }, rev: 0.15 }),
     L.str({ i: [0.25, 0.8], vel: 0.55, att: 1.4, reg: [52, 76] }),
@@ -284,7 +284,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ TENSION LOW: held breath (E phrygian) */
   tension_low: { key: 'E', mode: 'phrygian', bpm: 60, prog: 'i:4 bII:4', layers: [
     L.drone({ notes: [0, 7], every: 8, vel: 0.55, lo: 28 }),
-    L.sub({ vel: 0.5, lo: 28 }),
+    L.sub({ vel: 0.5 }),
     L.glass({ i: [0, 0.8], vel: 0.35, reg: [70, 90], n: 3, att: 3 }),
     L.ost({ inst: 'sub', pat: 'R . . . . . . . . . . . . . . .', unit: 1, lo: 40, vel: 0.7, fx: 'sat', rev: 0.4, o: { att: 0.05, rel: 0.7 } }),
     L.perc({ pats: ['m...............', '................', '............m...', '................'], vel: 0.35, rev: 0.9 }),
@@ -295,7 +295,7 @@ export const CUES = {
 
   /* ------------------------------------------------------------------ TENSION HIGH: racing pulse, rising (B minor) */
   tension_high: { key: 'B', mode: 'minor', bpm: 120, prog: 'i:2 bII:2', layers: [
-    L.sub({ vel: 0.6, lo: 23, drive: 3 }),
+    L.sub({ vel: 0.6, drive: 3 }),
     L.ost({ inst: 'spicc', pat: '1! . 1 1 1! . 1 . 1! . 1 1 1! 3 5 3', unit: 1, lo: 47, vel: 0.55, fx: 'lp', cut: 3000, gate: 0.5, o: { tc: 0.06 } }),
     L.heart({ bpm: 120, vel: 0.5 }),
     L.perc({ pats: ['K...K...K...K...'], vel: 0.7, i: [0.4, 1] }),
@@ -309,7 +309,7 @@ export const CUES = {
   /* ------------------------------------------------------------------ ALIEN: whole-tone drift, theremin, inharmonic bells (C whole-tone) */
   alien: { key: 'C', mode: 'wholetone', bpm: 70, prog: 'Iwt:2 IIwt:2 bIIIwt:2 IIwt:2', layers: [
     L.drone({ notes: [0, 6], every: 8, vel: 0.5, lo: 24, cut: 700 }),
-    L.sub({ vel: 0.4, lo: 24 }),
+    L.sub({ vel: 0.4 }),
     L.glass({ i: [0, 1], vel: 0.55, reg: [60, 88], n: 4, att: 3 }),
     L.choir({ i: [0.25, 1], vowel: 'o', fs: 1.0, vib: 14, n: 3, att: 2.5, reg: [55, 76], vel: 0.45 }),
     L.mel({ inst: 'theremin', gen: { pent: false, cells: ['x.......x.......', 'x.....x.........', 'x...x...........'], rest: 0.2, lo: 64, hi: 88 }, glide: true, every: 4, oct: 5, vel: 0.5, i: [0.1, 0.8], rev: 0.9 }),
@@ -323,7 +323,7 @@ export const CUES = {
   wonder: { key: 'D', mode: 'lydian', bpm: 76, prog: 'I:2 II:2 IM7:2 II:2', layers: [
     L.glass({ i: [0, 1], vel: 0.55, reg: [66, 90], n: 4, att: 2.5 }),
     L.warm({ vel: 0.45, att: 2 }),
-    L.sub({ vel: 0.35, lo: 26 }),
+    L.sub({ vel: 0.35 }),
     L.arp({ inst: 'harp', rate: 2, pattern: 'up', reg: [62, 90], vel: 0.42, rest: 0.12, i: [0, 1], rev: 0.85, fx: 'pluck', wet: 0.3 }),
     L.str({ i: [0.2, 0.8], vel: 0.55, att: 2.2, rel: 2.4, reg: [52, 78] }),
     L.mel({ inst: 'horn', phr: { A: WONDER }, seq: 'A', every: 8, oct: 4, vel: 0.65, i: [0.35, 0.85], rev: 0.8 }),
@@ -335,7 +335,7 @@ export const CUES = {
 
   /* ------------------------------------------------------------------ RESOLVE: determination, march, theme in minor (C minor) */
   resolve: { key: 'C', mode: 'minor', bpm: 84, prog: 'i bVI bIII bVII i bVI bVII V', layers: [
-    L.sub({ vel: 0.6, lo: 24, drive: 2.5 }),
+    L.sub({ vel: 0.6, drive: 2.5 }),
     L.ost({ inst: 'spicc', pat: '1 1 1 1 1 1 1 1', lo: 48, vel: 0.6, fx: 'str', i: [0, 1], gate: 0.55, o: { tc: 0.08 } }),
     L.ost({ inst: 'cello', pat: '1 . 3 . 5 . 3 .', lo: 36, vel: 0.6, i: [0.2, 0.8], fx: 'lp', cut: 2200 }),
     L.str({ i: [0.1, 0.6], vel: 0.55, att: 1.2 }),

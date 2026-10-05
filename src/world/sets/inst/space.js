@@ -33,7 +33,7 @@ export function createObservatory(opts = {}) {
   // ----- drum & floor -----
   k.cyl('woodLight', [R, R, 0.2], [0, -0.1, 0], { seg: 56, uv: 'box', tile: 2.2 });
   for (const r of [2.6, 5.9, 6.1]) k.part('brass', new THREE.RingGeometry(r - 0.025, r + 0.025, 90), [0, 0.003, 0], { rx: -Math.PI / 2 });
-  for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; k.box('brass', [0.04, 3.3, 0.01], [Math.sin(a) * 4.25, 0.004, Math.cos(a) * 4.25], { ry: a, rx: 0 }); }
+  for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; k.box('brass', [0.04, 0.008, 3.3], [Math.sin(a) * 4.25, 0.004, Math.cos(a) * 4.25], { ry: a }); }
   arcSlab(k, 'paintCream', R, R + 0.35, 0, TAU, 0, WH, [0, 0, 0], { steps: 72, caps: false, top: false, bottom: false, inner: true, outer: true });
   arcSlab(k, 'woodDark', R - 0.02, R + 0.02, 0, TAU, 0, 1.2, [0, 0, 0], { steps: 72, caps: false, top: false, bottom: false, outer: false });
   arcSlab(k, 'steel', R - 0.1, R + 0.4, 0, TAU, WH - 0.12, WH, [0, 0, 0], { steps: 72 });
@@ -72,15 +72,14 @@ export function createObservatory(opts = {}) {
   // ----- telescope on fork mount (dynamic) -----
   k.cyl('concrete', [0.9, 1.0, 0.9], [0, 0.45, 0], { seg: 28 }); k.cyl('steel', [0.55, 0.62, 0.5], [0, 1.15, 0], { seg: 24 });
   const scope = k.sub('scope'); scope.glowInfect = false;
-  scope.cyl('paintWhite', [0.8, 0.8, 5.2], [0, 0, 0], { seg: 32, open: true, uv: 'native' }); scope.cyl('paintWhite', [0.8, 0.8, 5.2], [0, 0, 0], { seg: 32, open: true });
-  scope.torus('steel', 0.8, 0.04, [0, 2.6, 0], { rx: Math.PI / 2, seg: 32, tseg: 5 }); scope.torus('steel', 0.8, 0.04, [0, -2.6, 0], { rx: Math.PI / 2, seg: 32, tseg: 5 });
-  scope.cyl('blackMatte', [0.82, 0.82, 0.12], [0, -2.5, 0], { seg: 32 }); scope.cyl('chrome', [0.74, 0.74, 0.04], [0, -2.38, 0], { seg: 32 });
-  scope.cyl('steelDark', [0.9, 0.9, 0.4], [0, -2.8, 0], { seg: 32 }); scope.box('blackPlastic', [0.4, 0.5, 0.4], [0.9, -2.7, 0]);
-  for (const a of [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2]) scope.rod('steel', [0, 2.45, 0], [Math.cos(a) * 0.78, 2.45, Math.sin(a) * 0.78], 0.012, { seg: 4 });
-  scope.cyl('blackMatte', [0.16, 0.16, 0.22], [0, 2.4, 0], { seg: 14 });
-  scope.rod('steel', [0.2, 1.8, 0], [0.45, 2.6, 0.4], 0.04, { seg: 5 }); scope.cyl('blackPlastic', [0.06, 0.06, 0.6], [0.9, 1.4, 0], { seg: 8 }); // finder
-  scope.cyl('chrome', [0.1, 0.1, 0.5], [-0.92, 0.9, 0], { seg: 10 }); // counterweight shaft stub
-  scope.cyl('steelDark', [0.28, 0.28, 0.7], [-0.9, 0.5, 0], { seg: 12 });
+  scope.cyl('paintWhite', [0.92, 0.92, 1.5], [0, -1.6, 0], { seg: 36 }); scope.cyl('steelDark', [0.96, 0.96, 0.12], [0, -0.82, 0], { seg: 36 }); scope.cyl('blackMatte', [0.8, 0.8, 0.1], [0, -2.38, 0], { seg: 32 }); scope.cyl('steelDark', [0.95, 0.95, 0.35], [0, -2.5, 0], { seg: 36 });
+  scope.torus('steel', 0.9, 0.05, [0, -0.85, 0], { rx: Math.PI / 2, seg: 36, tseg: 6 }); scope.torus('steel', 0.9, 0.05, [0, 2.3, 0], { rx: Math.PI / 2, seg: 36, tseg: 6 });
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU, a2 = (i + 1) / 8 * TAU; const p0 = [Math.cos(a) * 0.9, -0.85, Math.sin(a) * 0.9], p1 = [Math.cos(a) * 0.9, 2.3, Math.sin(a) * 0.9]; scope.rod('paintWhite', p0, p1, 0.04, { seg: 6 }); scope.rod('steel', p0, [Math.cos(a2) * 0.9, 0.7, Math.sin(a2) * 0.9], 0.015, { seg: 4 }); scope.rod('steel', [Math.cos(a2) * 0.9, 0.7, Math.sin(a2) * 0.9], p1, 0.015, { seg: 4 }); }
+  for (const a of [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2]) scope.rod('steel', [0, 2.2, 0], [Math.cos(a) * 0.88, 2.2, Math.sin(a) * 0.88], 0.012, { seg: 4 });
+  scope.cyl('blackMatte', [0.2, 0.2, 0.28], [0, 2.2, 0], { seg: 16 }); scope.cyl('chrome', [0.17, 0.17, 0.02], [0, 2.07, 0], { seg: 16 });
+  scope.rod('steel', [0.92, 0.2, 0], [0.92, 1.4, 0], 0.025, { seg: 5 }); scope.cyl('whitePlastic', [0.07, 0.07, 0.9], [1.0, 0.9, 0], { seg: 12 }); scope.cyl('blackMatte', [0.075, 0.075, 0.08], [1.0, 1.38, 0], { seg: 12 });
+  scope.box('blackPlastic', [0.25, 0.3, 0.25], [0.95, -2.0, 0]); scope.cyl('steel', [0.06, 0.06, 0.4], [0.95, -1.8, 0.0], { seg: 8, rz: 0.0 });
+  scope.cyl('steelDark', [0.3, 0.3, 0.9], [-1.15, -1.8, 0], { seg: 14 }); scope.rod('steel', [-0.9, -1.6, 0], [-1.15, -1.7, 0], 0.05, { seg: 5 });
   // fork arms (yaw group) carrying the tube (pitch group)
   const fork = k.sub('fork'); fork.box('steel', [0.18, 2.4, 0.2], [-1.0, 1.2, 0]); fork.box('steel', [0.18, 2.4, 0.2], [1.0, 1.2, 0]); fork.box('steel', [2.4, 0.3, 0.6], [0, 0.0, 0]); fork.cyl('steelDark', [0.2, 0.2, 0.24], [-1.0, 2.4, 0], { seg: 14, rz: Math.PI / 2 }); fork.cyl('steelDark', [0.2, 0.2, 0.24], [1.0, 2.4, 0], { seg: 14, rz: Math.PI / 2 });
   const forkG = k.attach(fork, [0, 1.35, 0]); const pitchG = new THREE.Group(); pitchG.position.set(0, 2.4, 0); forkG.add(pitchG);
@@ -88,7 +87,7 @@ export function createObservatory(opts = {}) {
   const aim = { yaw: 0, pitch: 0.95 };
   const applyAim = (t) => { forkG.rotation.y = aim.yaw + Math.sin(t * 0.02) * 0.01; pitchG.rotation.x = Math.PI / 2 - aim.pitch; };
   // ----- lights -----
-  const hemi = new THREE.HemisphereLight(0x5a6a90, 0x201810, 1.4); k.light(hemi, 'hemi');
+  const hemi = new THREE.HemisphereLight(0x8a92a8, 0x30261c, 1.5); k.light(hemi, 'hemi');
   const lamp = new THREE.PointLight(0xffb060, 26, 12, 1.5); lamp.position.set(-1.8, 2.2, -4.6); k.light(lamp, 'deskLamp');
   const moon = new THREE.PointLight(0x9ab8ff, 70, 20, 1.4); moon.position.set(0, 7.5, 2.5); k.light(moon, 'moonlight');
   for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + 0.3; k.sph(amber, 0.06, [Math.sin(a) * (R - 0.3), 2.2, Math.cos(a) * (R - 0.3)], { seg: 8 }); k.rod('steel', [Math.sin(a) * (R - 0.1), 2.2, Math.cos(a) * (R - 0.1)], [Math.sin(a) * (R - 0.3), 2.2, Math.cos(a) * (R - 0.3)], 0.01, {}); }

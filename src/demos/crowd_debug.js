@@ -3,9 +3,11 @@ import * as THREE from 'three';
 import { addStudioLights } from '../engine/stage.js';
 import { createCrowd, STATE } from '../models/crowd.js';
 import { STATE_NAMES } from '../models/crowd/rig.js';
+import { makeStreetScene } from './crowd_scene.js';
 
 export default async function setup(stage, params = {}) {
-  addStudioLights(stage, { shadows: true });
+  let sc = null;
+  if (params.street) sc = makeStreetScene(stage, { fog: 0.003, buildings: false, cold: !!params.cold }); else addStudioLights(stage, { shadows: true });
   const kind = params.kind || 'soldier';
   const crowd = createCrowd(kind, 40, { seed: params.seed || 3, castShadow: true });
   stage.scene.add(crowd.root);
@@ -18,7 +20,7 @@ export default async function setup(stage, params = {}) {
   const T = params.t ?? 1.3;
   const cx = 0, span = (names.length - 1) * gap / 2;
   return {
-    update(t, dt) { crowd.update(dt, t); },
+    update(t, dt) { crowd.update(dt, t); if (sc) sc.follow(0, 0); },
     shots: params.shots || [{ name: 'front', t: T, cam: [0, 1.5, 8 + span * 0.9, 0, 0.9, 0], fov: 42 }, { name: 'side', t: T + 0.4, cam: [8 + span, 1.4, 0.0, 0, 0.9, 0], fov: 42 }],
   };
 }

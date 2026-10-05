@@ -8,6 +8,8 @@ import { arm, armIK, stanceLegs, S, C } from './clips.js';
 
 const mat = (slot, layer, color = 0xffffff, shade = 1) => ({ slot, layer, color, shade });
 const SKINS = [0xf4d3b5, 0xe8bd96, 0xd3a07a, 0xb27a52, 0x8a5636, 0x5a3a26];
+const SKINS_PH = [0xe6c0a0, 0xd0a07c, 0xbf8c64, 0xa8744e, 0x8c5a3a, 0xf0d2b8];
+const HAIRS_PH = [0x14100c, 0x1c140e, 0x241a12, 0x14100c, 0x34281c, 0x6a5a4a];
 const HAIRS = [0x15110c, 0x2a1d12, 0x45301b, 0x6b4a2a, 0x9a7a4a, 0xb4aca4];
 
 // =====================================================================================================================================
@@ -106,13 +108,13 @@ export function buildCivilian() {
   return {
     M, L, K,
     palette: {
-      skin: SKINS, hair: HAIRS,
-      top: [0xeae6dc, 0xd24848, 0x3f78d0, 0x3ea060, 0xe6b83a, 0x8250b4, 0x30303a, 0xe8803e], bot: [0x3e5380, 0x2e323e, 0x6e5e4a, 0x4e5e4e, 0x8e887c, 0x22222a],
-      acc: [0xc03a3a, 0x2e62b0, 0x2e2e2e, 0xc0a056, 0x3e804e, 0xe8e8e0], shoe: [0x1e1e1e, 0xe8e8e8, 0x3e2e22, 0x702424],
+      skin: SKINS_PH, hair: HAIRS_PH,
+      top: [0xdad6cc, 0x8c7e6c, 0x4e5e72, 0x667658, 0xb4584a, 0x3f6a9a, 0x2e3036, 0xe0b440], bot: [0x3e5380, 0x2e323e, 0x6e5e4a, 0x4e5e4e, 0x8e887c, 0x22222a],
+      acc: [0xb04a3a, 0x2e5a90, 0x2e2e2e, 0xb89a56, 0x3e704e, 0xd8d8d0], shoe: [0x1e1e1e, 0xd8d8d8, 0x3e2e22, 0x602424],
     },
     ovrSlot: SLOT.TOP, dirt: 0.25, bareArm: 0.55, bareLeg: 0.22, mix: { kid: 0.1, elder: 0.12, female: 0.5 }, scale: [0.93, 1.07],
     groups: { head: 1, bag: 2, outer: 3, hair: 4 },
-    variant: (r, age, sex) => ({ head: r.chance(0.42) ? r.pick([1, 2, 3]) : 0, bag: r.chance(0.5) ? r.pick([1, 1, 2, 3]) : 0, outer: r.chance(0.3) ? r.pick([1, 2, 3, 3]) : 0, hair: sex ? r.pick([1, 1, 3, 0]) : r.pick([0, 0, 2, 2, 0]) }),
+    variant: (r, age, sex) => ({ head: r.chance(0.42) ? r.pick([1, 2, 3]) : 0, bag: r.chance(0.5) ? r.pick([1, 1, 2, 3]) : 0, outer: r.chance(0.32) ? (sex ? r.pick([1, 2, 3, 3, 3]) : r.pick([1, 1, 2, 2, 3])) : 0, hair: sex ? r.pick([1, 1, 3, 0]) : r.pick([0, 0, 2, 2, 0]) }),
   };
 }
 
@@ -163,8 +165,8 @@ export function buildScientist() {
   return {
     M, L, K,
     palette: {
-      skin: SKINS, hair: [0x15110c, 0x2a1d12, 0x45301b, 0x6b4a2a, 0xb4aca4, 0x8a8a90],
-      top: [0xf6f6f2, 0xefefea, 0xe6ebef, 0xf2efe6, 0xecece8, 0xf8f8f6, 0xe2e8e4, 0xeaeaea], bot: [0x2e323e, 0x3e4252, 0x56524a, 0x22262e, 0x4a5262, 0x32363a],
+      skin: SKINS_PH.concat([]), hair: [0x15110c, 0x2a1d12, 0x45301b, 0x6b4a2a, 0xb4aca4, 0x8a8a90],
+      top: [0xe6e6e0, 0xdedfda, 0xd6dce0, 0xe2dfd6, 0xdcdcd8, 0xe8e8e6, 0xd2d8d4, 0xdadada], bot: [0x2e323e, 0x3e4252, 0x56524a, 0x22262e, 0x4a5262, 0x32363a],
       acc: [0x3e78c8, 0x2a2a2e, 0xc8a038, 0x4a8a5a, 0xc04848, 0x8a8a90], shoe: [0x1e1e1e, 0xe0e0e0, 0x3e2e22, 0x2a2a30],
     },
     ovrSlot: SLOT.ACC, dirt: 0.12, bareArm: 0, bareLeg: 0, mix: { kid: 0, elder: 0.1, female: 0.5 }, scale: [0.94, 1.06],

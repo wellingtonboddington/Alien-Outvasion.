@@ -81,7 +81,7 @@ export class SceneContext {
    * Returns end time. Subtitle shows opts.sub (translation) when given, else text.
    */
   say(t, who, text, opts = {}) {
-    const actor = who && who.model ? who : null; const dur = opts.dur ?? Math.max(1.15, (estimateDuration(text, opts.wpm || 148) + 0.2) * (opts.pace || 1));
+    const actor = who && who.model ? who : null; const dur = opts.dur ?? Math.max(1.0, (estimateDuration(text, opts.wpm || 170) + 0.15) * (opts.pace || 1));
     const track = buildVisemeTrack(opts.visemeText || text, dur);
     const name = opts.name || (actor ? actor.name : String(who)); const color = opts.color || (actor ? actor.color : '#dfe8ff');
     const line = { t0: t, t1: t + dur, dur, actor, who, text, sub: opts.sub || text, name, color, track, emotion: opts.emotion || null, to: opts.to || null, amp: opts.amp ?? 1, style: opts.style || (actor && actor.isAlien ? 'alien' : 'human'), lang: opts.lang || 'en-US', gender: opts.gender || (actor && actor.model && actor.model.profile ? actor.model.profile.gender : 'M'), character: opts.character || (actor ? actor.id : name), idx: this.lines.length, italic: !!opts.italic || (opts.style === 'alien'), voice: opts.voice || {}, mute: !!opts.mute, pitch: opts.pitch, nosub: !!opts.nosub };
@@ -95,7 +95,7 @@ export class SceneContext {
    * This is the anti-cut-off / anti-dead-air tool: use it for every scene so the talk fills the shot and ends before the fade.
    */
   fit(t0, t1, lines, { gap0 = 0.28, maxStretch = 1.18, maxGap = 1.6, lead = 0.35 } = {}) {
-    const nat = lines.map((l) => { const o = l[2] || {}; return o.dur ?? Math.max(1.15, (estimateDuration(l[1], o.wpm || 148) + 0.2) * (o.pace || 1)); });
+    const nat = lines.map((l) => { const o = l[2] || {}; return o.dur ?? Math.max(1.0, (estimateDuration(l[1], o.wpm || 170) + 0.15) * (o.pace || 1)); });
     const sum = nat.reduce((a, b) => a + b, 0), n = lines.length; const avail = Math.max(0.5, t1 - t0 - lead); const base = sum + (n - 1) * gap0;
     let k = 1, gap = gap0;
     if (base > avail) { k = Math.max(0.88, (avail - (n - 1) * gap0) / sum); if (k * sum + (n - 1) * gap0 > avail + 0.05 && !this.dir.quiet) console.warn(`[film] ${this.id}: dialogue overfull by ${(k * sum + (n - 1) * gap0 - avail).toFixed(1)} s`); }

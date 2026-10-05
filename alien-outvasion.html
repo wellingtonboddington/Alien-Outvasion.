@@ -45337,7 +45337,7 @@ void main() {
      */
     say(t, who, text, opts = {}) {
       const actor = who && who.model ? who : null;
-      const dur = opts.dur ?? Math.max(1.15, (estimateDuration(text, opts.wpm || 148) + 0.2) * (opts.pace || 1));
+      const dur = opts.dur ?? Math.max(1, (estimateDuration(text, opts.wpm || 170) + 0.15) * (opts.pace || 1));
       const track = buildVisemeTrack(opts.visemeText || text, dur);
       const name = opts.name || (actor ? actor.name : String(who));
       const color = opts.color || (actor ? actor.color : "#dfe8ff");
@@ -45357,7 +45357,7 @@ void main() {
     fit(t0, t1, lines, { gap0 = 0.28, maxStretch = 1.18, maxGap = 1.6, lead = 0.35 } = {}) {
       const nat = lines.map((l) => {
         const o = l[2] || {};
-        return o.dur ?? Math.max(1.15, (estimateDuration(l[1], o.wpm || 148) + 0.2) * (o.pace || 1));
+        return o.dur ?? Math.max(1, (estimateDuration(l[1], o.wpm || 170) + 0.15) * (o.pace || 1));
       });
       const sum = nat.reduce((a, b) => a + b, 0), n = lines.length;
       const avail = Math.max(0.5, t1 - t0 - lead);
@@ -104604,8 +104604,9 @@ void main() {
       const ez = person3(S2, "ezra");
       sam.attach(0, 40, e, "driverSeat", { clip: "drive" });
       ez.attach(0, 40, e, "passengerSeats", { clip: "sit", idx: 0 });
-      const bar = safe3("barrier", () => City2.createBarricade("hbar"));
-      if (bar) {
+      const barM = safe3("barrier", () => City2.createBarricade("hbar"));
+      const bar = barM && (barM.root || barM);
+      if (bar && bar.position) {
         bar.position.set(x, 0, 56);
         S2.scene.add(bar);
         S2.during(13.8, 40, () => {
@@ -104661,7 +104662,7 @@ void main() {
         const d = door2.p;
         e.path(2.4 + i * 1.5, 5.2 + i * 1.5, [[d[0], 0, d[2] + 6], [d[0] + (i - 1) * 0.8, 0, d[2] + 1.5], [d[0] + (i - 1) * 1.4, 0, d[2] - 3]], { ease: "in" });
         S2.during(0, 40, (t) => {
-          c.play(t < 2.4 + i * 1.5 ? "idle" : t < 5.2 + i * 1.5 ? "run" : "die", { time: t - (t < 5.2 + i * 1.5 ? 2.4 + i * 1.5 : 5.2 + i * 1.5) });
+          c.play(t < 2.4 + i * 1.5 ? "idle" : t < 5.2 + i * 1.5 ? "run" : "die", { time: Math.max(0, t - (t < 5.2 + i * 1.5 ? 2.4 + i * 1.5 : 5.2 + i * 1.5)) + (t < 2.4 + i * 1.5 ? t : 0) });
         });
         S2.on(5.2 + i * 1.5, () => {
           const p = new V313(door2.p[0], 1.1, door2.p[2] - 2);

@@ -104,7 +104,9 @@ export function coverageSpec(kind, A, B, opts = {}) {
   const side = opts.side ?? 1; const bounds = opts.bounds || null; const fov = opts.fov;
   const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), tmpM = new THREE.Vector3(), dir = new THREE.Vector3(), perp = new THREE.Vector3();
   const clampB = (p) => { if (!bounds) return p; p.x = clamp(p.x, bounds.min[0], bounds.max[0]); p.z = clamp(p.z, bounds.min[2], bounds.max[2]); p.y = clamp(p.y, bounds.min[1], bounds.max[1]); return p; };
-  const geom = (t) => { A.headPos(tmpA); (B || A).headPos(tmpB); dir.subVectors(tmpB, tmpA); dir.y = 0; if (dir.lengthSq() < 1e-4) dir.set(Math.sin(A.model?.root?.rotation.y || 0), 0, Math.cos(A.model?.root?.rotation.y || 0)); dir.normalize(); perp.set(-dir.z, 0, dir.x).multiplyScalar(side); };
+  const face = new THREE.Vector3();
+  // dir = from speaker A toward partner B; when A faces AWAY from B (e.g. bent over a table) frame A's actual face instead (camera in front of A's facing direction)
+  const geom = (t) => { A.headPos(tmpA); (B || A).headPos(tmpB); dir.subVectors(tmpB, tmpA); dir.y = 0; const yaw = (typeof A.yaw === 'number' ? A.yaw : (A.model?.root?.rotation.y || 0)); face.set(Math.sin(yaw), 0, Math.cos(yaw)); if (dir.lengthSq() < 1e-4) dir.copy(face); dir.normalize(); const d = dir.dot(face); if (d < 0.35 && kind !== 'wide' && kind !== 'two') { dir.copy(face).multiplyScalar(0.85).addScaledVector(dir, 0.15 + Math.max(0, d) * 0.4).normalize(); } perp.set(-dir.z, 0, dir.x).multiplyScalar(side); };
   const spec = { handheld: opts.handheld ?? 0.5, push: opts.push ?? 0.0, seed: opts.seed || 0 };
   const fovK = (f) => fov ?? f;
   if (kind === 'cu' || kind === 'mcu') {
@@ -114,7 +116,7 @@ export function coverageSpec(kind, A, B, opts = {}) {
     spec.look = (t) => { geom(t); const p = tmpM.copy(tmpA); p.y -= 0.04; p.addScaledVector(dir, -0.0); return p.clone(); };
   } else if (kind === 'ots') {
     spec.fov = fovK(32);
-    spec.pos = (t) => { geom(t); const p = tmpM.copy(tmpB).addScaledVector(dir, -0.9 * (opts.dist || 1)).addScaledVector(perp, -0.42); p.y = tmpB.y + 0.12; return clampB(p.clone()); };
+    spec.pos = (t) => { geom(t); const toB = tmpM.subVectors(tmpB, tmpA).setY(0).normalize(); const fr = dir.dot(toB) > 0.7; const p = fr ? tmpM.copy(tmpB).addScaledVector(dir, -0.9 * (opts.dist || 1)).addScaledVector(perp, -0.42) : tmpM.copy(tmpA).addScaledVector(dir, 1.5 * (opts.dist || 1)).addScaledVector(perp, 0.35); p.y = (fr ? tmpB.y + 0.12 : tmpA.y + 0.02); return clampB(p.clone()); };
     spec.look = (t) => { geom(t); const p = tmpM.copy(tmpA); p.y -= 0.03; return p.clone(); };
   } else if (kind === 'two') {
     spec.fov = fovK(36);

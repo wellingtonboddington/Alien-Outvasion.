@@ -58,40 +58,40 @@ export const ACT1 = [
     cover(S, set, 0, 12); S.shot(12, 17, { follow: jez, offset: [-2.2, 1.7, 3.6], look: [0, 1.2, 0], fov: 38, handheld: 0.6 });
   } },
   // ------------------------------------------------------------------ s05 — Ezra & Sam, Robinsons
-  { id: 's05_robinsons', dur: 22, build(S) {
+  { id: 's05_robinsons', dur: 24, build(S) {
     const set = place(S, Life.createFoodCourtMcD()); indoors(S, { intensity: 1.0 });
     const ez = person(S, 'ezra'); const sam = person(S, 'sam'); at(ez, set, 'pos1', 'work_counter'); at(sam, set, 'customer1', 'idle');
     nameCard(S, 1.0, 'ezra', 3.2); nameCard(S, 4.6, 'sam', 3.4); mood(S, { music: 'everyday', amb: 'mall', level: 0.35, intensity: 0.35 });
-    S.fit(0.8, 21.0, [[ez, "Welcome to McDonald's, may I take your—oh. It's just you.", { emotion: 'smirk' }], [sam, "Kuya Ezra, don't be rude to a paying customer.", { emotion: 'happy' }], [ez, 'Paying? You paid once. In twenty forty-eight.', { emotion: 'happy' }], [sam, 'Big Mac, large fries, and—'], [ez, "—and a McFlurry you'll say is for your niece."], [sam, 'She loves it!', { emotion: 'happy' }], ['NEWS TV', 'Astronomers report an unusual cluster of comets approaching Earth in formation.', { style: 'radio', color: COL.news, nosub: false }], [ez, 'Comets? I hope they hit Monday.', { emotion: 'happy' }], [sam, 'Eat first. Panic later.', { emotion: 'smirk' }]]);
-    cover(S, set, 0, 22);
+    S.fit(0.8, 23.0, [[ez, "Welcome to McDonald's, may I take your—oh. It's just you.", { emotion: 'smirk' }], [sam, "Kuya Ezra, don't be rude to a paying customer.", { emotion: 'happy' }], [ez, 'Paying? You paid once. In twenty forty-eight.', { emotion: 'happy' }], [sam, 'Big Mac, large fries, and a McFlurry.'], ['NEWS TV', 'Astronomers report a comet cluster approaching Earth.', { style: 'radio', color: COL.news }], [ez, 'Comets? I hope they hit Monday.', { emotion: 'happy' }], [sam, 'Eat first. Panic later.', { emotion: 'smirk' }]]);
+    cover(S, set, 0, 24);
   } },
   // ------------------------------------------------------------------ s06 — Leon's bar
-  { id: 's06_bar_leon', dur: 13, build(S) {
+  { id: 's06_bar_leon', dur: 15, build(S) {
     const set = place(S, Life.createBar()); indoors(S, { intensity: 0.7 });
     const leon = person(S, 'leon'); const bong = extra(S, 'elder', 12, { name: 'Kuya Bong', npc: { gender: 'M', ethnicity: 'filipino' } });
     at(leon, set, 'leon', 'clean_glass'); at(bong, set, 'stool1', 'sit'); leon.faceTo(0, bong);
     nameCard(S, 0.9, 'leon', 3.6); mood(S, { music: 'everyday', amb: 'bar', level: 0.35, intensity: 0.3 });
-    S.fit(0.8, 12.2, [[bong, "Leon, you're early. Your bar isn't even awake yet.", { emotion: 'happy' }], [leon, "Neither am I, Kuya Bong. Neither am I.", { emotion: 'tired' }], [bong, "Is that... a shotgun under the counter?", { emotion: 'worried' }], [leon, 'Decor. Illegal decor. Drink your coffee.', { emotion: 'smirk' }]]);
-    cover(S, set, 0, 13);
+    S.fit(0.8, 14.1, [[bong, "Leon, you're early. Your bar isn't even awake.", { emotion: 'happy' }], [leon, 'Neither am I, Kuya Bong.', { emotion: 'tired' }], [bong, 'Is that a shotgun under the counter?', { emotion: 'worried' }], [leon, 'Decor. Illegal decor. Drink your coffee.', { emotion: 'smirk' }]]);
+    cover(S, set, 0, 15);
   } },
   // ------------------------------------------------------------------ s07 — Jhaz & Epiphany, Cebu terminal
-  { id: 's07_cebu_terminal', dur: 17, build(S) {
+  { id: 's07_cebu_terminal', dur: 19, build(S) {
     K.skyFor(S, 'day', { elev: 38, az: 60 }); const set = place(S, Life.createJeepneyTerminal());
     const jhaz = person(S, 'jhaz'); const epi = person(S, 'epiphany'); const jp = nr(set, 'bay1', 2.2, 1.2);
     jhaz.place(0, jp, -1.5, 'idle'); epi.place(0, [jp[0] - 2.8, jp[1], jp[2] + 0.4], 1.57, 'idle'); epi.hold('folder'); epi.go(0.4, [[jp[0] - 0.9, jp[2] + 0.4]], { speed: 1.3 });
     const j = safe('jeepney', () => Veh.createJeepney({ seed: 11, name: 'CEBU-LAPU-LAPU' })); if (j) { const e = S.entity(j); const a = A(set, 'bay1'); e.at(0, [a.p[0], a.p[1], a.p[2]], a.yaw); }
     nameCard(S, 0.9, 'jhaz', 3.2); nameCard(S, 4.4, 'epiphany', 3.6); mood(S, { music: 'everyday', amb: 'city_day', level: 0.4, intensity: 0.35 });
-    S.fit(1.0, 16.2, [[jhaz, "You're late, counselor. The warrant for my breakfast is in effect.", { emotion: 'smirk' }], [epi, 'I object. Traffic was a contributing factor.', { emotion: 'smirk' }], [jhaz, 'Overruled.'], [epi, 'Jhaz. I just beat a landlord twice my height.', { emotion: 'happy' }], [jhaz, 'Everyone is twice your height, Piphy.', { emotion: 'happy' }], [epi, 'Also: Bead texted. Group call tonight.']]);
-    cover(S, set, 0, 17);
+    S.fit(1.0, 18.2, [[jhaz, "You're late, counselor. Breakfast is waiting.", { emotion: 'smirk' }], [epi, 'I object. Traffic.', { emotion: 'smirk' }], [jhaz, 'Overruled.'], [epi, 'I just beat a landlord twice my height.', { emotion: 'happy' }], [jhaz, 'Everyone is twice your height, Piphy.', { emotion: 'happy' }], [epi, 'Also, Bead texted. Group call tonight.']]);
+    cover(S, set, 0, 19);
   } },
   // ------------------------------------------------------------------ s08 — Stephen, California
-  { id: 's08_cali_mcd', dur: 13, build(S) {
+  { id: 's08_cali_mcd', dur: 15, build(S) {
     K.skyFor(S, 'day', { elev: 45, az: 200 }); const set = place(S, Life.createMcDCalifornia()); indoors(S, { intensity: 0.8 });
     const st = person(S, 'stephen'); const karen = extra(S, 'civilian', 21, { name: 'Karen', npc: { gender: 'F', ethnicity: 'caucasian' } }); const dale = extra(S, 'worker', 22, { name: 'Dale', npc: { gender: 'M', ethnicity: 'caucasian' } });
     at(st, set, 'pos1', 'work_counter'); at(karen, set, 'customer1', 'idle_hands_hips'); at(dale, set, 'prep', 'idle_arms_crossed');
     nameCard(S, 0.9, 'stephen', 3.4); mood(S, { music: 'everyday', amb: 'mall', level: 0.3, intensity: 0.3 }); S.sfx(10.2, 'phone_vibrate');
-    S.fit(0.8, 12.2, [[karen, 'I asked for no pickles.', { emotion: 'angry' }], [st, "Ma'am, I'm literally holding the pickle bin and I'm sorry.", { emotion: 'worried' }], [dale, 'Stephen! Drive-thru!', { emotion: 'urgent' }], [st, 'Six more hours. Six more hours.', { emotion: 'tired' }], [st, 'Group call. Okay. I have a reason to live.', { emotion: 'happy' }]]);
-    cover(S, set, 0, 13);
+    S.fit(0.8, 14.1, [[karen, 'I asked for no pickles.', { emotion: 'angry' }], [st, "Ma'am, I'm holding the pickle bin and I'm sorry.", { emotion: 'worried' }], [dale, 'Stephen! Drive-thru!', { emotion: 'urgent' }], [st, 'Six more hours.', { emotion: 'tired' }], [st, 'Group call. I have a reason to live.', { emotion: 'happy' }]]);
+    cover(S, set, 0, 15);
   } },
   // ------------------------------------------------------------------ s09 — Bead's sanctuary
   { id: 's09_georgia_bead', dur: 22, build(S) {
@@ -104,15 +104,15 @@ export const ACT1 = [
     S.cover(0, 22, { bounds: { min: [-26, -99.4, -26], max: [26, -86, 26] } });
   } },
   // ------------------------------------------------------------------ s10 — the group call (nine friends, nine rooms)
-  { id: 's10_group_call', dur: 36, build(S) {
+  { id: 's10_group_call', dur: 42, build(S) {
     S.scene.background = new THREE.Color(0x05070c); S.scene.add(new THREE.HemisphereLight(0xbfd0ff, 0x202030, 1.2)); const key = new THREE.DirectionalLight(0xfff0e0, 2.4); key.position.set(0, 4, 6); S.scene.add(key);
     const order = ['ezra', 'bead', 'jez', 'mirrah', 'stephen', 'jhaz', 'epiphany', 'leon', 'sam']; const backs = { ezra: ['#7a1020', 'ROBINSONS · DUMAGUETE'], bead: ['#2a0f55', 'GEORGIA · SANCTUARY'], jez: ['#12485a', 'CITY MALL · DUMAGUETE'], mirrah: ['#0f4c47', 'MORGUE · DUMAGUETE'], stephen: ['#7a5a10', 'CALIFORNIA, USA'], jhaz: ['#123d78', 'CEBU TERMINAL'], epiphany: ['#4a3d12', 'CEBU CITY'], leon: ['#5a2a0a', "LEON'S BAR"], sam: ['#6a2a12', 'ROBINSONS · DUMAGUETE'] };
     const A9 = {}; order.forEach((k, i) => { const a = person(S, k); const x = i * 7; a.place(0, [x, 0, 0], 0, k === 'bead' ? 'idle_phone' : 'idle'); a.hold('phone'); A9[k] = a; a.autoLook = false; a.gaze(new V3(x, 1.5, 6));
       const cv = document.createElement('canvas'); cv.width = 512; cv.height = 288; const c = cv.getContext('2d'); const g = c.createLinearGradient(0, 0, 0, 288); g.addColorStop(0, backs[k][0]); g.addColorStop(1, '#05070c'); c.fillStyle = g; c.fillRect(0, 0, 512, 288); c.fillStyle = 'rgba(255,255,255,.55)'; c.font = '700 22px sans-serif'; c.fillText(backs[k][1], 24, 262); const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
       const p = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.15), new THREE.MeshBasicMaterial({ map: tx })); p.position.set(x, 1.5, -1.8); S.scene.add(p); const fl = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshStandardMaterial({ color: 0x151a24, roughness: 0.9 })); fl.rotation.x = -Math.PI / 2; fl.position.set(x, -0.01, 0); S.scene.add(fl); });
-    S.callFrame(0.5, 35, 'GROUP CALL — 9 CONNECTED', '#7fe9ff'); mood(S, { music: 'curious', amb: 'silence', intensity: 0.3 }); S.sfx(0.3, 'comm_open');
-    S.fit(0.6, 35.0, [[A9.ezra, "Is everyone here? Bead, your eye's doing the glowy thing again.", { emotion: 'happy' }], [A9.bead, "It's a holographic interface.", { emotion: 'smirk' }], [A9.ezra, "It's showing off.", { emotion: 'happy' }], [A9.jez, 'Mirrah. Are you eating?', { emotion: 'worried' }], [A9.mirrah, '...Yes.', { emotion: 'tired' }], [A9.jez, "She's lying.", { emotion: 'smirk' }], [A9.stephen, "It's four a.m. here and I smell like fries.", { emotion: 'tired' }], [A9.jhaz, 'You always smell like fries.', { emotion: 'smirk' }], [A9.epiphany, "Agenda item one: Leon's bar, the twentieth.", { emotion: 'serious' }], [A9.mirrah, "Hi, Epiphany. We've met. Twice.", { emotion: 'neutral' }], [A9.epiphany, 'At Jez\'s birthday. You corrected my grammar.', { emotion: 'smirk' }], [A9.leon, "First round's free. Second round's Bead's.", { emotion: 'happy' }], [A9.bead, "I'm paying for everything. Flights too. Don't argue.", { emotion: 'happy' }], [A9.sam, "Even mine? I don't fit in those seats.", { emotion: 'worried' }], [A9.bead, 'I bought two.', { emotion: 'smirk' }], [A9.ezra, 'Guys... turn on the news.', { emotion: 'worried' }]]);
-    frontShots(S, 0, 36, { dist: 2.1 });
+    S.callFrame(0.5, 41, 'GROUP CALL — 9 CONNECTED', '#7fe9ff'); mood(S, { music: 'curious', amb: 'silence', intensity: 0.3 }); S.sfx(0.3, 'comm_open');
+    S.fit(0.6, 41.0, [[A9.ezra, "Is everyone here? Bead, your eye's doing the glowy thing again.", { emotion: 'happy' }], [A9.bead, "It's a holographic interface.", { emotion: 'smirk' }], [A9.ezra, "It's showing off.", { emotion: 'happy' }], [A9.jez, 'Mirrah. Are you eating?', { emotion: 'worried' }], [A9.mirrah, '...Yes.', { emotion: 'tired' }], [A9.jez, "She's lying.", { emotion: 'smirk' }], [A9.epiphany, "Agenda item one: Leon's bar, the twentieth.", { emotion: 'serious' }], [A9.mirrah, "Hi, Epiphany. We've met. Twice.", { emotion: 'neutral' }], [A9.epiphany, 'At Jez\'s birthday. You corrected my grammar.', { emotion: 'smirk' }], [A9.leon, "First round's free. Second round's Bead's.", { emotion: 'happy' }], [A9.bead, "I'm paying for everything. Flights too. Don't argue.", { emotion: 'happy' }], [A9.sam, "Even mine? I don't fit in those seats.", { emotion: 'worried' }], [A9.bead, 'I bought two.', { emotion: 'smirk' }], [A9.ezra, 'Guys... turn on the news.', { emotion: 'worried' }]]);
+    frontShots(S, 0, 42, { dist: 2.1 });
   } },
   // ------------------------------------------------------------------ s11 — news: the comets
   { id: 's11_news_comets', dur: 24, build(S) {

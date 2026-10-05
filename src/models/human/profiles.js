@@ -148,7 +148,7 @@ export const MAIN_CAST = {
     face: { width: 0.95, jaw: 0.88, chin: 0.92, cheek: 1.05, noseWidth: 0.9, noseBridge: 0.9, noseLen: 0.9, lips: 1.0, lipWidth: 0.95, eyeSize: 1.1, eyeTilt: 0.04, brow: 0.95 },
     skin: { tone: '#d6a780', warm: 0.5, blush: 0.26, lip: '#b0605e', lipstick: '#9a2f3a', eyeliner: 0.4, moles: [[0.036, -0.056]] },
     eyes: { color: '#2d1b10' }, brows: { color: '#140e0b', thick: 0.95, arch: 0.75 },
-    hair: { style: 'low_ponytail', color: '#110c0a', hi: '#271c17', length: 1, volume: 1 },
+    hair: { style: 'pixie', color: '#110c0a', hi: '#271c17', length: 1, volume: 1 },
     outfit: { top: { type: 'blouse', color: '#f1ece4' }, outer: { type: 'blazer', color: '#2b2f3b' }, bottom: { type: 'slacks', color: '#2b2f3b' }, shoes: { type: 'heels', color: '#1c1b1d' } },
     accessories: ['glasses_tiny', 'briefcase_carry'], baseSmile: 0.05,
   },

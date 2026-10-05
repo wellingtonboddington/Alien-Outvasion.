@@ -34,6 +34,8 @@ node tools/build.mjs --dev   # unminified
 
 A scene is `{ id, dur, build(S) }`. `S` (a `SceneContext`) registers **time-keyed** content — actors with movement/animation tracks, entities with paths, camera shots (with automatic dialogue coverage), dialogue lines (lip-synced + subtitled + voiced), HUD overlays (date stamps, name cards, titles), audio cues, post-processing keys. Everything is a pure function of scene time, so the player can seek anywhere (`director.seek(t)` rebuilds the scene and fast-forwards silently).
 
+See `docs/PASS2_NOTES.md` for known issues and the cheapest iteration loop.
+
 ## Testing
 
 ```

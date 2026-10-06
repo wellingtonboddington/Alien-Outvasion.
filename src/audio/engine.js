@@ -130,14 +130,34 @@ export function createAudio(opts = {}) {
 
   /* ---------------------------------------------------------------- scheduler: worker timer (immune to tab throttling) with setInterval fallback */
   let timer = null, worker = null, disposed = false, lastTick = 0, wantRunning = false, frameDt = 0;
+  let lastSweep = 0;
+  /** self-healing: dispose voices that never got a source or whose onended was lost, then recount A.live from what is really alive.
+   *  (Leaked counts used to accumulate over a 30-minute film until the polyphony governor silenced music/sfx.) */
+  function sweep(now) {
+    if (!A.syns) return; const counts = { sfx: 0, music: 0, amb: 0, voice: 0 };
+    for (const sy of A.syns) {
+      if (sy.dead) { A.syns.delete(sy); continue; }
+      if (!sy.srcs.length && now > sy.t0 + 1.5) { sy.dispose(); continue; }
+      if (!sy.open && now > sy.tEnd + 2.5) { sy.dispose(); continue; }
+      if (sy.counted) counts[sy.cat] = (counts[sy.cat] || 0) + 1;
+    }
+    for (const k in counts) A.live[k] = counts[k];
+  }
   function pump(now) {
+    if (now - lastSweep > 2) { lastSweep = now; try { sweep(now); } catch (e) { /* */ } }
     refreshListener(); applyDuck(now);
     const until = now + A.lookahead;
     for (const fn of A.tickers) { try { fn(now, until); } catch (e) { if (!A._warned) { A._warned = true; console.warn('[audio] ticker error', e); } } }
   }
   function startTimer() {
     if (offline || timer || worker || disposed) return;
-    const tick = () => { if (disposed) return; pump(A.now()); };
+    let lastResume = 0;
+    const tick = () => {
+      if (disposed) return;
+      // watchdog: a context the browser suspended/interrupted while we still want sound gets resumed (allowed after the first user gesture)
+      if (wantRunning && ctx.state !== 'running' && ctx.state !== 'closed') { const pn = performance.now(); if (pn - lastResume > 2500) { lastResume = pn; try { const pr = ctx.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) { /* */ } } return; }
+      pump(A.now());
+    };
     try {
       if (typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
         const blob = new Blob(['let id=setInterval(()=>postMessage(0),25);onmessage=()=>{clearInterval(id)}'], { type: 'application/javascript' });

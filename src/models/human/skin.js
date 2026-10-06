@@ -109,7 +109,8 @@ export function paintHeadTexture(P, W = 1024, Hh = 512) {
     if (S.eyeShadow > 0 || S.eyeliner > 0) blobAt(ctx, M, s * 0.034, 0.0165, 0.022, 0.0085, '#5a3a55', 0.25 + 0.3 * S.eyeShadow, 'multiply');
   }
   // ---------- lips
-  const lipC = S.lipstick || mix(pal.lip, '#8a2830', 0.18);
+  // natural lips sit close to the skin tone (saturated pink lips read as uncanny on men); lipstick stays as authored
+  const lipC = S.lipstick ? mix(S.lipstick, pal.base, 0.18) : mix(mix(pal.lip, pal.base, P.isFemale ? 0.3 : 0.48), '#6a2c2a', 0.08);
   const xc = H.xc * 1.0; const ym = H.ym;
   const upper = [], lower = [];
   for (let k = 0; k <= 24; k++) {

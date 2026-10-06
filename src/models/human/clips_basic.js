@@ -191,8 +191,9 @@ function talkCore(B, t, p, h, cfg) {
   const stK = { calm: 1, excited: 1.45, angry: 1.25, afraid: 0.8, sad: 0.5 }[style] || 1;
   const en = clamp(E * stK, 0, 1.4);
   const ra = idleCore(B, t, p, h, { lean: cfg.lean ?? 0.025, shift: 1.2 });
-  const per = lerpn(1.5, 0.62, clamp(en, 0, 1)) * (cfg.periodK || 1);
-  const prob = clamp(0.28 + en * 0.75, 0, 1) * (cfg.probK || 1);
+  // fixed beat period per style (a period that follows energy re-quantises the beat grid every frame -> flailing)
+  const per = ({ calm: 1.45, excited: 1.15, angry: 1.2, afraid: 1.35, sad: 1.8 }[style] || 1.45) * (cfg.periodK || 1);
+  const prob = clamp(0.3 + en * 0.45, 0, 0.85) * (cfg.probK || 1);
   // gesture per hand
   const sides = [['R', cfg.rightBias ?? 1], ['L', cfg.leftBias ?? 0.45]];
   for (const [S, bias] of sides) {
@@ -200,9 +201,9 @@ function talkCore(B, t, p, h, cfg) {
     let base = cfg.rest?.[S] ? cfg.rest[S](B, t, ra) : ra;
     if (bs.e > 0.001) {
       const list = S === 'R' ? cfg.listR : cfg.listL; const g = GEST[list[Math.floor(bs.pick * list.length) % list.length]];
-      const osc = Math.sin(bs.x * Math.PI * 2 * 2.2) * g.osc * (1 + en) * 0.6;
+      const osc = Math.sin(bs.x * Math.PI * 2 * 1.4) * g.osc * (0.6 + en * 0.4) * 0.35;
       const a = { ...g.a, raise: g.a.raise + osc, elbow: g.a.elbow - osc * 0.6 };
-      const amt = bs.e * clamp(0.55 + en * 0.7, 0.4, 1.2);
+      const amt = bs.e * clamp(0.45 + en * 0.4, 0.35, 0.85);
       B.arm(S, mixo(base, a, amt)); B.fingers(S, g.hand, bs.e > 0.2 ? 1 : 0);
       if (g.hand === 'point') B.fingers(S, 'point', 1);
       // body response: torso twist & shoulder lift on beat
@@ -334,7 +335,7 @@ const sit = (B, t, p, h) => {
 const sit_talk = (B, t, p, h) => {
   sitBase(B, t, p, h, { lean: 0.06 });
   const sd = seedOf(h), E = clamp(h.energy ?? 0.5, 0, 1);
-  const per = lerpn(1.5, 0.7, E);
+  const per = 1.4; // fixed beat grid (see talkCore)
   const base = { raise: 0.5, abd: -0.18, rot: 0.2, elbow: 1.25, pron: 0.7, wflex: 0.05 };
   for (const S of ['R', 'L']) {
     const bs = beatState(t + (S === 'L' ? 0.4 : 0), { period: per * (S === 'L' ? 1.3 : 1), dur: per * 0.7, prob: S === 'R' ? 0.8 : 0.45, seed: sd + (S === 'L' ? 5 : 0) });

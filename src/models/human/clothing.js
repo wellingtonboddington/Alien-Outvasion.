@@ -96,11 +96,15 @@ export function buildClothing(P, L, rig, head, fx, bodyGeo) {
     push('bottom', torsoShell(c, { y0: 0.5, y1: 0.66, off: 0.012, color: bc, tile: 0.05, capStart: 0.045 }));
     push('bottom', skirtShell(c, { top: 0.6, hem: hemY, off: 0.012, flare: (s) => BS.flare * Math.pow(s, 1.3), color: bc, tile: 0.05, legK: BS.flare > 0.03 ? 0.4 : 0.6 }));
   } else if (B) {
-    const fit = BS.fit, u1 = BS.u1 || 2.97, bc = colOf(B, 'bottom'), wOff = Math.max(0.004, fit * 0.55) + (TS.tuck ? 0.012 : 0);
-    push('bottom', torsoShell(c, { y0: 0.47, y1: 0.655, off: wOff, color: bc, tile: 0.05, capStart: 0.045 }));
+    const fit = BS.fit, u1 = BS.u1 || 2.97, bc = colOf(B, 'bottom'), wOff0 = Math.max(0.004, fit * 0.55) + (TS.tuck ? 0.012 : 0);
+    // untucked top: keep the waistband clearly UNDER the shirt (equal offsets z-fight into a jagged patch) and stop it just above the hem
+    const untucked = !TS.tuck && !TS.robe && !TS.dress && TS.hem !== undefined;
+    const wOff = untucked ? Math.max(0.006, Math.min(wOff0, tfit - 0.002)) : wOff0;
+    const wY1 = untucked ? Math.min(0.655, Math.max(TS.hem, 0.6) + 0.025) : 0.655;
+    push('bottom', torsoShell(c, { y0: 0.47, y1: wY1, off: wOff, color: bc, tile: 0.05, capStart: 0.045 }));
     for (const S of ['L', 'R']) {
       const bell = BS.bell || 0, cargo = BS.cargo ? 0.008 : 0;
-      push('bottom', limbShell(c, 'leg', S, { u0: 0, u1, off: fit, tile: 0.05, color: bc, closeStart: true, offFn: (u) => bell * smooth(2.3, 2.95, u) + cargo * smooth(1.1, 1.5, u) * (1 - smooth(2.1, 2.5, u)) }));
+      push('bottom', limbShell(c, 'leg', S, { u0: untucked ? 0.16 : 0, u1, off: fit, tile: 0.05, color: bc, closeStart: !untucked, offFn: (u) => bell * smooth(2.3, 2.95, u) + cargo * smooth(1.1, 1.5, u) * (1 - smooth(2.1, 2.5, u)) }));
       if (!BS.u1) push('bottom', limbShell(c, 'leg', S, { u0: u1 - 0.09, u1, off: fit + (BS.jog ? 0.006 : 0.004) + bell, n: 3, color: BS.jog ? dark(B.color, 0.8) : bc, tile: 0.05 }));
       if (BS.cargo) push('bottom', limbStrip(c, 'leg', S, 1.35, 1.75, S === 'L' ? Math.PI / 2 : -Math.PI / 2, fit + 0.003, 0.085, dark(B.color, 0.85)));
     }
@@ -113,10 +117,11 @@ export function buildClothing(P, L, rig, head, fx, bodyGeo) {
 
   // ---------------------------------------------------------------- top
   if (!TS.robe && !TS.dress) {
-    const hemY = TS.hem, flare = TS.flare || 0;
+    // an untucked hem below the crotch line folds the torso shell into a tongue between the legs: clamp it to the belt line
+    const hemY = (B && !BS.skirt && !TS.tuck) ? Math.max(TS.hem, 0.6) : TS.hem, flare = TS.flare || 0;
     const vopen = TS.neck === 'vneck' ? (yf) => 0.42 * smooth(0.80, 0.857, yf) : (TS.neck === 'collar' || TS.neck === 'polo') ? (yf) => (TS.neck === 'polo' ? 0.2 : 0.26) * smooth(0.815, 0.857, yf) : null;
     const y1 = TS.neck === 'scoop' ? 0.835 : 0.855;
-    push('top', torsoShell(c, { y0: hemY, y1, off: tfit, offFn: (yf) => flare * (1 - smooth(hemY, hemY + 0.12, yf)) + bel * 0.008 * smooth(0.5, 0.58, yf) * (1 - smooth(0.62, 0.7, yf)), color: topC, tile: 0.05, open: vopen }));
+    push('top', torsoShell(c, { y0: hemY, y1, off: tfit, offFn: (yf) => flare * (1 - smooth(hemY, hemY + 0.12, yf)) + (B && !TS.tuck ? 0.006 * (1 - smooth(hemY, hemY + 0.07, yf)) : 0) + bel * 0.008 * smooth(0.5, 0.58, yf) * (1 - smooth(0.62, 0.7, yf)), color: topC, tile: 0.05, open: vopen }));
     if (TS.neck === 'crew' || TS.neck === 'roll') push('top', collarBand(c, { y: 0.855, h: TS.neck === 'roll' ? 0.045 : 0.012, off: tfit + (TS.neck === 'roll' ? 0.006 : 0.002), flare: TS.neck === 'roll' ? 0.012 : 0.001, color: T.trim ? tTrim : dark(topC, 0.9) }));
     if (TS.neck === 'collar' || TS.neck === 'polo' || TS.neck === 'vneck') {
       push('top', collarBand(c, { y: 0.852, h: 0.03, off: tfit + 0.004, flare: 0.006, color: TS.neck === 'polo' ? tTrim : topC }));

@@ -15,7 +15,7 @@ export function irisTexture(color, { holo = false, rim = 0.5 } = {}) {
     const outer = new THREE.Color().setHSL(hsl.h, Math.min(1, hsl.s * 1.05), hsl.l * 0.55);
     const inner = new THREE.Color().setHSL(hsl.h + 0.02, Math.min(1, hsl.s * 0.9), Math.min(0.75, hsl.l * 1.55 + 0.04));
     const collar = new THREE.Color().setHSL(hsl.h - 0.03, 0.6, Math.min(0.6, hsl.l + 0.18));
-    const sc = new THREE.Color('#eae5de'), scDark = new THREE.Color('#bfb8b2'), vein = new THREE.Color('#c25a56');
+    const sc = new THREE.Color('#dcd3ca'), scDark = new THREE.Color('#a99f97'), vein = new THREE.Color('#c25a56');
     const THI = 0.575, THP = 0.21;
     for (let y = 0; y < Hh; y++) {
       const th = (y + 0.5) / Hh * Math.PI;
@@ -47,7 +47,7 @@ const lin2s = (v) => { v = Math.max(0, Math.min(1, v)); return 255 * (v <= 0.003
 function scleraColor(u, th, sc, scDark, vein) {
   const c = sc.clone();
   // darker toward back, upper lid shadow (u≈.75 up)
-  const upShade = Math.exp(-(((u - 0.75) / 0.2) ** 2)) * smooth(0.55, 1.0, th) * 0.22;
+  const upShade = Math.exp(-(((u - 0.75) / 0.25) ** 2)) * smooth(0.5, 1.0, th) * 0.42; // upper-lid shadow on the eyeball
   c.lerp(scDark, smooth(0.9, 1.7, th) * 0.8 + upShade);
   // fine veins: ridged noise
   const v1 = 1 - Math.abs(noise2(u * 50 + th * 3, th * 10)) * 3.2; const vm = Math.max(0, v1) * smooth(0.65, 1.3, th) * 0.35;
@@ -321,7 +321,7 @@ export class FaceRig {
     this.mouth = { jaw: 0, wide: 0, round: 0, press: 0, tuck: 0, teeth: 0, tongue: 0 };
     this.mouthS = { jaw: 0, wide: 0, round: 0, press: 0, tuck: 0, teeth: 0, tongue: 0 };
     this.expr = { smile: 0, frown: 0, surprise: 0, fear: 0, anger: 0, sad: 0 }; this.exprS = { ...this.expr }; this.cexpr = null;
-    this.blinkOverride = undefined; this.baseSmile = profile.baseSmile || 0;
+    this.blinkOverride = undefined; this.baseSmile = profile.baseSmile ?? 0.07; // a hint of muscle tone: a dead-neutral face reads as a mannequin
     this.blinks = []; this.sacc = []; this.rngB = new RNG(profile.seed ^ 0xb11c); this.rngS = new RNG(profile.seed ^ 0x5acc);
     this.bt = 0; this.st = 0; this.gazeYaw = 0; this.gazePitch = 0; this.gazeW = 0; this.talk = 0;
     this.maxJaw = 0.34; this.mouthAmp = 1; this.tmp = new THREE.Euler(); this.eyeYaw = 0; this.eyePitch = 0;
@@ -367,7 +367,9 @@ export class FaceRig {
     b = Math.min(1, b * (1 - 0.8 * Math.min(1, e.surprise + e.fear * 0.8)) + 0.12 * e.sad);
     // lids follow vertical gaze
     const gp = gaze ? gaze.p : 0; const lidDrop = Math.max(0, gp) * 0.9; // gaze down (positive pitch in our eye convention) drops lids
-    const bl = Math.min(1, b + lidDrop * 0.45);
+    // relaxed upper lid covers the top of the iris (a fully open lid = staring 'sticker' eyes); wide-open only when surprised/afraid
+    const restLid = 0.17 * (1 - Math.min(1, e.surprise + e.fear));
+    const bl = Math.min(1, restLid + (1 - restLid) * b + lidDrop * 0.45);
     o.blinkL = bl; o.blinkR = bl;
     const inf = this.inf;
     for (let i = 0; i < this.names.length; i++) { const v = o[this.names[i]]; inf[i] = v < 0 ? 0 : v > 1.25 ? 1.25 : v; }

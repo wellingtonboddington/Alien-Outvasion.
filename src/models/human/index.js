@@ -100,7 +100,7 @@ export class Human {
   setTransform(x, y, z, yaw) { this.root.position.set(x, y, z); if (yaw !== undefined) this.root.rotation.y = yaw; this.root.updateMatrixWorld(true); }
   play(clip, o = {}) { this.anim.play(clip, o); }
   setMouth(p) { this.face.setMouth(p); }
-  setTalk(energy = 0.5, style = 'calm') { this.energy = clamp(energy, 0, 1); this.talkStyle = style || 'calm'; this.face.mouthAmp = (style === 'angry' || style === 'excited') ? 1.1 : style === 'sad' ? 0.8 : style === 'afraid' ? 0.95 : 1; }
+  setTalk(energy = 0.5, style = 'calm') { this.energyTarget = clamp(energy, 0, 1); this.talkStyle = style || 'calm'; this.face.mouthAmp = (style === 'angry' || style === 'excited') ? 1.1 : style === 'sad' ? 0.8 : style === 'afraid' ? 0.95 : 1; }
   setExpression(e) { this.face.setExpression(e); }
   lookAt(v, w = 1) { this.anim.look = v ? (this.anim.look || new THREE.Vector3()).copy(v) : null; this.anim.lookW = w; if (!v) this.anim.lookW = 0; }
   hold(name, hand = 'R') {
@@ -149,6 +149,8 @@ export class Human {
   }
   update(dt, t) {
     this._t = t;
+    // speech energy is per-syllable; gestures need a slow envelope (otherwise arms pop between poses every frame)
+    this.energy = damp(this.energy ?? 0, this.energyTarget ?? 0, (this.energyTarget ?? 0) > (this.energy ?? 0) ? 1.6 : 0.9, Math.min(dt, 0.1));
     const an = this.anim;
     an.update(dt, t);
     // clip-suggested expression merged with manual

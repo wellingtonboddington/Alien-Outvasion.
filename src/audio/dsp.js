@@ -174,7 +174,8 @@ export class Syn {
     this.A = A; this.ctx = A.ctx; this.out = out; this.t0 = t0 === undefined ? A.now() : t0; this.nodes = []; this.srcs = []; this.alive = 0;
     this.cat = cat; this.pitchCtl = pitchCtl; this.links = []; this.dead = false; this.tEnd = this.t0; this.onDone = null;
     if (A.live) A.live[cat] = (A.live[cat] || 0) + 1;
-    this.counted = true;
+    this.counted = true; this.open = false;
+    (A.syns || (A.syns = new Set())).add(this); // registry: the engine sweeps leaked voices and recounts A.live from it
   }
   _reg(n) { this.nodes.push(n); return n; }
   g(v = 1, dest) { const n = this._reg(this.ctx.createGain()); n.gain.value = v; if (dest) n.connect(dest); return n; }
@@ -184,8 +185,9 @@ export class Syn {
   delay(secs, max = 1) { const n = this._reg(this.ctx.createDelay(Math.max(max, secs + 0.01))); n.delayTime.value = secs; return n; }
   pan(v) { if (!this.ctx.createStereoPanner) return this.g(1); const n = this._reg(this.ctx.createStereoPanner()); n.pan.value = cl(v, -1, 1); return n; }
   _src(s, t, d) {
+    try { s.start(Number.isFinite(t) ? t : this.A.now()); } catch (e) { return s; } // a failed start would never fire onended (leaked voice)
     this.srcs.push(s); this.alive++; s.onended = () => { if (--this.alive <= 0) this.dispose(); };
-    s.start(t); if (d !== undefined && d !== null) { s.stop(t + d); this.tEnd = Math.max(this.tEnd, t + d); }
+    if (d !== undefined && d !== null && Number.isFinite(d)) { try { s.stop(t + d); } catch (e) { /* */ } this.tEnd = Math.max(this.tEnd, t + d); } else this.open = true;
     if (this.pitchCtl && s.detune) this.mod(this.pitchCtl, s.detune);
     return s;
   }
@@ -198,16 +200,16 @@ export class Syn {
   /** looped noise source starting at a random offset */
   n(kind, t, d, rate = 1) {
     const s = this.ctx.createBufferSource(); s.buffer = noiseBuffer(this.ctx, kind); s.loop = true; s.playbackRate.value = rate; this.nodes.push(s);
-    const off = this.A.rng.next() * 2.5; s.start(t, off); this.srcs.push(s); this.alive++; s.onended = () => { if (--this.alive <= 0) this.dispose(); };
-    if (d !== undefined && d !== null) { s.stop(t + d); this.tEnd = Math.max(this.tEnd, t + d); }
+    const off = this.A.rng.next() * 2.5; try { s.start(Number.isFinite(t) ? t : this.A.now(), off); } catch (e) { return s; } this.srcs.push(s); this.alive++; s.onended = () => { if (--this.alive <= 0) this.dispose(); };
+    if (d !== undefined && d !== null && Number.isFinite(d)) { try { s.stop(t + d); } catch (e) { /* */ } this.tEnd = Math.max(this.tEnd, t + d); } else this.open = true;
     if (this.pitchCtl && s.detune) this.mod(this.pitchCtl, s.detune);
     return s;
   }
   /** one-shot buffer (KS pluck etc.) */
   buf(buffer, t, d, rate = 1) {
     const s = this.ctx.createBufferSource(); s.buffer = buffer; s.playbackRate.value = rate; this.nodes.push(s);
-    this.srcs.push(s); this.alive++; s.onended = () => { if (--this.alive <= 0) this.dispose(); };
-    s.start(t); if (d !== undefined && d !== null) { s.stop(t + d); this.tEnd = Math.max(this.tEnd, t + d); }
+    try { s.start(Number.isFinite(t) ? t : this.A.now()); } catch (e) { return s; } this.srcs.push(s); this.alive++; s.onended = () => { if (--this.alive <= 0) this.dispose(); };
+    if (d !== undefined && d !== null && Number.isFinite(d)) { try { s.stop(t + d); } catch (e) { /* */ } this.tEnd = Math.max(this.tEnd, t + d); } else this.open = true;
     return s;
   }
   /** constant source (control signal) */
@@ -215,9 +217,9 @@ export class Syn {
   /** wire a chain a->b->c ... returns the last node */
   chain(...ns) { for (let i = 0; i < ns.length - 1; i++) ns[i].connect(ns[i + 1]); return ns[ns.length - 1]; }
   /** stop every source at absolute time t */
-  stopAt(t) { for (const s of this.srcs) { try { s.stop(t); } catch (e) { /* already stopped */ } } this.tEnd = Math.max(this.tEnd, t); }
+  stopAt(t) { for (const s of this.srcs) { try { s.stop(t); } catch (e) { /* already stopped */ } } this.tEnd = Math.max(this.tEnd, t); this.open = false; }
   dispose() {
-    if (this.dead) return; this.dead = true;
+    if (this.dead) return; this.dead = true; if (this.A.syns) this.A.syns.delete(this);
     for (const n of this.nodes) { try { n.disconnect(); } catch (e) { /* */ } }
     this.nodes.length = 0; this.srcs.length = 0;
     if (this.counted && this.A.live) { this.A.live[this.cat] = Math.max(0, (this.A.live[this.cat] || 1) - 1); this.counted = false; }

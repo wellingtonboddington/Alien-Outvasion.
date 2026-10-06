@@ -154,7 +154,8 @@ function createTTS(A) {
       try { synth.resume(); } catch (e) { /* */ }
       if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(() => { if (!hnd.cancelled) synth.speak(u); }, 45); } else synth.speak(u);
     } catch (e) { hnd._end(); return; }
-    hnd.timer = setTimeout(() => { if (!hnd.ended) { hnd.cancelled = true; try { synth.cancel(); } catch (e) { /* */ } hnd._end(); } }, (dur * 1.12 + 0.35) * 1000);
+    // overrun guard: generous, so a slightly slow voice finishes its sentence instead of being cut mid-word
+    hnd.timer = setTimeout(() => { if (!hnd.ended) { hnd.cancelled = true; try { synth.cancel(); } catch (e) { /* */ } hnd._end(); } }, (dur * 1.4 + 0.8) * 1000);
     hnd.cancel = () => { hnd.cancelled = true; try { synth.cancel(); } catch (e) { /* */ } };
   }
   return { synth, say, setVol(v) { vv = v; }, unlock() { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } catch (e) { /* */ } }, pause() { try { synth.pause(); } catch (e) { /* */ } }, resume() { try { synth.resume(); } catch (e) { /* */ } }, cancel() { try { synth.cancel(); } catch (e) { /* */ } } };

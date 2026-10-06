@@ -194,7 +194,7 @@ export function createPost(stage, opts = {}) {
     for (let i = 0; i < bloomLevels; i++) { w = Math.max(2, w); h = Math.max(2, h); bloomRTs.push(mkRT(w, h)); w >>= 1; h >>= 1; }
     blurRTs = [mkRT(W >> 1, H >> 1), mkRT(W >> 2, H >> 2), mkRT(W >> 3, H >> 3)];
     fxaaOn = params.fxaa !== undefined ? !!params.fxaa : lv < 2;
-    if (matFinal) matFinal.dispose(); matFinal = finalMat(fxaaOn);
+    if (!matFinal || post._fxaaBuilt !== fxaaOn) { if (matFinal) matFinal.dispose(); matFinal = finalMat(fxaaOn); }
     U.uRes.value.set(W, H); post._fxaaBuilt = fxaaOn;
   }
   post.setSize = (w, h, pr = 1) => {
@@ -203,6 +203,8 @@ export function createPost(stage, opts = {}) {
   };
   post.setQuality = (level) => { level = clamp(Math.round(level), 0, 2); if (level === post.level && sceneRT) return post; post.level = level; build(); return post; };
   post.setScene = (s) => { post.scene = s; return post; };
+  /** render target the scene is drawn into (null = screen); used to pre-compile scene shaders with matching output settings */
+  post.sceneTarget = () => (post.enabled ? (sceneRT || (build(), sceneRT)) : null);
   post.setBloom = (strength, radius, threshold) => { if (strength !== undefined) params.bloom.strength = strength; if (radius !== undefined) params.bloom.radius = radius; if (threshold !== undefined) params.bloom.threshold = threshold; return post; };
   /** bar thickness (fraction of screen height, per bar) that gives a target cinematic aspect on the current drawing buffer */
   post.letterboxFor = (aspect) => Math.max(0, 0.5 - 0.5 * (W / H) / aspect);

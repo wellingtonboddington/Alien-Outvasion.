@@ -53,7 +53,8 @@ export const ACT1 = [
     const jez = person(S, 'jez'); const mia = extra(S, 'civilian', 8, { name: 'Ate Mia', npc: { gender: 'F', ethnicity: 'filipino' } });
     const pj = nr(set, 'shop1', -0.6, 1.5), pm = nr(set, 'shop1', 0.9, 0.5); jez.place(0, pj, 0.5, 'idle'); mia.place(0, pm, -2.2, 'idle');
     nameCard(S, 1.2, 'jez', 4); mood(S, { music: 'everyday', amb: 'mall', level: 0.4, intensity: 0.35 });
-    const e = S.fit(1.0, 11.5, [[mia, "Ma'am Jez! The Magellan book you ordered finally came!", { emotion: 'happy' }], [jez, "Ate Mia, you're an angel. First edition?", { emotion: 'happy' }], [mia, 'First edition. The cover is a little... loved.'], [jez, 'Loved books are the only honest ones.', { emotion: 'smirk' }], [jez, "Gotta run. Mirrah forgets to eat when there's a body to open.", { emotion: 'worried' }]]);
+    S.fit(1.0, 11.8, [[mia, "Ma'am Jez! Your Magellan book came!", { emotion: 'happy' }], [jez, 'First edition?', { emotion: 'happy' }], [mia, 'First edition. A little loved.'], [jez, 'Loved books are the honest ones.', { emotion: 'smirk' }]]);
+    S.fit(11.9, 16.4, [[jez, 'Gotta run. Mirrah forgets to eat on body days.', { emotion: 'worried' }]]);
     jez.go(12.0, [nr(set, 'entrance', 3, 0)], { speed: 2.9 }); mia.act(12.0, 'wave');
     cover(S, set, 0, 12); S.shot(12, 17, { follow: jez, offset: [-2.2, 1.7, 3.6], look: [0, 1.2, 0], fov: 38, handheld: 0.6 });
   } },

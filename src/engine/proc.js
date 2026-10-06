@@ -44,6 +44,15 @@ export function voronoi2(x, y, seed = 0) {
 }
 
 // ---------- canvas helpers ----------
+// Procedural texture code reads pixels back constantly (getImageData). On a GPU-accelerated 2D canvas every readback is a pipeline
+// stall, which cost seconds per scene build; willReadFrequently keeps 2D canvases CPU-side so readbacks are plain memory copies.
+(() => {
+  for (const C of [globalThis.HTMLCanvasElement, globalThis.OffscreenCanvas]) {
+    if (!C || !C.prototype || C.prototype.__wrf) continue; const g = C.prototype.getContext;
+    C.prototype.getContext = function (type, opts) { return g.call(this, type, type === '2d' ? { willReadFrequently: true, ...(opts || {}) } : opts); };
+    C.prototype.__wrf = true;
+  }
+})();
 export function makeCanvas(w, h = w) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; return c;
 }

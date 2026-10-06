@@ -24,13 +24,14 @@ export class Director {
   _build(i, silentTo = 0) {
     const def = this.film[i]; const S = new SceneContext(this, def);
     try { def.build(S); } catch (err) { this.report(S, 'build', err); S.broken = true; }
+    try { S.mergeHemis(); } catch (err) { this.report(S, 'hemi', err); }
     if (!S.shots.length) S.shot(0, def.dur, { pos: [0, 2, 8], look: [0, 1.5, 0], fov: 40 });
     if (S.scene.background == null) S.scene.background = new THREE.Color(0x000000);
     if (silentTo > 0) { S.silent = true; const step = 1 / 15; for (let t = 0; t < silentTo; t += step) S.update(Math.min(t, silentTo), step); S.update(silentTo, 1 / 60); S.silent = false; }
     return S;
   }
   _activate(S, i) {
-    const prev = this.cur; this.cur = S; this.curIndex = i; this.stage.scene = S.scene;
+    const prev = this.cur; this.cur = S; this.curIndex = i; this.stage.scene = S.scene; this._activatedFrame = this.frame;
     this.stage.camera.near = S.camNear; this.stage.camera.far = S.camFar; this.stage.camera.updateProjectionMatrix();
     this.stage.renderer.toneMappingExposure = S.exposure;
     if (this.post && this.post.setScene) this.post.setScene(S.scene);
@@ -41,34 +42,62 @@ export class Director {
   seek(t, { play = null } = {}) {
     t = clamp(t, 0, this.total - 0.001); const i = this.indexAt(t); const local = t - this.starts[i];
     if (this.next) { this.next.dispose(); this.next = null; this.nextIndex = -1; }
+    if (this._pending) { this._pending.S.dispose(); this._pending = null; }
     const keepAudio = this.audioState; this.audioState = { music: null, amb: {} };
     if (this.audio) { this.audio.sfx.stopAll && this.audio.sfx.stopAll(); this.audio.voice.stopAll && this.audio.voice.stopAll(); }
     const S = this._build(i, local); this._activate(S, i); this.time = t; if (this.old) { this.old.dispose(); this.old = null; }
     // restore audio bed for the new position
     const st = this.audioState; if (this.audio) { if (st.music) { if (st.music.cue === 'stop' || st.music.cue === 'silence') this.audio.music.stop(0.5); else this.audio.music.play(st.music.cue, { fade: 1.2, intensity: st.music.intensity ?? 0.5 }); } else this.audio.music.stop(0.5); this.audio.amb.clear && this.audio.amb.clear(0.5); for (const k in st.amb) this.audio.amb.set(k, st.amb[k], 1.0); }
-    if (play !== null) this.playing = play; this._applyFrame(0);
+    if (play !== null) this.playing = play; this._applyFrame(0); this._pinPrograms();
   }
   setPlaying(p) { this.playing = p; if (this.audio) { if (p) this.audio.resume && this.audio.resume(); else { this.audio.suspend && this.audio.suspend(); this.audio.voice.stopAll && this.audio.voice.stopAll(); } } }
 
   /** advance (if playing), update scene, render */
   update(dtReal) {
-    const dt = Math.min(dtReal, 0.1); this.frame++;
+    const dt = clamp(dtReal, 0, 0.1); this.frame++;
     if (!this.cur) return;
-    if (this.playing) {
+    if (this._pending) {
+      // the next scene is built and its shaders are compiling in the background: hold the last presented frame (black under a fade)
+      const P = this._pending; if (!P.ready && performance.now() < P.deadline) return;
+      this._pending = null; this._activate(P.S, P.i); this.time = this.starts[P.i];
+    } else if (this.playing) {
       this.time += dt; if (this.time >= this.total) { this.time = this.total - 0.001; this.playing = false; if (this.onEnd) this.onEnd(); }
-      let i = this.indexAt(this.time);
+      const i = this.indexAt(this.time);
       if (i !== this.curIndex) {
-        // switch scene (use preloaded if available)
-        let S = this.next && this.nextIndex === i ? this.next : null; this.next = null; this.nextIndex = -1; if (!S) S = this._build(i);
+        // build at the scene boundary (the screen is black under the fade-out) instead of during visible frames
+        let S = this.next && this.nextIndex === i ? this.next : null; this.next = null; this.nextIndex = -1;
+        if (!S) { if (this.audio && this.audio.prefill) this.audio.prefill(4.5); S = this._build(i); }
+        this.time = this.starts[i];
+        if (this._compile(S, i)) return;
         this._activate(S, i);
       }
-      // preload next scene shortly before the end (hidden under the fade)
-      const local = this.time - this.starts[this.curIndex]; const remain = this.film[this.curIndex].dur - local;
-      if (!this.next && this.curIndex + 1 < this.film.length && remain < 1.6 && remain > 0.05) { this.nextIndex = this.curIndex + 1; this.next = this._build(this.nextIndex); }
     }
     this._applyFrame(dt);
     // dispose the previous scene once the new one has rendered a frame
     if (this.old && this.old !== this.cur) { this.old.dispose(); this.old = null; }
+    if (this.frame % 30 === 0) this._pinPrograms();
+  }
+  /** true while a scene swap is in progress or just happened (frame times are not representative) */
+  get busy() { return !!this._pending || this.frame - (this._activatedFrame || 0) < 30; }
+  /** compile the new scene's shaders without blocking (KHR_parallel_shader_compile). Returns true if the swap must wait for them. */
+  _compile(S, i) {
+    const r = this.stage.renderer; if (!r.compileAsync || !r.info.programs) return false;
+    const before = r.info.programs.length; const prev = r.getRenderTarget(); let prom = null;
+    try { r.setRenderTarget(this.post && this.post.sceneTarget ? this.post.sceneTarget() : null); prom = r.compileAsync(S.scene, this.stage.camera); } catch (err) { this.report(S, 'compile', err); }
+    r.setRenderTarget(prev); this._pinPrograms();
+    // upload the scene's textures now (screen is black) rather than on the first visible frames
+    if (r.initTexture) { const seen = new Set(); S.scene.traverse((o) => { const m = o.material; if (!m) return; for (const mm of Array.isArray(m) ? m : [m]) for (const k in mm) { const v = mm[k]; if (v && v.isTexture && !seen.has(v) && !v.isRenderTargetTexture && (v.image || v.isDataTexture)) { seen.add(v); try { r.initTexture(v); } catch (err) { /* ignore */ } } } }); }
+    if (!prom || r.info.programs.length === before) return false; // every shader was already cached
+    const P = { S, i, ready: false, deadline: performance.now() + 4000 }; prom.then(() => { P.ready = true; }, () => { P.ready = true; });
+    this._pending = P; return true;
+  }
+  /** keep compiled shader programs alive across scenes: three.js destroys a program when the last material using it is disposed,
+   *  which made every scene recompile ~50-90 programs (multi-second stalls on laptop GPUs). A pin is one extra use count; pins are never
+   *  released by hand (three also indexes programs in a private map, so only its own release path may destroy them). Beyond the ceiling
+   *  (phones only) new programs simply behave as before. */
+  _pinPrograms() {
+    const progs = this.stage.renderer.info.programs; if (!progs) return; const pinned = this._pinned || (this._pinned = []); const cap = this.pinCap ?? Infinity;
+    for (const p of progs) { if (pinned.length >= cap) break; if (!p.__pinned) { p.__pinned = true; p.usedTimes++; pinned.push(p); } }
   }
   _applyFrame(dt) {
     const S = this.cur; const local = clamp(this.time - this.starts[this.curIndex], 0, S.duration);
@@ -95,5 +124,5 @@ export class Director {
   }
   _setPost(p, key, v) { if (key === 'bloomStrength') { if (p.bloom) p.bloom.strength = v; } else if (key === 'tint') { p.tint = v; } else p[key] = v; }
   resize(w, h, pixelRatio) { this.stage.resize(w, h, pixelRatio); if (this.post) this.post.setSize(w, h, pixelRatio); this.aspect = w / h; }
-  dispose() { for (const s of [this.cur, this.next, this.old]) if (s) s.dispose(); }
+  dispose() { for (const s of [this.cur, this.next, this.old, this._pending && this._pending.S]) if (s) s.dispose(); this._pending = null; }
 }

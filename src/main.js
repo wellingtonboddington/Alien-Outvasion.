@@ -13,6 +13,15 @@ import { FILM } from './film/index.js';
 const params = new URLSearchParams(location.search);
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 900);
 const canvas = document.getElementById('c');
+// integrated / mobile / software GPUs start at Low when quality is Auto
+function weakGPU() {
+  try {
+    const c = document.createElement('canvas'); const gl = c.getContext('webgl2') || c.getContext('webgl'); if (!gl) return true;
+    const ext = gl.getExtension('WEBGL_debug_renderer_info'); const r = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
+    const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+    return /swiftshader|llvmpipe|software|basic render|intel|uhd|hd graphics|iris|mali|adreno|powervr|apple gpu|radeon\(tm\) graphics|radeon graphics|vega \d/i.test(r);
+  } catch (e) { return false; }
+}
 const fmt = (s) => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 const CSS = `
@@ -53,7 +62,7 @@ async function boot() {
     <div class="tag">A real-time 3D animated film</div>
     <button class="go" id="go">Begin</button>
     <div class="opts">
-      <label>Quality <select id="oq"><option value="auto">Auto</option><option value="0">Low (phones)</option><option value="1">Medium</option><option value="2">High</option></select></label>
+      <label>Quality <select id="oq"><option value="auto">Auto</option><option value="0">Low (laptops, phones)</option><option value="1">Medium</option><option value="2">High</option></select></label>
       <label>Voices <select id="ov"><option value="tts">Speech</option><option value="babble">Cinematic babble</option><option value="off">Off (subtitles)</option></select></label>
       <label>Subtitles <select id="os"><option value="1">On</option><option value="0">Off</option></select></label>
     </div>
@@ -68,14 +77,16 @@ async function boot() {
   if (isMobile) document.getElementById('oq').value = '0';
 
   let director = null, hud = null, audio = null, perf = null, post = null, stage = null; let started = false, userPaused = false, hideT = 0;
-  let userQuality = 'auto'; let pixelScale = 1; let last = performance.now();
+  let userQuality = 'auto'; let qStart = 1; let perfPR = 0; let last = performance.now();
+  // render-resolution ceiling per quality level (device pixels per CSS pixel); the perf controller adapts below it
+  const prCap = () => Math.min(window.devicePixelRatio || 1, [1.0, 1.5, 2][qStart], isMobile ? 1.5 : 2);
   const $ = (id) => document.getElementById(id);
 
   function layout() {
     const W = window.innerWidth, H = window.innerHeight; const wa = W / H; const A = clamp(wa, 1.78, 2.35);
     let w = W, h = W / A; if (h > H) { h = H; w = H * A; } w = Math.floor(w); h = Math.floor(h); const x = Math.floor((W - w) / 2), y = Math.floor((H - h) / 2);
     Object.assign(canvas.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', position: 'fixed', inset: 'auto' });
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2); const pr = clamp(dpr * pixelScale, 0.5, dpr);
+    const cap = prCap(); const pr = clamp(perfPR > 0 ? Math.min(perfPR, cap) : cap, 0.5, Math.max(0.5, cap));
     if (director) director.resize(w, h, pr); else if (stage) stage.resize(w, h, pr);
     if (hud) hud.layout(x, y, w, h);
     hint.style.display = (H > W * 1.05 && started) ? 'block' : 'none';
@@ -85,14 +96,16 @@ async function boot() {
     if (started) return; started = true;
     start.style.opacity = '0'; load.style.display = 'flex';
     await new Promise((r) => setTimeout(r, 60));
-    userQuality = $('oq').value; const q = userQuality === 'auto' ? (isMobile ? 0 : 1) : +userQuality; setQuality(q); Q.mobile = isMobile;
-    stage = createStage({ canvas, width: 1280, height: 720, pixelRatio: 1, antialias: q > 0 && !isMobile, preserveDrawingBuffer: params.has('capture') });
+    userQuality = $('oq').value; const q = userQuality === 'auto' ? (isMobile || weakGPU() ? 0 : 1) : +userQuality; qStart = q; setQuality(q); Q.mobile = isMobile;
+    stage = createStage({ canvas, width: 1280, height: 720, pixelRatio: 1, antialias: q > 1 && !isMobile, preserveDrawingBuffer: params.has('capture') });
+    stage.renderer.shadowMap.enabled = !!Q.shadows;
     try { post = PostMod.createPost ? PostMod.createPost(stage) : null; if (post && post.setQuality) post.setQuality(q); } catch (e) { console.error('post failed', e); post = null; }
-    try { perf = PerfMod.createPerf ? PerfMod.createPerf({ targetFps: isMobile ? 30 : 60, minPixelRatio: 0.5 }) : null; } catch (e) { perf = null; }
+    // the controller never goes above the chosen level; Auto may step the level down, an explicit choice only adapts resolution
+    try { perf = PerfMod.createPerf ? PerfMod.createPerf({ targetFps: isMobile ? 30 : q === 0 ? 45 : 60, minPixelRatio: 0.5, maxPixelRatio: prCap(), maxLevel: q, minLevel: userQuality === 'auto' ? 0 : q, startPixelRatio: q === 0 ? Math.min(prCap(), 0.85) : prCap() }) : null; if (perf) perfPR = perf.recommendedPixelRatio; } catch (e) { perf = null; }
     try { audio = AudioMod.createAudio ? AudioMod.createAudio() : null; if (audio) { audio.resume && audio.resume(); audio.voice.setMode($('ov').value); audio.setMaster(0.85); } } catch (e) { console.error('audio failed', e); audio = null; }
     hud = new HUD(document.body); hud.subsOn = $('os').value === '1';
     director = new Director({ stage, post, audio, hud, createFX: FxMod.createFX ? (scene, o) => FxMod.createFX(scene, o) : null, film: FILM, quality: q, perf });
-    director.onEnd = () => { endScr.style.display = 'flex'; };
+    director.onEnd = () => { endScr.style.display = 'flex'; }; if (isMobile) director.pinCap = 600;
     layout();
     const t0 = params.has('t') ? parseFloat(params.get('t')) : 0;
     await new Promise((r) => setTimeout(r, 30));
@@ -127,10 +140,14 @@ async function boot() {
   // ---- main loop ----
   let fpsAcc = 0, fpsN = 0, fps = 0, lastPR = 0;
   function frame(now) {
-    requestAnimationFrame(frame); const dtms = now - last; last = now; if (document.hidden) return;
-    if (perf && director.playing) {
+    requestAnimationFrame(frame); const dtms = Math.max(0, now - last); last = Math.max(last, now); if (document.hidden) return;
+    if (perf && director.playing && !director.busy) {
       perf.sample(dtms);
-      if (userQuality === 'auto' && now - lastPR > 1500) { lastPR = now; const rec = perf.recommendedPixelRatio; if (rec && Math.abs(rec - pixelScale) > 0.04) { pixelScale = rec; layout(); } if (perf.level !== undefined && perf.level !== Q.level) { setQuality(perf.level); if (post && post.setQuality) post.setQuality(perf.level); } }
+      if (now - lastPR > 1500) {
+        lastPR = now; const rec = perf.recommendedPixelRatio; if (rec && Math.abs(rec - perfPR) > 0.04) { perfPR = rec; layout(); }
+        // quality level only ever steps DOWN from the start level (affects the next scenes built)
+        if (userQuality === 'auto' && perf.level !== undefined && perf.level < Q.level) { setQuality(perf.level); if (post && post.setQuality) post.setQuality(perf.level); if (audio && audio.setQuality) audio.setQuality(perf.level); stage.renderer.shadowMap.enabled = !!Q.shadows; }
+      }
     }
     director.update(dtms / 1000);
     fpsAcc += dtms; fpsN++; if (fpsAcc > 500) { fps = Math.round(1000 / (fpsAcc / fpsN)); fpsAcc = 0; fpsN = 0; }

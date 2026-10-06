@@ -1,5 +1,15 @@
 # Pass-2 notes (quality / error-check pass) — technical, spoiler-free
 
+## Opus quality pass (done)
+* **Loading / stalls.** Procedural textures read pixels back constantly; 2D canvases are now created with `willReadFrequently` (patched once in `engine/proc.js`), which made scene builds 3–30× faster (worst scene 11.6 s → 0.4 s; all ≤ ~1.1 s in software GL). Compiled shader programs are pinned across scenes (`Director._pinPrograms`; three.js would otherwise recompile 50–90 programs per scene). Never destroy pinned programs by hand: three r186 also indexes them in a private map. The next scene is built at the scene boundary (black under the fade-out), its shaders compiled with `compileAsync` (KHR_parallel_shader_compile) and its textures uploaded while the screen holds black. Music is scheduled 4.5 s ahead right before a build (`audio.prefill`). Hemisphere lights are merged into one per scene (`SceneContext.mergeHemis`).
+* **Quality settings.** Low caps render resolution at 1.0 device pixel (starts at 0.85) and adapts down to 0.5 at a 45 fps target; every level adapts resolution; Auto starts at Low on integrated/mobile GPUs and never raises the level above the start; shadows are off at Low; MSAA only on High. Negative frame deltas (stale rAF timestamps after a stall) no longer rewind the film.
+* **Audio dropouts.** Leaked live-voice counts could hit the polyphony caps and silence music; voices are now registered and swept, and a watchdog resumes a suspended AudioContext.
+* **Talking while moving.** Speech energy is smoothed and the gesture beat is fixed per style (no more flailing).
+* **Faces.** Softer resting lids, warmer sclera, natural lip colour, slight resting smile; clothing seam z-fighting fixed.
+* **Interceptors** (s38/s39a): exhaust streaks (`film/streaks.js`: screen-space ribbons with a minimum pixel width, curved paths matching `Entity.path`), breakout through the atmosphere, point-defence beams, close hull impacts and their aftermath, side-on wide shots that read at orbital distances.
+* **Dialogue.** `S.fit` may compress speech to 0.8×; the remaining overfull scenes were trimmed.
+
+
 State: complete 1800 s film (64 scenes in `src/film/act1..act4.js`, built into `alien-outvasion.html`). `node tools/smoke.mjs` walks every scene (software GL, ~15 s/scene); last full run: 0 hard errors, all scenes build and render.
 
 ## How to iterate cheaply
@@ -10,8 +20,8 @@ State: complete 1800 s film (64 scenes in `src/film/act1..act4.js`, built into `
 ## Known issues / best next improvements
 1. **Faces & hair** (src/models/human): faces are readable but a bit uncanny (lip/eye texture, wide head proportions); long/ponytail hair cards can stray across the face (Epiphany was switched to `pixie`; `low_ponytail`/`bob` fringe needs fixing in `hair.js`); Leon's goatee/stubble texture is blotchy; hands are simple.
 2. **Cinematography in cramped sets**: auto-coverage (`coverageSpec` in camera.js) frames the speaker's face using the actor's facing, but small sets (BSL-4 lab, bunker, silo) put benches/walls in front of the lens; hand-tune a few shots using the sets' `cam*` anchors.
-3. **Performance**: heavy exteriors reach ~1.3 M triangles at quality 1 (`s19`), sets build in 5–15 s in software GL (fast on a GPU, but check phones). Knobs: `Q` in src/engine/common.js, `cnt()` in battle.js (crowd counts), `Q.level` 0 for phones. The player auto-selects Low on mobile.
+3. **Performance**: heavy exteriors reach ~1.3 M triangles at quality 1 (`s19`). Humans are now about half of a warm scene build (head mesh + normal welding); caching head geometry per profile would cut builds further. Knobs: `Q` in src/engine/common.js, `cnt()` in battle.js (crowd counts), `Q.level` 0 for phones. The player auto-selects Low on mobile.
 4. **Animation polish**: gestures are procedural; humans in vehicles/at counters mostly use generic clips; no hand-to-hand interactions (handshakes, hugs) beyond clip names that exist.
-5. **Audio**: fully procedural (src/audio); mix levels were calibrated offline only. Music lookahead is 1.6 s so scene swaps (≈0.5 s stall) don't glitch.
+5. **Audio**: fully procedural (src/audio); mix levels were calibrated offline only. Music lookahead is 1.6 s, extended to 4.5 s just before scene builds.
 6. **Vehicles**: military turrets (tank/howitzer) look blobby; exhaust flames read as white columns; car parks are expensive (30 k tris/car).
 7. Asset agents' API docs: `docs/api/*.md`. Contract and conventions: `docs/CONTRACT.md`.

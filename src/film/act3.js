@@ -3,13 +3,14 @@ import * as THREE from 'three';
 import * as K from './kit.js';
 import * as SC from './screens.js';
 import { space, R_E } from './space.js';
+import { createStreaks, glowTex as streakGlow } from './streaks.js';
 import { battle, mover, cnt } from './battle.js';
 import { createCrowd } from '../models/crowd.js';
 import { createCrawlerSwarm } from '../models/aliens/index.js';
 import { createPodSwarm, createBeams, createTripod, createTripodHorde } from '../models/alientech/index.js';
 import * as Veh from '../models/vehicles.js';
 import { createOcean } from '../world/ocean.js';
-const { person, extra, alien, at, A, cover, indoors, place, nameCard, mood, COL, Life, Inst, City, safe, V3, RNG } = K;
+const { person, extra, alien, at, A, cover, indoors, place, nameCard, mood, COL, Life, Inst, City, safe, V3, RNG, clamp } = K;
 const nr = (set, name, dx = 0, dz = 0) => { const a = A(set, name); return [a.p[0] + dx, a.p[1], a.p[2] + dz]; };
 const radio = (o = {}) => ({ style: 'radio', color: COL.radio, ...o });
 const mil = (o = {}) => ({ style: 'radio', color: COL.mil, ...o });
@@ -138,23 +139,81 @@ export const ACT3 = [
   } },
   // ------------------------------------------------------------------ s38 — day seven: the interceptors rise
   { id: 's38_interceptor_launch', dur: 14, build(S) {
-    K.skyFor(S, 'dawn', { elev: 6, az: 90 }); S.camFar = 20000; const fx = S.fx; ground(S, 0x6a5a40, 3000);
-    const pads = [[-60, -80], [0, -110], [70, -90], [30, -140]]; pads.forEach((p, i) => { const m = safe('interceptor', () => Veh.createMissile('interceptor', { axis: 'z' })); if (!m) return; const e = S.entity(m); const t0 = 2.2 + i * 1.4; e.at(0, [p[0], 6.2, p[1]], 0, { pitch: Math.PI / 2 }); e.path(t0, 14, [[p[0], 6.2, p[1]], [p[0], 30, p[1]], [p[0] + 6, 160, p[1] - 6], [p[0] + 30, 1400, p[1] - 80], [p[0] + 90, 9000, p[1] - 300]], { ease: 'in', pitch: true }); S.during(0, t0, () => { m.root.rotation.x = -Math.PI / 2; }); S.during(t0, 40, () => m.setBurn && m.setBurn(1)); S.on(t0, () => { fx.smokeColumn([p[0], 0, p[1]], { height: 90, width: 12, life: 12 }); fx.fire([p[0], 1, p[1]], { size: 6 }); fx.shockwave([p[0], 0.5, p[1]], { size: 70 }); fx.dust([p[0], 0.5, p[1]], { radius: 36, amount: 1.6 }); }); S.sfx(t0, 'missile_launch', { pos: [p[0], 5, p[1]] }); });
+    K.skyFor(S, 'dawn', { elev: 6, az: 90 }); S.camFar = 20000; const fx = S.fx; ground(S, 0x6a5a40, 3000); const SK = createStreaks(S);
+    const pads = [[-60, -80], [0, -110], [70, -90], [30, -140]]; pads.forEach((p, i) => { const m = safe('interceptor', () => Veh.createMissile('interceptor', { axis: 'z' })); if (!m) return; const e = S.entity(m); const t0 = 2.2 + i * 1.4; e.at(0, [p[0], 6.2, p[1]], 0, { pitch: Math.PI / 2 }); const climb = [[p[0], 6.2, p[1]], [p[0], 30, p[1]], [p[0] + 6, 160, p[1] - 6], [p[0] + 30, 1400, p[1] - 80], [p[0] + 90, 9000, p[1] - 300]]; e.path(t0, 14, climb, { ease: 'in', pitch: true });
+      SK.add(climb, { t0, t1: 14, ease: 'in', widthPx: 3.2, worldW: 16, tailLen: 5200, grow: 3.4, headPx: 0.014, hot: [9, 6.8, 4.6], cool: [1.1, 1.0, 0.92] }); S.during(0, t0, () => { m.root.rotation.x = -Math.PI / 2; }); S.during(t0, 40, () => m.setBurn && m.setBurn(1)); S.on(t0, () => { fx.smokeColumn([p[0], 0, p[1]], { height: 90, width: 12, life: 12 }); fx.fire([p[0], 1, p[1]], { size: 6 }); fx.shockwave([p[0], 0.5, p[1]], { size: 70 }); fx.dust([p[0], 0.5, p[1]], { radius: 36, amount: 1.6 }); }); S.sfx(t0, 'missile_launch', { pos: [p[0], 5, p[1]] }); });
     S.shot(0, 5, { from: { pos: [-20, 2.0, 30], look: [0, 8, -110], fov: 44 }, to: { pos: [-10, 2.2, 20], look: [0, 12, -110], fov: 40 }, handheld: 0.4 }); S.shot(5, 10, { pos: [20, 1.3, -40], look: [30, 60, -140], fov: 54, handheld: 0.6, push: 3 }, 'cut'); S.shot(10, 14, { from: { pos: [0, 2, -40], look: [30, 200, -200], fov: 58 }, to: { pos: [0, 2, -40], look: [40, 900, -300], fov: 58 }, handheld: 0.3 }, 'cut');
     S.stamp(0.5, 'DAY 7 — MARCH 22, 2050 — 00:41 UTC', 'WHITE SANDS INTERCEPTOR RANGE', 5); mood(S, { music: 'nuclear', amb: 'wind', level: 0.3, intensity: 0.85 });
     S.fit(0.6, 13.2, [['RANGE CONTROL', 'Interceptor wing, stand by.', mil({ emotion: 'serious' })], ['RANGE CONTROL', 'Wing Alpha, launch. Launch. Launch.', mil({ emotion: 'urgent' })], ['RANGE CONTROL', 'All birds away. Forty-one in flight.', mil({ emotion: 'afraid' })]]);
   } },
-  // ------------------------------------------------------------------ s39a — the interceptors reach the fleet
+  // ------------------------------------------------------------------ s39a — the interceptors break out of the atmosphere and reach the fleet
   { id: 's39a_interceptors_orbit', dur: 24, cutIn: true, build(S) {
-    const sp = space(S, { lat: 30, lon: -100, sunFront: 0.3, sunSide: 0.9 }); const fx = S.fx; const shipsAt = [[34, -96, 560], [28, -104, 540], [38, -110, 580]]; const heroes = shipsAt.map((s, i) => sp.ship(7 + i, s[0], s[1], s[2], 880 - i * 60)); const list = []; for (let i = 0; i < 45; i++) list.push([22 + (i % 9) * 3.2, -125 + (i * 7) % 50, 500 + (i % 6) * 40, 500 + (i % 5) * 80]); sp.fleet(list, 3);
-    const hit = [[34, -96, 560, 8.4], [28, -104, 540, 11.0], [38, -110, 580, 13.4]]; const falling = [];
-    hit.forEach((h, i) => { const p = sp.at(h[0], h[1], h[2]); const a = sp.at(h[0] - 14, h[1] + 8, 0); for (let k = 0; k < 3; k++) { const m = safe('interceptor', () => Veh.createMissile('interceptor', { axis: 'z' })); if (!m) continue; m.root.scale.setScalar(0.02); const e = S.entity(m); const o = new V3((k - 1) * 0.6, k * 0.3, (k - 1) * 0.5); e.path(0, h[3], [[a.x, a.y, a.z], [(a.x + p.x) / 2 + o.x * 40, (a.y + p.y) / 2 + o.y * 40, (a.z + p.z) / 2 + o.z * 40], [p.x + o.x, p.y + o.y, p.z + o.z]], { pitch: true, ease: 'in' }); S.during(0, 40, () => m.setBurn && m.setBurn(1)); S.during(h[3], 99, () => { m.root.visible = false; }); }
-      S.on(h[3], () => { fx.nuke(p, { size: 7, inSpace: true }); }); S.flash(h[3], 0.9); S.sfx(h[3], 'nuke'); S.during(h[3], 99, () => { const sh = heroes[i]; if (sh.setLights) sh.setLights(0.04); if (sh.setThrust) sh.setThrust(0); });
-      S.on(h[3] + 2, () => { const q = sp.at(h[0], h[1], 0); fx.reentry(p, q, { life: 9, size: 0.5, trailTime: 6 }); }); const e2 = S.entity({ root: heroes[i].root }); falling.push(e2); });
-    const hp = heroes[0].root.position.clone();
-    S.shot(0, 6, { from: { pos: sp.cam(30, -100, R_E * 1.9, 400, 600), look: [0, 0, 0], fov: 38 }, to: { pos: sp.cam(32, -98, R_E + 1500, 60, 30), look: hp.toArray(), fov: 34 } }); S.shot(6, 9, { pos: [hp.x + 1.6, hp.y + 0.7, hp.z + 1.0], look: hp.toArray(), fov: 36, handheld: 0.15 }, 'cut'); S.shot(9, 13, { pos: sp.cam(28, -104, R_E + 900, 8, 3), look: sp.at(28, -104, 540).toArray(), fov: 34, handheld: 0.3 }, 'cut'); S.shot(13, 18, { pos: [hp.x + 3, hp.y + 1.2, hp.z + 2], look: hp.toArray(), fov: 36, handheld: 0.3 }, 'cut'); S.shot(18, 24, { from: { pos: sp.cam(32, -100, R_E + 1800, 100, 60), look: sp.at(32, -100, 540).toArray(), fov: 38 }, to: { pos: sp.cam(32, -100, R_E * 1.9, 400, 300), look: [0, 0, 0], fov: 42 } }, 'cut');
+    const sp = space(S, { lat: 31, lon: -102, sunFront: 0.35, sunSide: 0.9 }); const fx = S.fx; const SK = createStreaks(S); const beams = sp.beams; const rng = new RNG(3939);
+    // local frame over (lat, lon, alt): o(up, east, north) offsets in km
+    const fr = (lat, lon, alt = 0) => { const p = sp.at(lat, lon, alt); const up = p.clone().normalize(); const east = new V3(0, 1, 0).cross(up).normalize(); const north = up.clone().cross(east).normalize(); return { p, up, east, north, o: (u, e, n) => p.clone().addScaledVector(up, u).addScaledVector(east, e).addScaledVector(north, n) }; };
+    const arr = (v) => v.toArray(); const EXH = { hot: [7, 5.2, 3.4], cool: [0.8, 0.62, 0.5] }; const PLUME = { hot: [6, 2.3, 0.7], cool: [0.7, 0.28, 0.1] };
+    // ---- hero capital ships lie level over the planet; the rest of the fleet is instanced, with running-light glares so it reads at any range
+    const HS = [{ lat: 34, lon: -96, alt: 560, len: 880, hit: 10.3, nuke: 0.8 }, { lat: 28.6, lon: -103.2, alt: 545, len: 820, hit: 13.6, nuke: 6.5 }, { lat: 37.2, lon: -108.6, alt: 575, len: 760, hit: 14.7, nuke: 6.5 }];
+    const heroes = HS.map((h, i) => { const sh = sp.ship(7 + i, h.lat, h.lon, h.alt, h.len); const F = fr(h.lat, h.lon, h.alt); sh.root.up.copy(F.up); sh.root.lookAt(F.p.clone().addScaledVector(F.east, i === 1 ? -1 : 1).addScaledVector(F.north, 0.3)); return { sh, F, h, q0: sh.root.quaternion.clone() }; });
+    const list = []; for (let i = 0; i < 45; i++) list.push([22 + (i % 9) * 3.2, -125 + (i * 7) % 50, 500 + (i % 6) * 40, 500 + (i % 5) * 80]); const fleet = sp.fleet(list, 3);
+    const FH = [[4, 15.3], [11, 16.0], [19, 16.7], [27, 17.3]]; const fhit = new Map(FH);
+    list.forEach((s, i) => SK.glare(sp.at(s[0], s[1], s[2]), { color: [0.6, 2.6, 3.6], px: 0.0065, flicker: 2 + (i % 5), t1: fhit.get(i), near: 60 }));
+    heroes.forEach(({ F, h }) => SK.glare(F.p, { color: [0.7, 2.8, 3.8], px: 0.008, flicker: 3, t1: h.hit, near: 60 }));
+    const fState = new Map(); S.during(0, 24, (t) => { let dirty = false; for (const [i, th] of FH) { const hid = t >= th + 0.25; if (fState.get(i) !== hid) { fState.set(i, hid); const s = list[i]; const p = sp.at(s[0], s[1], s[2]); fleet.set(i, { x: p.x, y: p.y, z: p.z, yaw: fleet.get(i).yaw, scale: hid ? 0 : (s[3] || 600) / 1000 }); dirty = true; } } if (dirty) fleet.commit(); });
+    // ---- interceptors: exhaust streaks with glaring heads; some are burned down by point defence before they arrive
+    const icpt = (pts, o) => SK.add(pts, { ...EXH, widthPx: 2.2, worldW: 0.14, tailLen: 110, grow: 2.0, headPx: 0.013, popPx: 0.045, fade: 2.6, ...o });
+    const kills = [], strikers = [];
+    for (let j = 0; j < 12; j++) { const la = 31.7 + j * 0.12 + rng.range(-0.05, 0.05), lo = -106.6 + j * 0.09 + rng.range(-0.04, 0.04); icpt([sp.at(la, lo, 16), sp.at(la + 0.25, lo + 0.35, 90), sp.at(la + 0.8, lo + 1.4, 230), sp.at(la + 1.6, lo + 3.2, 400), sp.at(la + 2.0, lo + 5.5, 520)], { t0: -3.5 + j * 0.3 + rng.range(0, 0.2), t1: 12.5 + j * 0.2, ease: 'in', worldW: 0.35, tailLen: 170, headPx: 0.015, dieAt: j % 3 ? undefined : 10.6 + j * 0.3 }); }
+    const attack = (F, t1s, killAt, dir = 1) => t1s.map((t1, j) => {
+      const a = j - (t1s.length - 1) / 2; const k = killAt[j];
+      const st = icpt([F.o(-330 - 25 * j, (-240 + 55 * a) * dir, -150 + 40 * a), F.o(-140 - 10 * j, (-90 + 22 * a) * dir, -60 + 15 * a), F.o(-30, (-14 + 3 * a) * dir, -8 + 2 * a), F.o(-0.06, a * 0.12, 0.04 * a)], { t0: t1 - 9.5, t1, ease: 'linear', dieAt: k });
+      if (k !== undefined) kills.push({ st, t: k, F }); else strikers.push({ st, F }); return st;
+    });
+    attack(heroes[0].F, [10.3, 10.55, 10.45, 10.7, 10.6], [undefined, 7.0, undefined, 8.4, 9.4]);
+    attack(heroes[1].F, [13.6, 13.8, 13.7, 13.9], [undefined, 11.9, 12.6, undefined], -1);
+    attack(heroes[2].F, [14.7, 14.9, 15.0, 14.8], [12.9, undefined, 13.9, undefined]);
+    FH.forEach(([i, t], k) => { const s = list[i]; attack(fr(s[0], s[1], s[2]), [t, t + 0.3], [undefined, t - 2.2 - k * 0.3], k % 2 ? 1 : -1); });
+    // point-defence fire: killing shots plus misses at everything still closing
+    const hullPt = (F) => F.o(rng.range(-0.06, 0.12), rng.range(-0.35, 0.35), rng.range(-0.12, 0.12));
+    kills.forEach(({ st, t, F }) => { const to = st.headAt(t); beams.fire({ from: hullPt(F), to, color: 0x8ff8ff, width: 0.006, life: 0.28, delay: t - 0.22, muzzle: 0.05, impact: 0.5 }); beams.fire({ from: hullPt(F), to: to.clone().addScaledVector(F.east, rng.range(-4, 4)), color: 0x8ff8ff, width: 0.005, life: 0.24, delay: t - 0.7, muzzle: 0.04, impact: 0 }); S.sfx(t, 'explosion_far', { volume: 0.4 }); });
+    strikers.forEach(({ st, F }) => { for (let b = 0; b < 3; b++) { const tb = st.t1 - 3.8 + b * 1.1 + rng.range(0, 0.4); if (tb < 0.3) continue; const to = st.headAt(tb).addScaledVector(F.north, rng.range(-6, 6)).addScaledVector(F.east, rng.range(-6, 6)); beams.fire({ from: hullPt(F), to, color: 0x8ff8ff, width: 0.005, life: 0.3, delay: tb, muzzle: 0.04, impact: 0 }); } });
+    // ---- detonations
+    heroes.forEach(({ F, h }, i) => { fx.nuke(F.o(i === 0 ? -0.55 : -0.08, i === 0 ? -0.2 : 0.05, i === 0 ? -0.15 : 0), { size: h.nuke, inSpace: true, t: h.hit }); S.flash(h.hit, i === 0 ? 1.0 : 0.55); S.sfx(h.hit, 'nuke'); });
+    S.post(10.3, 11.6, 'exposure', 1.7, 1, 'out');
+    FH.forEach(([i, t]) => { const s = list[i]; fx.nuke(sp.at(s[0], s[1], s[2]), { size: 5.5, inSpace: true, t }); S.sfx(t, 'explosion_far'); });
+    // ---- crippled ships: lights die, hull fires, knocked nose-down, then falling toward the atmosphere with a growing reentry plume
+    const glowMat = (c) => new THREE.SpriteMaterial({ map: streakGlow(), color: new THREE.Color(...c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+    heroes.forEach((H, i) => {
+      const { sh, F, h } = H; const d = i === 1 ? -1 : 1;
+      const fall = SK.add([F.p, F.o(-22, 16 * d, -5), F.o(-130, 64 * d, -26), F.o(-420, 150 * d, -70)], { ...PLUME, t0: h.hit + 0.7, t1: h.hit + 19, ease: 'in', widthPx: 3.6, worldW: 0.6, tailLen: 110, grow: 2.8, headPx: 0.024, alpha: (t) => clamp((t - h.hit - 1.6) / 4.0) });
+      H.fall = fall;
+      const wounds = [[0.0, -0.5, 0.2, 1.0], [0.4, 0.2, -0.3, 0.7], [-0.3, 0.6, 0.55, 0.55]].map(([x, y, z, s]) => { const w = new THREE.Sprite(glowMat([6, 2.0, 0.5])); w.position.set(x * sh.radius, y * sh.radius, z * sh.length * 0.5); w.userData.s = s * sh.radius * 2.2; w.visible = false; sh.root.add(w); return w; });
+      const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
+      S.during(0, 24, (t) => {
+        const dt_ = t - h.hit; const on = dt_ >= 0;
+        sh.setLights(on ? (dt_ < 1.6 ? (Math.sin(dt_ * 37) > 0.2 ? 0.6 : 0.05) * (1 - dt_ / 1.6) + 0.04 : 0.04) : 1); sh.setThrust(on ? 0 : 0.7);
+        wounds.forEach((w, k) => { w.visible = on; if (on) w.scale.setScalar(w.userData.s * Math.min(1, dt_ * 2.5) * (0.8 + 0.2 * Math.sin(t * (9 + k * 3) + k))); });
+        if (!on) { sh.root.position.copy(F.p); sh.root.quaternion.copy(H.q0); return; }
+        fall.headAt(t, sh.root.position).addScaledVector(F.up, -0.25 * Math.min(1, dt_ / 0.8));
+        qa.setFromAxisAngle(F.north, (0.1 + 0.85 * Math.pow(Math.min(1, dt_ / 14), 0.8)) * -d); qb.setFromAxisAngle(F.east, 0.25 * Math.sin(dt_ * 0.35) + dt_ * 0.03);
+        sh.root.quaternion.copy(qa).multiply(qb).multiply(H.q0);
+      });
+    });
+    FH.forEach(([i, t], k) => { const s = list[i]; const F = fr(s[0], s[1], s[2]); const d = k % 2 ? 1 : -1; SK.add([F.p, F.o(-25, 15 * d, 4), F.o(-140, 60 * d, 20), F.o(-420, 140 * d, 50)], { ...PLUME, t0: t + 0.6, t1: t + 17, ease: 'in', widthPx: 3.4, worldW: 0.5, tailLen: 100, grow: 2.8, headPx: 0.022, alpha: (tt) => clamp((tt - t - 1.2) / 3.5) }); });
+    // ---- camera: breakout over the limb -> fleet POV under fire -> the first hit up close -> the wide fleet -> pulling back as they fall
+    const H0 = heroes[0].F; const ship0 = () => heroes[0].sh.root.position.toArray();
+    S.shot(0, 5.4, { from: { pos: arr(fr(30.5, -104.2).o(58, 0, 0)), look: arr(sp.at(32.3, -105.9, 95)), fov: 50 }, to: { pos: arr(fr(30.6, -104.3).o(60, -6, 4)), look: arr(sp.at(32.9, -105.0, 230)), fov: 48 }, handheld: 0.15 });
+    S.shot(5.4, 9.2, { from: { pos: arr(H0.o(0.9, 1.6, 1.2)), look: arr(H0.o(-0.6, -0.9, -0.8)), fov: 42 }, to: { pos: arr(H0.o(0.8, 1.45, 1.05)), look: arr(H0.o(-0.7, -0.95, -0.85)), fov: 40 }, handheld: 0.12 }, 'cut');
+    S.shot(9.2, 13.0, { pos: arr(H0.o(1.6, 2.2, 9.5)), look: ship0, fov: 30, handheld: 0.3 }, 'cut');
+    // wide shots are side-on at fleet altitude: falling ships cross the frame toward the limb instead of foreshortening away
+    S.shot(13.0, 17.6, { from: { pos: arr(fr(31.5, -118.5).o(520, 0, 0)), look: arr(fr(32.5, -102.5).o(440, 0, 0)), fov: 44 }, to: { pos: arr(fr(31.5, -118.8).o(522, 0, 0)), look: arr(fr(32.5, -102.0).o(430, 0, 0)), fov: 43 }, handheld: 0.08 }, 'cut');
+    S.shot(17.6, 24, { from: { pos: arr(fr(18.5, -98.5).o(500, 0, 0)), look: arr(fr(31, -99).o(420, 0, 0)), fov: 42 }, to: { pos: arr(fr(17.5, -98.5).o(520, 0, 0)), look: arr(fr(31, -99).o(380, 0, 0)), fov: 47 } }, 'cut');
     mood(S, { music: 'nuclear', amb: 'space', level: 0.35, intensity: 0.9 }); S.stamp(0.5, 'DAY 7 — MARCH 22, 2050 — 01:19 UTC', 'LOW EARTH ORBIT', 4.5);
-    S.fit(0.6, 8.0, [['INTERCEPTOR WING', 'Alpha group, terminal phase. Warheads armed.', mil({ emotion: 'serious' })], ['INTERCEPTOR WING', 'Detonation in three. Two. One.', mil({ emotion: 'urgent' })]]); S.fit(9.6, 23.2, [['INTERCEPTOR WING', 'Detonation! Multiple hits!', mil({ emotion: 'excited' })], ['INTERCEPTOR WING', "Capital ships venting. They're falling!", mil({ emotion: 'shocked' })], ['INTERCEPTOR WING', "Not all of them. The rest are holding. They're not leaving.", mil({ emotion: 'afraid' })]]);
+    S.fit(0.6, 5.2, [['INTERCEPTOR WING', 'Alpha group is through the atmosphere. Terminal phase.', mil({ emotion: 'serious' })]]);
+    S.say(5.5, 'INTERCEPTOR WING', 'Point defence! Losing birds!', mil({ dur: 2.2, emotion: 'urgent' }));
+    S.say(7.8, 'INTERCEPTOR WING', 'Detonation in three. Two. One.', mil({ dur: 2.7, emotion: 'urgent' }));
+    S.fit(10.9, 17.4, [['INTERCEPTOR WING', 'Direct hit! Direct hit!', mil({ emotion: 'excited' })], ['INTERCEPTOR WING', 'Multiple detonations. Capital ships venting.', mil({ emotion: 'shocked' })]]);
+    S.fit(17.8, 23.5, [['INTERCEPTOR WING', "They're falling!", mil({ emotion: 'excited' })], ['INTERCEPTOR WING', 'Not all of them. The rest are holding.', mil({ emotion: 'afraid' })]]);
   } },
   // ------------------------------------------------------------------ s39b — the ground war notices
   { id: 's39b_ground_reaction', dur: 16, cutIn: true, build(S) {

@@ -91,14 +91,14 @@ export class SceneContext {
   }
   /**
    * Fit a conversation into [t0,t1]: lines keep natural (never clipped) durations — slack becomes natural pauses between lines,
-   * overfull scenes compress speech by at most ~12%. lines = [[who,text,opts],...] (opts.gap = extra pause after the line). Returns end time.
+   * overfull scenes compress speech by at most ~20%. lines = [[who,text,opts],...] (opts.gap = extra pause after the line). Returns end time.
    * This is the anti-cut-off / anti-dead-air tool: use it for every scene so the talk fills the shot and ends before the fade.
    */
   fit(t0, t1, lines, { gap0 = 0.28, maxStretch = 1.18, maxGap = 1.6, lead = 0.35 } = {}) {
     const nat = lines.map((l) => { const o = l[2] || {}; return o.dur ?? Math.max(1.0, (estimateDuration(l[1], o.wpm || 170) + 0.15) * (o.pace || 1)); });
     const sum = nat.reduce((a, b) => a + b, 0), n = lines.length; const avail = Math.max(0.5, t1 - t0 - lead); const base = sum + (n - 1) * gap0;
     let k = 1, gap = gap0;
-    if (base > avail) { k = Math.max(0.88, (avail - (n - 1) * gap0) / sum); if (k * sum + (n - 1) * gap0 > avail + 0.05 && !this.dir.quiet) console.warn(`[film] ${this.id}: dialogue overfull by ${(k * sum + (n - 1) * gap0 - avail).toFixed(1)} s`); }
+    if (base > avail) { k = Math.max(0.8, (avail - (n - 1) * gap0) / sum); if (k * sum + (n - 1) * gap0 > avail + 0.05 && !this.dir.quiet) console.warn(`[film] ${this.id}: dialogue overfull by ${(k * sum + (n - 1) * gap0 - avail).toFixed(1)} s`); }
     else { k = Math.min(maxStretch, (avail - (n - 1) * gap0) / sum); k = Math.max(1, Math.min(k, 1.0 + (maxStretch - 1))); const slack = avail - k * sum; gap = n > 1 ? Math.min(maxGap, slack / (n - 1)) : 0; }
     let c = t0 + lead + (n > 1 ? 0 : Math.max(0, (avail - k * sum) / 2));
     for (let i = 0; i < n; i++) { const o = { ...(lines[i][2] || {}) }; o.dur = nat[i] * k; c = this.say(c, lines[i][0], lines[i][1], o) + (i < n - 1 ? Math.max(gap, 0.18) + (o.gap || 0) : 0); }
@@ -152,8 +152,25 @@ export class SceneContext {
     for (const e of this.entities) { try { e.evaluate(t, dt); } catch (err) { this.dir.report(this, 'entity', err); } }
     for (const u of this.updaters) { if (t >= u.t0 && t <= u.t1) { try { u.fn(t, (t - u.t0) / Math.max(1e-6, u.t1 - u.t0), dt); } catch (err) { this.dir.report(this, 'updater', err); } } }
     for (const m of this.modules) { try { m.update && m.update(dt, t); } catch (err) { this.dir.report(this, 'module', err); } }
+    if (this._hemi) this._hemiSync();
     // camera
     this._evalCamera(t, dt);
+  }
+  /** Merge every hemisphere light into one scene-level light that tracks them each frame. Sets often bring their own hemi (and are
+   *  placed at large offsets, which tilted those hemis sideways); one light means fewer shader variants and cheaper shading. */
+  mergeHemis() {
+    const hs = []; this.scene.traverse((o) => { if (o.isHemisphereLight) hs.push(o); });
+    if (hs.length < 2) return;
+    const M = new THREE.HemisphereLight(0, 0, 1); M.name = 'hemiMerged'; M.position.set(0, 1, 0); this.scene.add(M);
+    for (const h of hs) h.layers.set(31); // excluded from lighting (the camera only sees layer 0), still animatable by scene code
+    this._hemi = { M, hs }; this._hemiSync();
+  }
+  _hemiSync() {
+    const { M, hs } = this._hemi; const c = M.color.setRGB(0, 0, 0), g = M.groundColor.setRGB(0, 0, 0);
+    for (const h of hs) {
+      let v = h.visible, p = h.parent; while (v && p) { v = p.visible; p = p.parent; } if (!v || !h.parent) continue;
+      const k = h.intensity; c.r += h.color.r * k; c.g += h.color.g * k; c.b += h.color.b * k; g.r += h.groundColor.r * k; g.g += h.groundColor.g * k; g.b += h.groundColor.b * k;
+    }
   }
   _evalCamera(t, dt) {
     const shots = this.shots; if (!shots.length) return;
